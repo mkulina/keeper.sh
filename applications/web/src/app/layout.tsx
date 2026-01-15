@@ -2,7 +2,7 @@
 import "./globals.css";
 
 import { Suspense, cache, use } from "react";
-import type { ReactNode } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Geist as googleFont, Geist_Mono as googleMonoFont } from "next/font/google";
@@ -66,7 +66,7 @@ const getCountry = cache(
     headers().then((headers): string => headers.get("x-vercel-ip-country") ?? ""),
 );
 
-const Providers = ({ children }: { children: React.ReactNode }): ReactNode => {
+const Providers = ({ children }: PropsWithChildren): ReactNode => {
   const country = use(getCountry());
   const gdprApplies = GDPR_COUNTRIES.has(country);
 
@@ -82,11 +82,7 @@ const Providers = ({ children }: { children: React.ReactNode }): ReactNode => {
   );
 };
 
-const RootLayout = ({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>): ReactNode => (
+const RootLayout = ({ children }: Readonly<PropsWithChildren>): ReactNode => (
   <html lang="en">
     <head>
       <JsonLd />

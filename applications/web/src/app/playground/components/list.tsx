@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC, PropsWithChildren, ReactNode } from "react";
+import type { FC, PropsWithChildren } from "react";
 import { createContext, useContext, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -57,10 +57,9 @@ const List: FC<PropsWithChildren<ListProps>> = ({ children, className }) => {
 
 interface ListItemProps {
   id: string;
-  children: ReactNode;
 }
 
-const ListItem: FC<ListItemProps> = ({ id, children }) => {
+const ListItem: FC<PropsWithChildren<ListItemProps>> = ({ id, children }) => {
   const { activeId, setActiveId, indicatorLayoutId } = useListContext();
   const isActive = activeId === id;
 
@@ -95,10 +94,9 @@ const ListItemValue: FC<PropsWithChildren> = ({ children }) => (
 interface ListItemLinkProps {
   id: string;
   href: string;
-  children: ReactNode;
 }
 
-const ListItemLink: FC<ListItemLinkProps> = ({ id, href, children }) => {
+const ListItemLink: FC<PropsWithChildren<ListItemLinkProps>> = ({ id, href, children }) => {
   const { activeId, setActiveId, indicatorLayoutId } = useListContext();
   const isActive = activeId === id;
 
@@ -127,10 +125,9 @@ interface ListItemCheckboxProps {
   checked?: boolean;
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
-  children: ReactNode;
 }
 
-const ListItemCheckbox: FC<ListItemCheckboxProps> = ({
+const ListItemCheckbox: FC<PropsWithChildren<ListItemCheckboxProps>> = ({
   id,
   checked,
   defaultChecked,
@@ -260,10 +257,9 @@ interface ListItemCheckboxLinkProps {
   checked?: boolean;
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;
-  children: ReactNode;
 }
 
-const ListItemCheckboxLink: FC<ListItemCheckboxLinkProps> = ({
+const ListItemCheckboxLink: FC<PropsWithChildren<ListItemCheckboxLinkProps>> = ({
   id,
   href,
   checked,

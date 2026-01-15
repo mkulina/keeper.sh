@@ -46,3 +46,4 @@ TopNav.displayName = "TopNav";
 TopNavItem.displayName = "TopNavItem";
 
 export { TopNav, TopNavItem };
+export type { TopNavItemProps };

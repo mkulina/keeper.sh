@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, ButtonText } from "@keeper.sh/ui";
-import {
-  ConnectionPreambleModalProvider,
-  type Account,
-} from "../../../compositions/connection-preamble-modal/connection-preamble-modal";
+import { Button, ButtonText, ConnectionPreambleModalProvider, type Account } from "@keeper.sh/ui";
 
 const DEMO_ACCOUNTS: Account[] = [
   {

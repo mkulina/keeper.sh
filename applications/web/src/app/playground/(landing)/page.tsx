@@ -3,12 +3,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-import {
-  CalendarStack,
-  SyncCalendarsButton,
-  SyncHoverProvider,
-} from "../compositions/calendar-illustration/calendar-illustration";
-import { Heading1, Heading2, Copy, Button, ButtonText, ButtonIcon, LinkOut } from "@keeper.sh/ui";
+import { Heading1, Heading2, Copy, Button, ButtonText, ButtonIcon, LinkOut, CalendarStack, SyncCalendarsButton, SyncHoverProvider } from "@keeper.sh/ui";
 import { PricingGrid, PricingTier, PricingFeatureList, PricingFeature } from "../components/pricing";
 
 export default function Playground() {

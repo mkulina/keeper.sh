@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import { Header } from "@/components/header";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { ToastProvider } from "@/components/toast-provider";
 import { ConsentBanner } from "@/components/consent-banner";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }): ReactNode => (
+const DashboardLayout = ({ children }: PropsWithChildren): ReactNode => (
   <ToastProvider>
     <Header />
     <main className="flex-1 flex flex-col min-h-0">

@@ -27,6 +27,7 @@ const Modal: FC<PropsWithChildren<ModalProps>> = ({ open, onClose, className, ch
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
+            aria-hidden="true"
             className="fixed inset-0 bg-black/50 z-150 backdrop-blur-[0.125rem]"
           />
         )}
@@ -64,13 +65,14 @@ interface ModalHeaderProps {
 const ModalHeader: FC<ModalHeaderProps> = ({ title, description, onClose }) => (
   <div className="flex gap-2">
     <div className="flex flex-col gap-1 flex-1">
-      <Heading3>{title}</Heading3>
-      {description && <Copy className="text-xs">{description}</Copy>}
+      <Heading3 id="modal-title">{title}</Heading3>
+      {description && <Copy className="text-xs" id="modal-description">{description}</Copy>}
     </div>
     {onClose && (
       <button
         type="button"
         onClick={onClose}
+        aria-label="Close modal"
         className="self-start p-1 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-400 hover:text-neutral-600"
       >
         <X size={16} />

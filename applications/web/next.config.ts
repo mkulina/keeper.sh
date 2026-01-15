@@ -14,7 +14,7 @@ const config: NextConfig = {
   cacheComponents: true,
   ...(output && { output }),
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', '@keeper.sh/ui'],
   },
   serverExternalPackages: [
     "pino",
@@ -31,6 +31,7 @@ const config: NextConfig = {
     "@keeper.sh/data-schemas",
     "@keeper.sh/premium",
     "@keeper.sh/broadcast-client",
+    "@keeper.sh/ui",
   ],
   turbopack: {
     rules: {

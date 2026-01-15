@@ -36,4 +36,4 @@ const Input = ({ className, disabled, size = "default", label, ref, ...props }: 
 Input.displayName = "Input";
 
 export { Input };
-export type { InputSize };
+export type { InputSize, InputProps };

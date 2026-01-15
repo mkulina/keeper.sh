@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { ReactNode } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 
 interface AnalyticsContextValue {
   gdprApplies: boolean;
@@ -15,13 +15,12 @@ const useAnalytics = (): AnalyticsContextValue => useContext(AnalyticsContext);
 
 interface AnalyticsContextProviderProps {
   gdprApplies: boolean;
-  children: ReactNode;
 }
 
 const AnalyticsContextProvider = ({
   gdprApplies,
   children,
-}: AnalyticsContextProviderProps): ReactNode => (
+}: PropsWithChildren<AnalyticsContextProviderProps>): ReactNode => (
   <AnalyticsContext.Provider value={{ gdprApplies }}>{children}</AnalyticsContext.Provider>
 );
 

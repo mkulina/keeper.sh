@@ -73,7 +73,8 @@ const DesktopModal: FC<PropsWithChildren<DesktopModalProps>> = ({ children, onCl
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Modal dialog"
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
         tabIndex={-1}
         className={cn("bg-neutral-50 rounded-xl shadow-lg w-full max-w-md p-4 outline-none", className)}
         onClick={(event) => event.stopPropagation()}

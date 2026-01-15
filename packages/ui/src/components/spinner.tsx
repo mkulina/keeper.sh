@@ -31,3 +31,4 @@ const Spinner: FC<SpinnerProps> = ({ className }) => (
 Spinner.displayName = "Spinner";
 
 export { Spinner };
+export type { SpinnerProps };

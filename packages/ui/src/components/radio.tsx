@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, Ref } from "react";
 import { cn } from "../utils/cn";
+import { tv } from "tailwind-variants";
 
 type RadioSize = "default" | "small";
 
@@ -10,13 +11,40 @@ interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" 
   ref?: Ref<HTMLInputElement>;
 }
 
-const sizeStyles: Record<RadioSize, { outer: string; inner: string; label: string }> = {
-  default: { outer: "size-4", inner: "size-2", label: "text-xs" },
-  small: { outer: "size-3.5", inner: "size-1.5", label: "text-xs" },
-};
+const radioVariants = tv({
+  slots: {
+    outer: [
+      "flex items-center justify-center",
+      "border border-neutral-300 rounded-full transition-colors bg-white",
+      "peer-focus:ring-2 peer-focus:ring-neutral-200 peer-focus:border-neutral-400",
+      "peer-focus-visible:ring-neutral-300",
+      "peer-checked:border-neutral-800",
+    ],
+    inner: [
+      "rounded-full bg-neutral-800",
+      "scale-0 peer-checked:scale-100 transition-transform",
+    ],
+    label: "text-neutral-700 text-xs",
+  },
+  variants: {
+    size: {
+      default: {
+        outer: "size-4",
+        inner: "size-2",
+      },
+      small: {
+        outer: "size-3.5",
+        inner: "size-1.5",
+      },
+    },
+  },
+  defaultVariants: {
+    size: "default",
+  },
+});
 
 const Radio = ({ className, disabled, size = "default", label, id, ref, ...props }: RadioProps) => {
-  const styles = sizeStyles[size];
+  const { outer, inner, label: labelClass } = radioVariants({ size });
 
   return (
     <label
@@ -36,24 +64,11 @@ const Radio = ({ className, disabled, size = "default", label, id, ref, ...props
           className="peer sr-only"
           {...props}
         />
-        <div
-          className={cn(
-            "border border-neutral-300 rounded-full transition-colors bg-white",
-            "peer-focus:ring-2 peer-focus:ring-neutral-200 peer-focus:border-neutral-400",
-            "peer-focus-visible:ring-neutral-300",
-            "peer-checked:border-neutral-800",
-            styles.outer,
-          )}
-        />
-        <div
-          className={cn(
-            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-800",
-            "scale-0 peer-checked:scale-100 transition-transform",
-            styles.inner,
-          )}
-        />
+        <div className={outer()}>
+          <div className={inner()} />
+        </div>
       </div>
-      {label && <span className={cn("text-neutral-700", styles.label)}>{label}</span>}
+      {label && <span className={labelClass()}>{label}</span>}
     </label>
   );
 };
@@ -61,4 +76,4 @@ const Radio = ({ className, disabled, size = "default", label, id, ref, ...props
 Radio.displayName = "Radio";
 
 export { Radio };
-export type { RadioSize };
+export type { RadioSize, RadioProps };
