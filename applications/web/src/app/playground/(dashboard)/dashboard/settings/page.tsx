@@ -17,7 +17,8 @@ import {
   ListItemButton,
   ListItemLabel,
   ListItemValue,
-  ListItemAdd
+  ListItemAdd,
+  SectionHeader
 } from "@keeper.sh/ui";
 
 interface Passkey {
@@ -56,40 +57,40 @@ const SettingsPage = () => {
       <div className="md:hidden">
         <Heading1>Settings</Heading1>
       </div>
-      <div className="flex flex-col gap-2">
-        <Heading2>Account</Heading2>
-        <Copy className="text-xs">Manage your account settings.</Copy>
-        <List>
-          <ListItem id="email">
-            <ListItemLabel>Email</ListItemLabel>
-            <ListItemValue>john@example.com</ListItemValue>
-          </ListItem>
-          <ListItemButton id="change-password" onClick={() => setChangePasswordOpen(true)}>
-            <ListItemLabel>Password</ListItemLabel>
-            <ListItemValue>••••••••</ListItemValue>
-          </ListItemButton>
-          <ListItemButton id="delete-account" onClick={() => setDeleteAccountOpen(true)}>
-            <span className="text-xs text-red-600">Delete account</span>
-          </ListItemButton>
-        </List>
-      </div>
+      <SectionHeader
+        title="Account"
+        description="Manage your account settings."
+      />
+      <List>
+        <ListItem id="email">
+          <ListItemLabel>Email</ListItemLabel>
+          <ListItemValue>john@example.com</ListItemValue>
+        </ListItem>
+        <ListItemButton id="change-password" onClick={() => setChangePasswordOpen(true)}>
+          <ListItemLabel>Password</ListItemLabel>
+          <ListItemValue>••••••••</ListItemValue>
+        </ListItemButton>
+        <ListItemButton id="delete-account" onClick={() => setDeleteAccountOpen(true)}>
+          <span className="text-xs text-red-600">Delete account</span>
+        </ListItemButton>
+      </List>
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Passkeys</Heading2>
-        <Copy className="text-xs">Manage passkeys for passwordless sign-in.</Copy>
-        <List>
-          {MOCK_PASSKEYS.map((passkey) => (
-            <ListItemButton key={passkey.id} id={passkey.id} onClick={() => setDeletePasskeyOpen(passkey)}>
-              <div className="flex items-center gap-2">
-                <Fingerprint size={14} className="text-neutral-400" />
-                <ListItemLabel>{passkey.name}</ListItemLabel>
-              </div>
-              <ListItemValue>Added {formatDate(passkey.createdAt)}</ListItemValue>
-            </ListItemButton>
-          ))}
-          <ListItemAdd>Add passkey</ListItemAdd>
-        </List>
-      </div>
+      <SectionHeader
+        title="Passkeys"
+        description="Manage passkeys for passwordless sign-in."
+      />
+      <List>
+        {MOCK_PASSKEYS.map((passkey) => (
+          <ListItemButton key={passkey.id} id={passkey.id} onClick={() => setDeletePasskeyOpen(passkey)}>
+            <div className="flex items-center gap-2">
+              <Fingerprint size={14} className="text-neutral-400" />
+              <ListItemLabel>{passkey.name}</ListItemLabel>
+            </div>
+            <ListItemValue>Added {formatDate(passkey.createdAt)}</ListItemValue>
+          </ListItemButton>
+        ))}
+        <ListItemAdd>Add passkey</ListItemAdd>
+      </List>
 
       <Modal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)}>
         <ModalHeader

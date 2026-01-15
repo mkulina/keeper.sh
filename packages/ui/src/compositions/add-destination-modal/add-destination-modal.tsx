@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import { DESTINATION_PROVIDERS } from "../../data/providers";
-import { ProviderModal } from "../provider-modal/provider-modal";
+import { ProviderSelectionModal } from "../provider-modal/provider-modal";
 
 interface AddDestinationModalProps {
   open: boolean;
@@ -12,7 +12,7 @@ interface AddDestinationModalProps {
 
 const AddDestinationModal: FC<AddDestinationModalProps> = ({ open, onClose, onConnect }) => {
   return (
-    <ProviderModal
+    <ProviderSelectionModal
       type="destination"
       open={open}
       onClose={onClose}

@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import { SOURCE_PROVIDERS } from "../../data/providers";
-import { ProviderModal } from "../provider-modal/provider-modal";
+import { ProviderSelectionModal } from "../provider-modal/provider-modal";
 
 interface AddSourceModalProps {
   open: boolean;
@@ -15,7 +15,7 @@ const AddSourceModal: FC<AddSourceModalProps> = ({ open, onClose }) => {
   };
 
   return (
-    <ProviderModal
+    <ProviderSelectionModal
       type="source"
       open={open}
       onClose={onClose}

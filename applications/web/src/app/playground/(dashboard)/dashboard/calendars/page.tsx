@@ -15,7 +15,8 @@ import {
   ModalContent,
   ModalFooter,
   FormField,
-  IconButton
+  IconButton,
+  SectionHeader
 } from "@keeper.sh/ui";
 import type { FilterType } from "./types";
 import { MOCK_SOURCES, MOCK_DESTINATIONS } from "./utils/mock-data";
@@ -58,69 +59,69 @@ const CalendarsPage = () => {
       <div className="md:hidden">
         <Heading1>Calendars</Heading1>
       </div>
-      <div className="flex flex-col gap-2">
-        <Heading2>Sources</Heading2>
-        <Copy className="text-xs">Calendars for which events may be sourced, these events are pooled and can be used to push events to destinations.</Copy>
-        <List>
-          {MOCK_SOURCES.map((source) => (
-            <SourceItem key={source.id} source={source} />
-          ))}
-          <ListItemAdd onClick={actions.openAddSource}>Add source</ListItemAdd>
-        </List>
-      </div>
+      <SectionHeader
+        title="Sources"
+        description="Calendars for which events may be sourced, these events are pooled and can be used to push events to destinations."
+      />
+      <List>
+        {MOCK_SOURCES.map((source) => (
+          <SourceItem key={source.id} source={source} />
+        ))}
+        <ListItemAdd onClick={actions.openAddSource}>Add source</ListItemAdd>
+      </List>
 
       <Filter size={20} className="text-neutral-300 mx-auto" />
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Filters</Heading2>
-        <Copy className="text-xs">Define rules to filter events from your sources. Only events matching these criteria will be synced to your destinations.</Copy>
-        <List>
-          {state.filters.map((filter) => (
-            <FilterItem
-              key={filter.id}
-              filter={filter}
-              onEdit={handleEditFilter}
-              onRemove={handleRemoveFilter}
-            />
-          ))}
-          <ListItemAdd onClick={actions.addFilter}>Add filter</ListItemAdd>
-        </List>
-      </div>
+      <SectionHeader
+        title="Filters"
+        description="Define rules to filter events from your sources. Only events matching these criteria will be synced to your destinations."
+      />
+      <List>
+        {state.filters.map((filter) => (
+          <FilterItem
+            key={filter.id}
+            filter={filter}
+            onEdit={handleEditFilter}
+            onRemove={handleRemoveFilter}
+          />
+        ))}
+        <ListItemAdd onClick={actions.addFilter}>Add filter</ListItemAdd>
+      </List>
 
       <ArrowDown size={20} className="text-neutral-300 mx-auto" />
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Destinations</Heading2>
-        <Copy className="text-xs">When events are pulled from sources, they can be pushed to destinations. Destinations require special permissions to write events to.</Copy>
-        <List>
-          {MOCK_DESTINATIONS.map((destination) => (
-            <DestinationItem key={destination.id} destination={destination} />
-          ))}
-          <ListItemAdd>Add destination</ListItemAdd>
-        </List>
-      </div>
+      <SectionHeader
+        title="Destinations"
+        description="When events are pulled from sources, they can be pushed to destinations. Destinations require special permissions to write events to."
+      />
+      <List>
+        {MOCK_DESTINATIONS.map((destination) => (
+          <DestinationItem key={destination.id} destination={destination} />
+        ))}
+        <ListItemAdd>Add destination</ListItemAdd>
+      </List>
 
       <Ampersand size={20} className="text-neutral-300 mx-auto" />
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Aggregate iCal Link</Heading2>
-        <Copy className="text-xs">A single iCal link that aggregates all filtered events from your sources.</Copy>
-        <div className="flex gap-2 items-start">
-          <div className="flex-1">
-            <Input
-              type="text"
-              value={ICAL_LINK}
-              readOnly
-              className="font-mono text-xs"
-            />
-          </div>
-          <IconButton
-            icon={CopyIcon}
-            onClick={handleCopyLink}
-            variant="outline"
-            aria-label="Copy iCal link"
+      <SectionHeader
+        title="Aggregate iCal Link"
+        description="A single iCal link that aggregates all filtered events from your sources."
+      />
+      <div className="flex gap-2 items-start">
+        <div className="flex-1">
+          <Input
+            type="text"
+            value={ICAL_LINK}
+            readOnly
+            className="font-mono text-xs"
           />
         </div>
+        <IconButton
+          icon={CopyIcon}
+          onClick={handleCopyLink}
+          variant="outline"
+          aria-label="Copy iCal link"
+        />
       </div>
 
       <AddSourceModal open={state.addSourceOpen} onClose={actions.closeAddSource} />

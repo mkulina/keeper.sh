@@ -18,7 +18,8 @@ import {
   List,
   ListItemCheckbox,
   ListItemLabel,
-  Notice
+  Notice,
+  SectionHeader
 } from "@keeper.sh/ui";
 import { CalendarCheckboxItem } from "../../components/calendar-checkbox-item";
 
@@ -176,53 +177,54 @@ const CalendarDetailPage: FC<CalendarDetailPageProps> = ({ params }) => {
           action={{
             label: "Reauthenticate",
             onAction: () => {
-              // TODO: Handle reauthentication
+              // Placeholder: In production, this would trigger OAuth flow
+              console.warn("Reauthentication flow not yet implemented");
             },
           }}
         />
       )}
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Calendars</Heading2>
-        <Copy className="text-xs">Select which calendars to pull events from.</Copy>
-        <List>
-          {source.subCalendars.map((calendar) => (
-            <SubCalendarItem key={calendar.id} calendar={calendar} />
-          ))}
-        </List>
-      </div>
+      <SectionHeader
+        title="Calendars"
+        description="Select which calendars to pull events from."
+      />
+      <List>
+        {source.subCalendars.map((calendar) => (
+          <SubCalendarItem key={calendar.id} calendar={calendar} />
+        ))}
+      </List>
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Destinations</Heading2>
-        <Copy className="text-xs">Select which destinations to sync events to.</Copy>
-        <List>
-          {destinations.map((destination) => (
-            <CalendarCheckboxItem
-              key={destination.id}
-              id={destination.id}
-              name={destination.name}
-              email={destination.email}
-              providerIcon={destination.provider.icon}
-              providerName={destination.provider.name}
-              checked={destination.enabled}
-              onChange={() => handleToggleDestination(destination.id)}
-            />
-          ))}
-        </List>
-      </div>
+      <SectionHeader
+        title="Destinations"
+        description="Select which destinations to sync events to."
+      />
+      <List>
+        {destinations.map((destination) => (
+          <CalendarCheckboxItem
+            key={destination.id}
+            id={destination.id}
+            name={destination.name}
+            email={destination.email}
+            providerIcon={destination.provider.icon}
+            providerName={destination.provider.name}
+            checked={destination.enabled}
+            onChange={() => handleToggleDestination(destination.id)}
+          />
+        ))}
+      </List>
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Sync Settings</Heading2>
-        <Copy className="text-xs">Choose what event data to sync.</Copy>
-        <List>
-          <ListItemCheckbox id="sync-summaries" checked={syncSummaries} onChange={setSyncSummaries}>
-            <ListItemLabel>Sync event summaries</ListItemLabel>
-          </ListItemCheckbox>
-          <ListItemCheckbox id="sync-descriptions" checked={syncDescriptions} onChange={setSyncDescriptions}>
-            <ListItemLabel>Sync event descriptions</ListItemLabel>
-          </ListItemCheckbox>
-        </List>
-      </div>
+      <SectionHeader
+        title="Sync Settings"
+        description="Choose what event data to sync."
+      />
+      <List>
+        <ListItemCheckbox id="sync-summaries" checked={syncSummaries} onChange={setSyncSummaries}>
+          <ListItemLabel>Sync event summaries</ListItemLabel>
+        </ListItemCheckbox>
+        <ListItemCheckbox id="sync-descriptions" checked={syncDescriptions} onChange={setSyncDescriptions}>
+          <ListItemLabel>Sync event descriptions</ListItemLabel>
+        </ListItemCheckbox>
+      </List>
 
       <div className="flex flex-col gap-4">
         <Heading2>Custom Values</Heading2>
@@ -248,18 +250,18 @@ const CalendarDetailPage: FC<CalendarDetailPageProps> = ({ params }) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Heading2>Danger Zone</Heading2>
-        <Copy className="text-xs">Permanently remove this source and all synced events.</Copy>
-        <Button
-          variant="outline"
-          className="text-red-600 border-red-200 hover:bg-red-50"
-          onClick={() => setDeleteSourceOpen(true)}
-        >
-          <Trash2 size={14} />
-          <ButtonText>Delete Source</ButtonText>
-        </Button>
-      </div>
+      <SectionHeader
+        title="Danger Zone"
+        description="Permanently remove this source and all synced events."
+      />
+      <Button
+        variant="outline"
+        className="text-red-600 border-red-200 hover:bg-red-50"
+        onClick={() => setDeleteSourceOpen(true)}
+      >
+        <Trash2 size={14} />
+        <ButtonText>Delete Source</ButtonText>
+      </Button>
 
       <Modal open={deleteSourceOpen} onClose={() => setDeleteSourceOpen(false)}>
         <ModalHeader

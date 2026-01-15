@@ -3,7 +3,7 @@
 import type { FC, FormEvent, HTMLInputAutoCompleteAttribute} from "react";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Provider, useStore } from "jotai";
+import { useStore } from "jotai";
 import { FormDivider } from "../../../components/form-divider";
 import { IconButton } from "../../../components/button";
 import {
@@ -131,10 +131,6 @@ const AuthFormInternal: FC<AuthFormProps> = ({ variant, strategy }) => {
   );
 };
 
-const AuthForm: FC<AuthFormProps> = ({ ...props }) => (
-    <Provider>
-      <AuthFormInternal {...props} />
-    </Provider>
-  )
+const AuthForm = AuthFormInternal;
 
 export { AuthForm }

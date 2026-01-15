@@ -50,6 +50,8 @@ export { Heading1, Heading2, Heading3 } from "./components/heading";
 export type { HeadingProps } from "./components/heading";
 export { Copy } from "./components/copy";
 export type { CopyProps } from "./components/copy";
+export { SectionHeader } from "./components/section-header";
+export type { SectionHeaderProps } from "./components/section-header";
 export { LinkOut } from "./components/link-out";
 
 export { Notice } from "./components/notice";
@@ -94,8 +96,8 @@ export type { Account } from "./compositions/connection-preamble-modal/connectio
 
 export { ProviderIcon } from "./components/provider-icon";
 export { ProviderDetails } from "./components/provider-details";
-export { ProviderModal } from "./compositions/provider-modal/provider-modal";
-export type { ProviderModalProps } from "./compositions/provider-modal/provider-modal";
+export { ProviderSelectionModal } from "./compositions/provider-modal/provider-modal";
+export type { ProviderSelectionModalProps } from "./compositions/provider-modal/provider-modal";
 export type { Provider, ProviderStep, ProviderType } from "./types/provider";
 export { SOURCE_PROVIDERS, DESTINATION_PROVIDERS } from "./data/providers";
 

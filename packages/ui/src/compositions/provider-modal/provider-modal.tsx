@@ -20,7 +20,7 @@ const layoutVariants = tv({
 
 const { content, sidebar, details } = layoutVariants();
 
-interface ProviderModalProps {
+interface ProviderSelectionModalProps {
   type: ProviderType;
   open: boolean;
   onClose: () => void;
@@ -29,7 +29,7 @@ interface ProviderModalProps {
   onConnect: (providerId: string) => void;
 }
 
-const ProviderModal: FC<ProviderModalProps> = ({
+const ProviderSelectionModal: FC<ProviderSelectionModalProps> = ({
   type,
   open,
   onClose,
@@ -91,7 +91,7 @@ const ProviderModal: FC<ProviderModalProps> = ({
   );
 };
 
-ProviderModal.displayName = "ProviderModal";
+ProviderSelectionModal.displayName = "ProviderSelectionModal";
 
-export { ProviderModal };
-export type { ProviderModalProps };
+export { ProviderSelectionModal };
+export type { ProviderSelectionModalProps };
