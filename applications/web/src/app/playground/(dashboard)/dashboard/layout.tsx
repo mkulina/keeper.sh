@@ -6,7 +6,7 @@ import { DockItem } from "../../components/dock";
 const DashboardLayout: FC<PropsWithChildren> = ({ children }) => (
   <>
     <Scaffold>
-      <div className="flex flex-col pt-8 pb-8">
+      <div className="flex flex-col pt-8 pb-8 md:pb-16">
         <div className="hidden md:block">
           <TopNav>
             <div className="flex items-center gap-px">

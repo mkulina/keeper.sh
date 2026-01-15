@@ -23,7 +23,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         ref={ref}
         disabled={disabled}
         className={cn(
-          "w-full shadow-xs border border-neutral-200 rounded-xl transition-colors bg-white",
+          "w-full shadow-xs border border-neutral-200 rounded-xl  bg-white",
           "focus:outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-200",
           "focus-visible:ring-neutral-300 focus-visible:ring-offset-1",
           "placeholder:text-neutral-400 tracking-normal",

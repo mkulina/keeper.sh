@@ -59,7 +59,7 @@ interface MicroEventItemProps {
 }
 
 const MicroEventItem: FC<MicroEventItemProps> = ({ event }) => (
-  <div className="flex items-center gap-2 py-1.5 px-2 hover:bg-surface-subtle rounded-lg transition-colors">
+  <div className="flex items-center gap-2 py-1.5 px-2 hover:bg-surface-subtle rounded-lg ">
     <div className="flex flex-col flex-1 min-w-0">
       <span className="text-xs text-foreground truncate">{event.name}</span>
       <span className="text-[10px] text-foreground-subtle tabular-nums">
@@ -79,7 +79,7 @@ const CalendarPreviewCard: FC<CalendarPreviewCardProps> = ({
 }) => (
   <div className="flex flex-col border border-border rounded-xl bg-surface overflow-hidden">
     {/* Header */}
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-b-border">
       <Image
         src={provider.icon}
         alt={provider.name}
@@ -104,7 +104,7 @@ const CalendarPreviewCard: FC<CalendarPreviewCardProps> = ({
     </div>
 
     {/* Footer */}
-    <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-surface-subtle">
+    <div className="flex items-center justify-between px-4 py-2.5 border-t border-t-border bg-surface-subtle">
       <span className="text-xs text-foreground-secondary">{email}</span>
       <span className="text-xs text-foreground-subtle">{formatEventCount(eventCount)}</span>
     </div>

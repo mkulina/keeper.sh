@@ -21,7 +21,7 @@ const DockIndicator: FC<DockIndicatorProps> = ({ segment }) => {
       layoutId="indicator"
       style={{ originY: "top" }}
       transition={{ duration: 0.16, ease: [0.5, 0, 0, 1] }}
-      className="absolute inset-0 size-full rounded-full z-10 bg-linear-to-b from-neutral-700 to-neutral-800 border-y border-t-neutral-500 border-b-neutral-600"
+      className="absolute inset-0 size-full rounded-full z-10 bg-surface-muted border border-border"
     />
   );
 };

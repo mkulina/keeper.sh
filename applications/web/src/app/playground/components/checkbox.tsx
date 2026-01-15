@@ -39,7 +39,7 @@ const Checkbox = ({ className, disabled, checkboxSize = "default", label, id, re
         />
         <div
           className={cn(
-            "border border-neutral-300 rounded-md transition-colors bg-white",
+            "border border-neutral-300 rounded-md  bg-white",
             "peer-focus:ring-2 peer-focus:ring-neutral-200 peer-focus:border-neutral-400",
             "peer-focus-visible:ring-neutral-300",
             "peer-checked:bg-neutral-800 peer-checked:border-neutral-800",
@@ -49,7 +49,7 @@ const Checkbox = ({ className, disabled, checkboxSize = "default", label, id, re
         <Check
           size={styles.icon}
           strokeWidth={2.5}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 transition-opacity"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 "
         />
       </div>
       {label && <span className={cn("text-neutral-700", styles.label)}>{label}</span>}

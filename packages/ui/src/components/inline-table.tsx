@@ -24,7 +24,7 @@ interface InlineTableRowProps {
 }
 
 const InlineTableRow: FC<PropsWithChildren<InlineTableRowProps>> = ({ last, children }) => (
-  <tr className={cn({"border-b border-border": last})}>{children}</tr>
+  <tr className={cn({"border-b border-b-border": last})}>{children}</tr>
 );
 
 const InlineTableHead: FC<PropsWithChildren> = ({ children }) => (

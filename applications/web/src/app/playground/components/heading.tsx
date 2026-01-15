@@ -12,7 +12,7 @@ const Heading1: FC<PropsWithChildren<HeadingProps>> = ({ children, className }) 
   <h1
     className={cn(
       lora.className,
-      "text-4xl font-medium leading-tight -tracking-[0.075em]",
+      "text-4xl font-medium leading-tight -tracking-[0.075em] text-foreground",
       className,
     )}
   >
@@ -24,7 +24,7 @@ const Heading2: FC<PropsWithChildren<HeadingProps>> = ({ children, className }) 
   <h2
     className={cn(
       lora.className,
-      "text-2xl font-medium leading-tight -tracking-[0.075em]",
+      "text-2xl font-medium leading-tight -tracking-[0.075em] text-foreground",
       className,
     )}
   >
@@ -36,7 +36,7 @@ const Heading3: FC<PropsWithChildren<HeadingProps>> = ({ children, className }) 
   <h2
     className={cn(
       lora.className,
-      "text-xl font-medium leading-tight -tracking-[0.075em]",
+      "text-xl font-medium leading-tight -tracking-[0.075em] text-foreground",
       className,
     )}
   >

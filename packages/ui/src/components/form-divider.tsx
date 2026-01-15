@@ -1,7 +1,7 @@
 import type { FC } from "react";
 
 const LateralDivider = () => (
-  <div className="flex-1 h-px bg-[repeating-linear-gradient(to_right,var(--color-border-input),var(--color-border-input)_0.25rem,transparent_0.25rem,transparent_0.5rem)]" />
+  <div className="flex-1 h-px bg-[repeating-linear-gradient(to_right,var(--color-input),var(--color-input)_0.25rem,transparent_0.25rem,transparent_0.5rem)]" />
 );
 
 const FormDivider: FC = () => (
@@ -13,7 +13,7 @@ const FormDivider: FC = () => (
 );
 
 const Divider: FC = () => (
-  <div className="border-t border-border" />
+  <div className="border-t border-t-border" />
 );
 
 FormDivider.displayName = "FormDivider";

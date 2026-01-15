@@ -98,7 +98,7 @@ export const FilterItem: FC<FilterItemProps> = memo(({ filter, onEdit, onRemove 
       <button
         type="button"
         onClick={() => onRemove(filter.id)}
-        className="text-foreground-subtle hover:text-foreground-secondary transition-colors"
+        className="text-foreground-subtle hover:text-foreground-secondary "
       >
         <X size={14} />
       </button>

@@ -9,7 +9,7 @@ const LandingLayout: FC<PropsWithChildren> = ({ children }) => (
     <div className="pt-8 pb-16 flex flex-col gap-8">
       <header className="flex justify-between items-center">
         <Link href="/playground">
-          <KeeperSvg className="size-4" />
+          <KeeperSvg className="size-4 text-foreground" />
         </Link>
         <div className="flex items-center gap-1">
           <Button href="/playground/login" variant="ghost" size="small">

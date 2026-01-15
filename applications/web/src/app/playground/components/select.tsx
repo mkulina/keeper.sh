@@ -31,7 +31,7 @@ const Select = ({ className, disabled, selectSize = "default", children, ref, ..
       ref={ref}
       disabled={disabled}
       className={cn(
-        "w-full appearance-none border border-neutral-300 rounded-xl transition-colors tracking-tight bg-white",
+        "w-full appearance-none border border-neutral-300 rounded-xl  tracking-tight bg-white",
         "focus:outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-200",
         sizeStyles[selectSize],
         disabled && "bg-neutral-100 text-neutral-400 cursor-not-allowed",

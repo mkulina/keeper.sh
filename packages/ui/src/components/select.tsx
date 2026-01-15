@@ -14,7 +14,7 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "siz
 const selectVariants = tv({
   slots: {
     select: [
-      "w-full appearance-none border border-input rounded-xl transition-colors tracking-tight bg-surface",
+      "w-full appearance-none border border-input rounded-xl transition-colors tracking-tight bg-surface text-foreground",
       "focus:outline-none focus:border-input focus:ring-2 focus:ring-border",
     ],
     icon: "absolute top-1/2 -translate-y-1/2 pointer-events-none text-foreground-subtle",

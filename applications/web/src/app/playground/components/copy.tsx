@@ -16,7 +16,7 @@ const Copy = <AsComponent extends ElementType = "p">({
 
   return (
     <Component
-      className={cn("text-neutral-600 text-sm leading-relaxed", className)}
+      className={cn("text-foreground-secondary text-sm leading-relaxed", className)}
       {...props}
     >
       {children}

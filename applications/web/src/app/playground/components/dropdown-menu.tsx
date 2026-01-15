@@ -51,7 +51,7 @@ const DropdownMenuTrigger: FC<PropsWithChildren<DropdownMenuTriggerProps>> = ({
     className={cn(
       "bg-gradient-to-b from-white to-neutral-50 border-y border-t-neutral-100 border-b-neutral-200 text-neutral-800 shadow-xs",
       "tracking-tighter font-medium rounded-xl w-fit cursor-pointer",
-      "flex items-center gap-1 hover:brightness-95 transition-all",
+      "flex items-center gap-1 hover:brightness-95 ",
       triggerSizeStyles[dropdownSize],
       className,
     )}
@@ -94,9 +94,9 @@ const DropdownMenuItem: FC<
 > = ({ children, className, ...props }) => (
   <Item
     className={cn(
-      "relative flex cursor-pointer select-none items-center gap-2 rounded-xl outline-none transition-colors",
-      "text-neutral-700 text-sm p-2",
-      "focus:bg-neutral-100",
+      "relative flex cursor-pointer select-none items-center gap-2 rounded-xl outline-none ",
+      "text-foreground text-sm p-2",
+      "focus:bg-surface-muted",
       "data-disabled:pointer-events-none data-disabled:opacity-50",
       className,
     )}
@@ -111,9 +111,9 @@ const DropdownMenuCheckboxItem: FC<
 > = ({ children, className, checked, ...props }) => (
   <CheckboxItem
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-xl outline-none transition-colors",
-      "text-neutral-700 text-sm py-1.5 pl-7 pr-2",
-      "focus:bg-neutral-100",
+      "relative flex cursor-pointer select-none items-center rounded-xl outline-none ",
+      "text-foreground text-sm py-1.5 pl-7 pr-2",
+      "focus:bg-surface-muted",
       "data-disabled:pointer-events-none data-disabled:opacity-50",
       className,
     )}
@@ -134,9 +134,9 @@ const DropdownMenuRadioItem: FC<
 > = ({ children, className, ...props }) => (
   <RadioItem
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-xl outline-none transition-colors",
-      "text-neutral-700 text-sm py-1.5 pl-7 pr-2",
-      "focus:bg-neutral-100",
+      "relative flex cursor-pointer select-none items-center rounded-xl outline-none ",
+      "text-foreground text-sm py-1.5 pl-7 pr-2",
+      "focus:bg-surface-muted",
       "data-disabled:pointer-events-none data-disabled:opacity-50",
       className,
     )}
@@ -144,7 +144,7 @@ const DropdownMenuRadioItem: FC<
   >
     <span className="absolute left-2 flex items-center justify-center">
       <ItemIndicator>
-        <span className="size-1.5 rounded-xl bg-neutral-800" />
+        <span className="size-1.5 rounded-xl bg-foreground" />
       </ItemIndicator>
     </span>
     {children}
@@ -180,7 +180,7 @@ const DropdownMenuSubTrigger: FC<
 > = ({ children, className, ...props }) => (
   <SubTrigger
     className={cn(
-      "relative flex cursor-pointer select-none items-center gap-2 rounded-xl outline-none transition-colors",
+      "relative flex cursor-pointer select-none items-center gap-2 rounded-xl outline-none ",
       "text-neutral-700 text-sm py-1.5 px-2",
       "focus:bg-neutral-100 data-[state=open]:bg-neutral-100",
       className,

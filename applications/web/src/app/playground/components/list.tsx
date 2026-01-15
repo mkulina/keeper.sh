@@ -9,7 +9,7 @@ import { tv } from "tailwind-variants";
 import { cn } from "../utils/cn";
 
 const checkboxIndicatorVariants = tv({
-  base: "size-4 rounded-md border flex items-center justify-center transition-colors",
+  base: "size-4 rounded-md border flex items-center justify-center ",
   variants: {
     checked: {
       true: "bg-neutral-800 border-neutral-800",
@@ -84,11 +84,11 @@ const ListItem: FC<PropsWithChildren<ListItemProps>> = ({ id, children }) => {
 };
 
 const ListItemLabel: FC<PropsWithChildren> = ({ children }) => (
-  <span className="text-xs text-neutral-900">{children}</span>
+  <span className="text-xs text-foreground">{children}</span>
 );
 
 const ListItemValue: FC<PropsWithChildren> = ({ children }) => (
-  <span className="text-xs text-neutral-400">{children}</span>
+  <span className="text-xs text-foreground-subtle">{children}</span>
 );
 
 interface ListItemLinkProps {

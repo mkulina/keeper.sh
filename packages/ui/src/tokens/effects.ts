@@ -24,7 +24,7 @@ export const TRANSITIONS = {
 } as const;
 
 export const FOCUS_RING = {
-  button: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-input focus-visible:ring-offset-2",
+  button: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-input focus-visible:ring-offset-2",
   input: "focus:outline-none focus:border-input focus:ring-2 focus:ring-border",
   checkbox: "peer-focus:ring-2 peer-focus:ring-border peer-focus:border-input",
 } as const;

@@ -38,7 +38,7 @@ const Radio = ({ className, disabled, radioSize = "default", label, id, ref, ...
         />
         <div
           className={cn(
-            "border border-neutral-300 rounded-full transition-colors bg-white",
+            "border border-neutral-300 rounded-full  bg-white",
             "peer-focus:ring-2 peer-focus:ring-neutral-200 peer-focus:border-neutral-400",
             "peer-focus-visible:ring-neutral-300",
             "peer-checked:border-neutral-800",
@@ -48,7 +48,7 @@ const Radio = ({ className, disabled, radioSize = "default", label, id, ref, ...
         <div
           className={cn(
             "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-800",
-            "scale-0 peer-checked:scale-100 transition-transform",
+            "scale-0 peer-checked:scale-100 ",
             styles.inner,
           )}
         />

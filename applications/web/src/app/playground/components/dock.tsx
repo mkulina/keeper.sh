@@ -37,10 +37,10 @@ const DockItem: FC<DockItemProps> = ({ href, segment, icon }) => {
     <li>
       <Link
         draggable={false}
-        className="relative hover:text-neutral-50 p-2 flex rounded-full"
+        className="relative p-2 flex rounded-full group"
         href={href}
       >
-        <Icon className="z-20" size={20} strokeWidth={1.5} />
+        <Icon className="z-20 text-foreground-secondary group-hover:text-foreground " size={20} strokeWidth={1.5} />
         <DockIndicator segment={segment} />
       </Link>
     </li>
@@ -61,7 +61,7 @@ interface DockProps {
 const Dock: FC<PropsWithChildren<DockProps>> = ({ position = "bottom", children }) => (
   <nav
     className={cn(
-      "left-0 right-0 mx-auto p-1.5 rounded-full bg-neutral-950 w-fit text-neutral-300 z-100",
+      "left-0 right-0 mx-auto p-1.5 rounded-full bg-surface-elevated border border-border w-fit z-100",
       getDockPositionClassName(position).className,
     )}
   >
