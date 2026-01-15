@@ -26,7 +26,7 @@ const DesktopModal: FC<PropsWithChildren<DesktopModalProps>> = ({ children, onCl
       aria-modal="true"
       aria-label="Modal dialog"
       tabIndex={-1}
-      className={cn("bg-white rounded-xl shadow-lg w-full max-w-md p-4", className)}
+      className={cn("bg-neutral-50 rounded-xl shadow-lg w-full max-w-md p-4", className)}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
     >

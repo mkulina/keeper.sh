@@ -254,4 +254,63 @@ const ListItemAdd: FC<ListItemAddProps> = ({ children, onClick }) => {
   );
 };
 
-export { List, ListItem, ListItemLink, ListItemCheckbox, ListItemButton, ListItemLabel, ListItemValue, ListItemAdd };
+interface ListItemCheckboxLinkProps {
+  id: string;
+  href: string;
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onChange?: (checked: boolean) => void;
+  children: ReactNode;
+}
+
+const ListItemCheckboxLink: FC<ListItemCheckboxLinkProps> = ({
+  id,
+  href,
+  checked,
+  defaultChecked,
+  onChange,
+  children,
+}) => {
+  const { activeId, setActiveId, indicatorLayoutId } = useListContext();
+  const isActive = activeId === id;
+  const [internalChecked, setInternalChecked] = useState(defaultChecked ?? false);
+  const isChecked = checked ?? internalChecked;
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newValue = !isChecked;
+    setInternalChecked(newValue);
+    onChange?.(newValue);
+  };
+
+  return (
+    <li
+      className="relative -mx-4 cursor-pointer"
+      onMouseEnter={() => setActiveId(id)}
+      onMouseLeave={() => setActiveId(null)}
+    >
+      {isActive && (
+        <motion.div
+          layoutId={indicatorLayoutId}
+          className="absolute inset-0 bg-neutral-100 rounded-lg"
+          transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+        />
+      )}
+      <Link href={href} className="relative z-10 flex items-center justify-between px-4 py-2">
+        {children}
+        <button
+          type="button"
+          onClick={handleCheckboxClick}
+          className="ml-3"
+        >
+          <div className={checkboxIndicatorVariants({ checked: isChecked })}>
+            {isChecked && <Check size={10} strokeWidth={2.5} className="text-white" />}
+          </div>
+        </button>
+      </Link>
+    </li>
+  );
+};
+
+export { List, ListItem, ListItemLink, ListItemCheckbox, ListItemCheckboxLink, ListItemButton, ListItemLabel, ListItemValue, ListItemAdd };

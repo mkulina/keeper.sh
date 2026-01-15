@@ -12,4 +12,8 @@ const FormDivider: FC = () => (
   </div>
 );
 
-export { FormDivider };
+const Divider: FC = () => (
+  <div className="border-t border-neutral-200" />
+);
+
+export { FormDivider, Divider };

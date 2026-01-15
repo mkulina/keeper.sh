@@ -5,13 +5,14 @@ import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { Heading1, Heading2 } from "../../../../components/heading";
-import { Copy } from "../../../../components/copy";
-import { Button, ButtonText } from "../../../../components/button";
-import { Input } from "../../../../components/input";
-import { Modal, ModalHeader, ModalFooter } from "../../../../compositions/modal/modal";
-import { List, ListItemCheckbox, ListItemLabel, ListItemValue } from "../../../../components/list";
-import { Notice } from "../../../../components/notice";
+import { Heading1, Heading2 } from "../../../../../components/heading";
+import { Copy } from "../../../../../components/copy";
+import { Button, ButtonText } from "../../../../../components/button";
+import { Input } from "../../../../../components/input";
+import { Modal, ModalHeader, ModalFooter } from "../../../../../compositions/modal/modal";
+import { List, ListItemCheckbox, ListItemLabel } from "../../../../../components/list";
+import { Notice } from "../../../../../components/notice";
+import { CalendarCheckboxItem } from "../../components/calendar-checkbox-item";
 
 interface SubCalendar {
   id: string;
@@ -106,33 +107,16 @@ const SubCalendarItem: FC<SubCalendarItemProps> = ({ calendar }) => (
   </ListItemCheckbox>
 );
 
-interface DestinationOptionItemProps {
-  destination: DestinationOption;
-}
-
-const DestinationOptionItem: FC<DestinationOptionItemProps> = ({ destination }) => (
-  <ListItemCheckbox id={destination.id} defaultChecked={destination.enabled}>
-    <div className="flex items-center gap-2">
-      <Image
-        src={destination.provider.icon}
-        alt={destination.provider.name}
-        width={14}
-        height={14}
-      />
-      <ListItemLabel>{destination.name}</ListItemLabel>
-      <ListItemValue>{destination.email}</ListItemValue>
-    </div>
-  </ListItemCheckbox>
-);
 
 interface CalendarDetailPageProps {
-  params: Promise<{ calendarId: string }>;
+  params: Promise<{ sourceId: string }>;
 }
 
 const CalendarDetailPage: FC<CalendarDetailPageProps> = ({ params }) => {
-  const { calendarId: _calendarId } = use(params);
+  const { sourceId: _sourceId } = use(params);
   const source = MOCK_SOURCE;
 
+  const [destinations, setDestinations] = useState(source.destinations);
   const [syncSummaries, setSyncSummaries] = useState(source.syncSettings.summaries);
   const [customSummary, setCustomSummary] = useState(source.name);
 
@@ -141,8 +125,16 @@ const CalendarDetailPage: FC<CalendarDetailPageProps> = ({ params }) => {
 
   const [deleteSourceOpen, setDeleteSourceOpen] = useState(false);
 
+  const handleToggleDestination = (destinationId: string) => {
+    setDestinations((prev) =>
+      prev.map((dest) =>
+        dest.id === destinationId ? { ...dest, enabled: !dest.enabled } : dest
+      )
+    );
+  };
+
   return (
-    <div className="flex flex-col gap-8 pt-16 pb-8">
+    <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
         <Link
           href="/playground/dashboard/calendars"
@@ -151,19 +143,17 @@ const CalendarDetailPage: FC<CalendarDetailPageProps> = ({ params }) => {
           <ArrowLeft size={12} />
           Back
         </Link>
-        <div className="flex flex-col gap-1">
-          <Heading1>{source.name}</Heading1>
-          <div className="flex items-center gap-2">
-            <Image
-              src={source.provider.icon}
-              alt={source.provider.name}
-              width={14}
-              height={14}
-            />
-            <Copy as="span" className="text-xs">{source.email}</Copy>
-            <span className="text-xs text-neutral-400">·</span>
-            <span className="text-xs text-neutral-500">Source</span>
-          </div>
+        <Heading1>{source.name}</Heading1>
+        <div className="flex items-center gap-2">
+          <Image
+            src={source.provider.icon}
+            alt={source.provider.name}
+            width={14}
+            height={14}
+          />
+          <Copy as="span" className="text-xs">{source.email}</Copy>
+          <span className="text-xs text-neutral-400">·</span>
+          <span className="text-xs text-neutral-500">Source</span>
         </div>
       </div>
 
@@ -195,8 +185,17 @@ const CalendarDetailPage: FC<CalendarDetailPageProps> = ({ params }) => {
         <Heading2>Destinations</Heading2>
         <Copy className="text-xs">Select which destinations to sync events to.</Copy>
         <List>
-          {source.destinations.map((destination) => (
-            <DestinationOptionItem key={destination.id} destination={destination} />
+          {destinations.map((destination) => (
+            <CalendarCheckboxItem
+              key={destination.id}
+              id={destination.id}
+              name={destination.name}
+              email={destination.email}
+              providerIcon={destination.provider.icon}
+              providerName={destination.provider.name}
+              checked={destination.enabled}
+              onChange={() => handleToggleDestination(destination.id)}
+            />
           ))}
         </List>
       </div>

@@ -37,10 +37,10 @@ const Modal: FC<PropsWithChildren<ModalProps>> = ({ open, onClose, className, ch
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-150"
+            className="fixed inset-0 bg-black/50 z-150 backdrop-blur-[2px]"
           />
           <ModalComponent onClose={onClose} className={className}>
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-4">
               {children}
             </div>
           </ModalComponent>
@@ -75,7 +75,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({ title, description, onClose }) => (
 );
 
 const ModalContent: FC<PropsWithChildren> = ({ children }) => (
-  <div className="flex flex-col gap-2">{children}</div>
+  <div className="flex flex-col gap-3">{children}</div>
 );
 
 interface ModalFooterProps {

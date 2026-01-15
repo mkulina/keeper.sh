@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { Fingerprint } from "lucide-react";
-import { Heading1, Heading2 } from "../../../components/heading";
 import { Copy } from "../../../components/copy";
 import { Input } from "../../../components/input";
+import { Heading2 } from "../../../components/heading";
+import { Divider } from "../../../components/form-divider";
 import { Modal, ModalHeader, ModalContent, ModalFooter } from "../../../compositions/modal/modal";
 import { List, ListItem, ListItemButton, ListItemLabel, ListItemValue, ListItemAdd } from "../../../components/list";
 
@@ -40,9 +41,7 @@ const SettingsPage = () => {
   const [deletePasskeyOpen, setDeletePasskeyOpen] = useState<Passkey | null>(null);
 
   return (
-    <div className="flex flex-col gap-8 pt-16 pb-8">
-      <Heading1>Settings</Heading1>
-
+    <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <Heading2>Account</Heading2>
         <Copy className="text-xs">Manage your account settings.</Copy>
@@ -86,6 +85,7 @@ const SettingsPage = () => {
         />
         <ModalContent>
           <Input inputSize="small" type="password" placeholder="Current password" />
+          <Divider />
           <Input inputSize="small" type="password" placeholder="New password" />
           <Input inputSize="small" type="password" placeholder="Confirm new password" />
         </ModalContent>
