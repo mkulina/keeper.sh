@@ -15,7 +15,7 @@ import { Copy } from "@/components/copy"
 import { MicroCopy } from "@/components/micro-copy"
 import { InlineLink } from "@/components/inline-link"
 
-export default function Blayground() {
+function LoginPage() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = (event: FormEvent) => {
@@ -79,3 +79,5 @@ export default function Blayground() {
     </main>
   )
 }
+
+export default LoginPage;
