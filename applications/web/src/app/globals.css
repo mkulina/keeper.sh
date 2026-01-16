@@ -6,7 +6,7 @@
   --font-family-mono: var(--font-mono);
 
   --color-background: var(--color-white);
-  --color-surface: var(--color-white);
+  --color-surface: var(--color-zinc-50);
   --color-surface-elevated: var(--color-white);
   --color-surface-subtle: var(--color-zinc-50);
   --color-surface-muted: var(--color-zinc-100);

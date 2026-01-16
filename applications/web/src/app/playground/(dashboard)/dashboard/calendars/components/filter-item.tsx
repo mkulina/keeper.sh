@@ -86,22 +86,24 @@ export const FilterItem: FC<FilterItemProps> = memo(({ filter, onEdit, onRemove 
 
   return (
     <ListItem id={filter.id}>
-      <button
-        type="button"
-        onClick={() => onEdit(filter.id)}
-        className="flex-1 text-left"
-      >
-        <div className="text-xs">
-          {renderFilterText()}
-        </div>
-      </button>
-      <button
-        type="button"
-        onClick={() => onRemove(filter.id)}
-        className="text-foreground-subtle hover:text-foreground-secondary "
-      >
-        <X size={14} />
-      </button>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => onEdit(filter.id)}
+          className="flex-1 text-left cursor-pointer px-4 py-2"
+        >
+          <div className="text-xs">
+            {renderFilterText()}
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={() => onRemove(filter.id)}
+          className="text-foreground-subtle hover:text-foreground-secondary cursor-pointer px-4 py-2"
+        >
+          <X size={14} />
+        </button>
+      </div>
     </ListItem>
   );
 });

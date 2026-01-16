@@ -42,7 +42,6 @@ export {
   ListItemLabel,
   ListItemValue,
   ListItemCheckbox,
-  ListItemCheckboxLink,
   ListItemAdd,
 } from "./components/list";
 

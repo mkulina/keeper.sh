@@ -12,7 +12,7 @@ interface EventItemProps {
 
 const eventItemVariants = tv({
   slots: {
-    container: "flex items-center justify-between gap-4 text-xs w-full",
+    container: "flex items-center justify-between gap-4 text-xs w-full px-4 py-2",
     name: "overflow-hidden text-ellipsis",
   },
   variants: {

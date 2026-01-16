@@ -16,12 +16,12 @@ const checkboxVariants = tv({
   slots: {
     box: [
       "flex items-center justify-center",
-      "border border-input rounded-md transition-colors bg-surface",
+      "border border-input rounded-md bg-surface",
       "peer-focus:ring-2 peer-focus:ring-border peer-focus:border-input",
       "peer-focus-visible:ring-input",
-      "peer-checked:bg-foreground peer-checked:border-foreground",
+      "peer-checked:bg-primary peer-checked:border-primary",
     ],
-    icon: "text-surface opacity-0 peer-checked:opacity-100 transition-opacity",
+    icon: "text-primary-foreground opacity-0 peer-checked:opacity-100",
     label: "text-foreground-secondary text-xs",
   },
   variants: {

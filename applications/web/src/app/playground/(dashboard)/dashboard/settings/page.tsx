@@ -63,8 +63,10 @@ const SettingsPage = () => {
       />
       <List>
         <ListItem id="email">
-          <ListItemLabel>Email</ListItemLabel>
-          <ListItemValue>john@example.com</ListItemValue>
+          <div className="flex items-center justify-between px-4 py-2">
+            <ListItemLabel>Email</ListItemLabel>
+            <ListItemValue>john@example.com</ListItemValue>
+          </div>
         </ListItem>
         <ListItemButton id="change-password" onClick={() => setChangePasswordOpen(true)}>
           <ListItemLabel>Password</ListItemLabel>
