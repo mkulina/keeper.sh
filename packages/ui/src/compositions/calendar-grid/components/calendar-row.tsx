@@ -14,10 +14,11 @@ interface CalendarRowProps {
 
 const CalendarRow: FC<CalendarRowProps> = memo(
   ({ rowIndex, rowHeight, startY, startDate }) => {
+    const startDay = startDate.getDate();
     const cells = Array.from({ length: COLUMN_COUNT }, (_unused, colIndex) => {
       const daysFromStart = rowIndex * COLUMN_COUNT + colIndex;
       const date = new Date(startDate);
-      date.setDate(startDate.getDate() + daysFromStart);
+      date.setDate(startDay + daysFromStart);
       return { day: date.getDate(), key: `${rowIndex}-${colIndex}` };
     });
 

@@ -10,10 +10,6 @@ import {
   Copy,
   Select,
   Input,
-  Modal,
-  ModalHeader,
-  ModalContent,
-  ModalFooter,
   FormField,
   IconButton,
   SectionHeader
@@ -27,6 +23,26 @@ import { useCalendarsState } from "./hooks/use-calendars-state";
 
 const AddSourceModal = dynamic(
   () => import("@keeper.sh/ui").then((m) => ({ default: m.AddSourceModal })),
+  { ssr: false }
+);
+
+const Modal = dynamic(
+  () => import("@keeper.sh/ui").then((m) => ({ default: m.Modal })),
+  { ssr: false }
+);
+
+const ModalHeader = dynamic(
+  () => import("@keeper.sh/ui").then((m) => ({ default: m.ModalHeader })),
+  { ssr: false }
+);
+
+const ModalContent = dynamic(
+  () => import("@keeper.sh/ui").then((m) => ({ default: m.ModalContent })),
+  { ssr: false }
+);
+
+const ModalFooter = dynamic(
+  () => import("@keeper.sh/ui").then((m) => ({ default: m.ModalFooter })),
   { ssr: false }
 );
 

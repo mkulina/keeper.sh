@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Heading1, Copy, CalendarGrid, EventList, TODAY_EVENTS, TOMORROW_EVENTS } from "@keeper.sh/ui";
+import { Heading1, Copy } from "@keeper.sh/ui";
+import { DashboardContent } from "./dashboard-content";
 
 export const metadata: Metadata = {
   title: "Dashboard - Keeper",
   description: "View your calendar overview and upcoming events",
 };
-
-const ALL_EVENTS = [...TODAY_EVENTS, ...TOMORROW_EVENTS];
 
 const DashboardPage = () => (
   <div className="flex flex-col gap-4">
@@ -14,10 +13,7 @@ const DashboardPage = () => (
       <Heading1>Welcome, Rida</Heading1>
       <Copy>It&apos;s Friday the 9th and you&apos;ve got 5 events today across 2 calendars.</Copy>
     </div>
-    <div className="flex flex-col gap-4">
-      <CalendarGrid />
-      <EventList events={ALL_EVENTS} />
-    </div>
+    <DashboardContent />
   </div>
 );
 

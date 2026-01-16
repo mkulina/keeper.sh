@@ -1,26 +1,19 @@
 "use client";
 
 import type { ComponentPropsWithoutRef, FC, PropsWithChildren } from "react";
-import {
-  Root,
-  Trigger,
-  Portal,
-  Content,
-  Close,
-  Arrow,
-} from "@radix-ui/react-popover";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "../utils/cn";
 
-const Popover = Root;
-const PopoverTrigger = Trigger;
-const PopoverClose = Close;
-const PopoverArrow = Arrow;
+const Popover = PopoverPrimitive.Root;
+const PopoverTrigger = PopoverPrimitive.Trigger;
+const PopoverClose = PopoverPrimitive.Close;
+const PopoverArrow = PopoverPrimitive.Arrow;
 
 const PopoverContent: FC<
-  PropsWithChildren<ComponentPropsWithoutRef<typeof Content>>
+  PropsWithChildren<ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>>
 > = ({ children, className, sideOffset = 8, align = "start", ...props }) => (
-  <Portal>
-    <Content
+  <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Content
       sideOffset={sideOffset}
       align={align}
       className={cn(
@@ -36,8 +29,8 @@ const PopoverContent: FC<
       {...props}
     >
       {children}
-    </Content>
-  </Portal>
+    </PopoverPrimitive.Content>
+  </PopoverPrimitive.Portal>
 );
 
 PopoverContent.displayName = "PopoverContent";

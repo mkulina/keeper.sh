@@ -1,9 +1,25 @@
+"use client";
+
 import {
   ArrowRight,
   ArrowUpRight,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 
-import { Heading1, Heading2, Copy, Button, ButtonText, ButtonIcon, LinkOut, CalendarStack, SyncCalendarsButton, SyncHoverProvider, PricingGrid, PricingTier, PricingFeatureList, PricingFeature } from "@keeper.sh/ui";
+import { Heading1, Heading2, Copy, Button, ButtonText, ButtonIcon, LinkOut, SyncCalendarsButton, PricingGrid, PricingTier, PricingFeatureList, PricingFeature } from "@keeper.sh/ui";
+
+const CalendarStack = dynamic(
+  () => import("@keeper.sh/ui").then(m => ({ default: m.CalendarStack })),
+  {
+    ssr: false,
+    loading: () => <div className="w-full aspect-square bg-surface-muted rounded-xl animate-pulse" />
+  }
+);
+
+const SyncHoverProvider = dynamic(
+  () => import("@keeper.sh/ui").then(m => ({ default: m.SyncHoverProvider })),
+  { ssr: false }
+);
 
 export default function Playground() {
   return (

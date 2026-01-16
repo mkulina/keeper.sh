@@ -13,16 +13,12 @@ type RequestHandler = (request: NextRequest) => Promise<Response>;
  */
 const forward: RequestHandler = async (request) => {
   if (!env.API_URL) {
-    return new Response(null, { status: 501 });
-  }
-
-  const { pathname, search } = new URL(request.url);
-
-  if (!env.API_URL) {
     return new Response("The API_URL has not been configured", {
       status: 501,
     });
   }
+
+  const { pathname, search } = new URL(request.url);
 
   const url = new URL(pathname, env.API_URL);
   url.search = search;

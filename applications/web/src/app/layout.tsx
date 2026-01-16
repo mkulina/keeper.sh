@@ -3,8 +3,9 @@ import "./globals.css";
 
 import { Suspense, cache, use } from "react";
 import type { PropsWithChildren, ReactNode } from "react";
-import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
+import { Analytics } from '@vercel/analytics/next';
+
 import { Geist as googleFont, Geist_Mono as googleMonoFont } from "next/font/google";
 import { headers } from "next/headers";
 import { clsx } from "clsx";

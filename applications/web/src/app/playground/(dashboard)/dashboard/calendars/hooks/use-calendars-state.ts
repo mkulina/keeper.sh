@@ -2,6 +2,13 @@ import { useReducer } from "react";
 import type { Filter, FilterType, Group } from "../types";
 import { MOCK_GROUPS, INITIAL_FILTERS } from "../utils/mock-data";
 
+const TIME_FILTER_TYPES = new Set<FilterType>([
+  "starts_before",
+  "starts_after",
+  "ends_before",
+  "ends_after"
+]);
+
 interface CalendarsState {
   addSourceOpen: boolean;
   filters: Filter[];
@@ -79,9 +86,7 @@ function calendarsReducer(state: CalendarsState, action: CalendarsAction): Calen
       };
 
     case "EDIT_FILTER": {
-      const isTimeFilter = ["starts_before", "starts_after", "ends_before", "ends_after"].includes(
-        action.filter.type
-      );
+      const isTimeFilter = TIME_FILTER_TYPES.has(action.filter.type);
 
       if (isTimeFilter && action.filter.value) {
         const parsed = parseTimeFilter(action.filter.value);
@@ -110,9 +115,7 @@ function calendarsReducer(state: CalendarsState, action: CalendarsAction): Calen
     }
 
     case "SAVE_FILTER": {
-      const isTimeFilter = ["starts_before", "starts_after", "ends_before", "ends_after"].includes(
-        state.filterType
-      );
+      const isTimeFilter = TIME_FILTER_TYPES.has(state.filterType);
       const finalValue = isTimeFilter
         ? `${state.timeValue.replace(/^0/, "")} ${state.timePeriod} ${state.timezone}`
         : state.filterValue;

@@ -76,15 +76,15 @@ const ProviderSelectionModal: FC<ProviderSelectionModalProps> = ({
         </div>
 
         <div className={details()}>
-          {providers
-            .filter((p) => p.id === selectedProviderId)
-            .map((provider) => (
+          {(() => {
+            const provider = providers.find((p) => p.id === selectedProviderId);
+            return provider ? (
               <ProviderDetails
-                key={provider.id}
                 provider={provider}
                 onConnect={handleConnect}
               />
-            ))}
+            ) : null;
+          })()}
         </div>
       </div>
     </Modal>

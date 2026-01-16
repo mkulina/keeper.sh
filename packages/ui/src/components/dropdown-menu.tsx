@@ -1,32 +1,16 @@
 "use client";
 
 import type { ComponentPropsWithoutRef, FC, PropsWithChildren } from "react";
-import {
-  Root,
-  Trigger,
-  Group,
-  Sub,
-  RadioGroup,
-  Portal,
-  Content,
-  Item,
-  CheckboxItem,
-  RadioItem,
-  Label,
-  Separator,
-  SubTrigger,
-  SubContent,
-  ItemIndicator,
-} from "@radix-ui/react-dropdown-menu";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { cn } from "../utils/cn";
 import { BUTTON_SIZES } from "../utils/sizes";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 
 type DropdownMenuSize = "default" | "small";
 
-const DropdownMenu = Root;
+const DropdownMenu = DropdownMenuPrimitive.Root;
 
-interface DropdownMenuTriggerProps extends ComponentPropsWithoutRef<typeof Trigger> {
+interface DropdownMenuTriggerProps extends ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger> {
   size?: DropdownMenuSize;
 }
 
@@ -48,7 +32,7 @@ const DropdownMenuTrigger: FC<PropsWithChildren<DropdownMenuTriggerProps>> = ({
   size = "default",
   ...props
 }) => (
-  <Trigger
+  <DropdownMenuPrimitive.Trigger
     className={cn(
       "bg-gradient-to-b from-surface to-surface-subtle border-y border-t-surface-subtle border-b-surface-skeleton text-foreground shadow-xs",
       "tracking-tighter font-medium rounded-xl w-fit cursor-pointer",
@@ -60,18 +44,18 @@ const DropdownMenuTrigger: FC<PropsWithChildren<DropdownMenuTriggerProps>> = ({
   >
     {children}
     <ChevronDown size={getChevronSize(size)} />
-  </Trigger>
+  </DropdownMenuPrimitive.Trigger>
 );
 
-const DropdownMenuGroup = Group;
-const DropdownMenuSub = Sub;
-const DropdownMenuRadioGroup = RadioGroup;
+const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const DropdownMenuContent: FC<
-  PropsWithChildren<ComponentPropsWithoutRef<typeof Content>>
+  PropsWithChildren<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>>
 > = ({ children, className, sideOffset = 4, align = "start", ...props }) => (
-  <Portal>
-    <Content
+  <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Content
       sideOffset={sideOffset}
       align={align}
       className={cn(
@@ -86,14 +70,14 @@ const DropdownMenuContent: FC<
       {...props}
     >
       {children}
-    </Content>
-  </Portal>
+    </DropdownMenuPrimitive.Content>
+  </DropdownMenuPrimitive.Portal>
 );
 
 const DropdownMenuItem: FC<
-  PropsWithChildren<ComponentPropsWithoutRef<typeof Item>>
+  PropsWithChildren<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>>
 > = ({ children, className, ...props }) => (
-  <Item
+  <DropdownMenuPrimitive.Item
     className={cn(
       "relative flex cursor-pointer select-none items-center gap-2 rounded-xl outline-none transition-colors",
       "text-foreground-secondary text-sm p-2",
@@ -104,13 +88,13 @@ const DropdownMenuItem: FC<
     {...props}
   >
     {children}
-  </Item>
+  </DropdownMenuPrimitive.Item>
 );
 
 const DropdownMenuCheckboxItem: FC<
-  PropsWithChildren<ComponentPropsWithoutRef<typeof CheckboxItem>>
+  PropsWithChildren<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>>
 > = ({ children, className, checked, ...props }) => (
-  <CheckboxItem
+  <DropdownMenuPrimitive.CheckboxItem
     className={cn(
       "relative flex cursor-pointer select-none items-center rounded-xl outline-none transition-colors",
       "text-foreground-secondary text-sm py-1.5 pl-7 pr-2",
@@ -122,18 +106,18 @@ const DropdownMenuCheckboxItem: FC<
     {...props}
   >
     <span className="absolute left-2 flex items-center justify-center">
-      <ItemIndicator>
+      <DropdownMenuPrimitive.ItemIndicator>
         <Check size={14} />
-      </ItemIndicator>
+      </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
-  </CheckboxItem>
+  </DropdownMenuPrimitive.CheckboxItem>
 );
 
 const DropdownMenuRadioItem: FC<
-  PropsWithChildren<ComponentPropsWithoutRef<typeof RadioItem>>
+  PropsWithChildren<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>>
 > = ({ children, className, ...props }) => (
-  <RadioItem
+  <DropdownMenuPrimitive.RadioItem
     className={cn(
       "relative flex cursor-pointer select-none items-center rounded-xl outline-none transition-colors",
       "text-foreground-secondary text-sm py-1.5 pl-7 pr-2",
@@ -144,30 +128,30 @@ const DropdownMenuRadioItem: FC<
     {...props}
   >
     <span className="absolute left-2 flex items-center justify-center">
-      <ItemIndicator>
+      <DropdownMenuPrimitive.ItemIndicator>
         <span className="size-1.5 rounded-xl bg-primary" />
-      </ItemIndicator>
+      </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
-  </RadioItem>
+  </DropdownMenuPrimitive.RadioItem>
 );
 
 const DropdownMenuLabel: FC<
-  PropsWithChildren<ComponentPropsWithoutRef<typeof Label>>
+  PropsWithChildren<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label>>
 > = ({ children, className, ...props }) => (
-  <Label
+  <DropdownMenuPrimitive.Label
     className={cn("px-2 py-1.5 text-xs text-foreground-subtle font-medium", className)}
     {...props}
   >
     {children}
-  </Label>
+  </DropdownMenuPrimitive.Label>
 );
 
-const DropdownMenuSeparator: FC<ComponentPropsWithoutRef<typeof Separator>> = ({
+const DropdownMenuSeparator: FC<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>> = ({
   className,
   ...props
 }) => (
-  <Separator
+  <DropdownMenuPrimitive.Separator
     className={cn(
       "mx-1 my-1 h-px bg-[repeating-linear-gradient(to_right,var(--color-neutral-300),var(--color-neutral-300)_0.25rem,transparent_0.25rem,transparent_0.5rem)]",
       className,
@@ -177,9 +161,9 @@ const DropdownMenuSeparator: FC<ComponentPropsWithoutRef<typeof Separator>> = ({
 );
 
 const DropdownMenuSubTrigger: FC<
-  PropsWithChildren<ComponentPropsWithoutRef<typeof SubTrigger>>
+  PropsWithChildren<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger>>
 > = ({ children, className, ...props }) => (
-  <SubTrigger
+  <DropdownMenuPrimitive.SubTrigger
     className={cn(
       "relative flex cursor-pointer select-none items-center gap-2 rounded-xl outline-none transition-colors",
       "text-foreground-secondary text-sm py-1.5 px-2",
@@ -190,14 +174,14 @@ const DropdownMenuSubTrigger: FC<
   >
     {children}
     <ChevronRight size={14} className="ml-auto text-foreground-subtle" />
-  </SubTrigger>
+  </DropdownMenuPrimitive.SubTrigger>
 );
 
-const DropdownMenuSubContent: FC<ComponentPropsWithoutRef<typeof SubContent>> = ({
+const DropdownMenuSubContent: FC<ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>> = ({
   className,
   ...props
 }) => (
-  <SubContent
+  <DropdownMenuPrimitive.SubContent
     className={cn(
       "min-w-48 overflow-hidden rounded-xl bg-surface p-1 shadow-lg",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",

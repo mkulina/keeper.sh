@@ -1,12 +1,18 @@
 import { type } from "arktype";
 
+// Hoisted RegExp patterns
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
+const UPPERCASE_REGEX = /[A-Z]/;
+const LOWERCASE_REGEX = /[a-z]/;
+const DIGIT_REGEX = /\d/;
+
 /**
  * Email validation schema
  * Validates email format and common requirements
  */
 export const emailSchema = type("string").narrow((value, context) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(value) || context.mustBe("a valid email address");
+  return EMAIL_REGEX.test(value) || context.mustBe("a valid email address");
 });
 
 /**
@@ -19,7 +25,7 @@ export const emailSchema = type("string").narrow((value, context) => {
 export const usernameSchema = type("string").narrow((value, context) => {
   if (value.length < 3) return context.mustBe("at least 3 characters");
   if (value.length > 20) return context.mustBe("at most 20 characters");
-  if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(value)) {
+  if (!USERNAME_REGEX.test(value)) {
     return context.mustBe("a username starting with a letter and containing only letters, numbers, underscores, or hyphens");
   }
   return true;
@@ -35,9 +41,9 @@ export const usernameSchema = type("string").narrow((value, context) => {
  */
 export const passwordSchema = type("string").narrow((value, context) => {
   if (value.length < 8) return context.mustBe("at least 8 characters");
-  if (!/[A-Z]/.test(value)) return context.mustBe("contain at least one uppercase letter");
-  if (!/[a-z]/.test(value)) return context.mustBe("contain at least one lowercase letter");
-  if (!/\d/.test(value)) return context.mustBe("contain at least one number");
+  if (!UPPERCASE_REGEX.test(value)) return context.mustBe("contain at least one uppercase letter");
+  if (!LOWERCASE_REGEX.test(value)) return context.mustBe("contain at least one lowercase letter");
+  if (!DIGIT_REGEX.test(value)) return context.mustBe("contain at least one number");
   return true;
 });
 

@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Button, ButtonText, ConnectionPreambleModalProvider, type Account } from "@keeper.sh/ui";
+import dynamic from "next/dynamic";
+import { Button, ButtonText, type Account } from "@keeper.sh/ui";
+
+const ConnectionPreambleModalProvider = dynamic(
+  () => import("@keeper.sh/ui").then((m) => ({ default: m.ConnectionPreambleModalProvider })),
+  { ssr: false }
+);
 
 const DEMO_ACCOUNTS: Account[] = [
   {

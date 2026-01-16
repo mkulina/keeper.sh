@@ -135,7 +135,7 @@ const Calendar = ({
   const getEventsForDay = (date: Date): CalendarEvent[] =>
     events
       .filter((event) => isSameDay(new Date(event.startTime), date))
-      .sort(
+      .toSorted(
         (first, second) =>
           new Date(first.startTime).getTime() - new Date(second.startTime).getTime(),
       );
