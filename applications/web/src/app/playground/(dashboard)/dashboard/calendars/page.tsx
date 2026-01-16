@@ -70,14 +70,18 @@ const CalendarsPage = () => {
     }
   };
 
+  const hasSources = MOCK_SOURCES.length > 0;
+  const hasDestinations = MOCK_DESTINATIONS.length > 0;
+
   return (
     <div className="flex flex-col gap-8">
       <div className="md:hidden">
         <Heading1>Calendars</Heading1>
       </div>
+
       <div className="flex flex-col gap-2">
         <SectionHeader
-          title="Sources"
+          title="Event Sources"
           description="Calendars for which events may be sourced, these events are pooled and can be used to push events to destinations."
         />
         <List>
@@ -92,7 +96,7 @@ const CalendarsPage = () => {
 
       <div className="flex flex-col gap-2">
         <SectionHeader
-          title="Filters"
+          title="Global Filters"
           description="Define rules to filter events from your sources. Only events matching these criteria will be synced to your destinations."
         />
         <List>
@@ -112,7 +116,7 @@ const CalendarsPage = () => {
 
       <div className="flex flex-col gap-2">
         <SectionHeader
-          title="Destinations"
+          title="Event Destinations"
           description="When events are pulled from sources, they can be pushed to destinations. Destinations require special permissions to write events to."
         />
         <List>

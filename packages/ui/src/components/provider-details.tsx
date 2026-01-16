@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { CSSProperties, FC } from "react";
 import { ExternalLink } from "lucide-react";
 import { cn } from "../utils/cn";
 import type { Provider } from "../types/provider";
@@ -11,10 +11,11 @@ interface ProviderDetailsProps {
   provider: Provider;
   onConnect: () => void;
   className?: string;
+  style?: CSSProperties;
 }
 
-const ProviderDetails: FC<ProviderDetailsProps> = ({ provider, onConnect, className }) => (
-  <div className={cn("flex flex-col justify-between gap-12 h-full p-4 pt-2", className)}>
+const ProviderDetails: FC<ProviderDetailsProps> = ({ provider, onConnect, className, style }) => (
+  <div className={cn("flex flex-col justify-between gap-12 h-full p-4 pt-2", className)} style={style}>
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">

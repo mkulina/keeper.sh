@@ -15,9 +15,17 @@ import {
   ModalHeader,
   ModalFooter,
   List,
-  Notice
+  Notice,
+  SectionHeader
 } from "@keeper.sh/ui";
 import { CalendarCheckboxItem } from "../../components/calendar-checkbox-item";
+import { CalendarRadioItem } from "../../components/calendar-radio-item";
+
+interface SubCalendar {
+  id: string;
+  name: string;
+  color: string;
+}
 
 interface Source {
   id: string;
@@ -41,6 +49,8 @@ interface DestinationDetail {
     icon: string;
   };
   status: "synced" | "syncing" | "error" | "reauthenticate";
+  subCalendars: SubCalendar[];
+  selectedCalendarId: string;
   sources: Source[];
   syncStatus: {
     status: "idle" | "syncing" | "error";
@@ -62,6 +72,12 @@ const MOCK_DESTINATIONS: Record<string, DestinationDetail> = {
       icon: "/integrations/icon-outlook.svg",
     },
     status: "syncing",
+    subCalendars: [
+      { id: "cal-1", name: "Personal", color: "#0078D4" },
+      { id: "cal-2", name: "Work", color: "#00BCF2" },
+      { id: "cal-3", name: "Family", color: "#8661C5" },
+    ],
+    selectedCalendarId: "cal-1",
     sources: [
       {
         id: "source-1",
@@ -114,6 +130,11 @@ const MOCK_DESTINATIONS: Record<string, DestinationDetail> = {
       icon: "/integrations/icon-fastmail.svg",
     },
     status: "synced",
+    subCalendars: [
+      { id: "cal-4", name: "Calendar", color: "#16C04D" },
+      { id: "cal-5", name: "Work Calendar", color: "#FF6D4D" },
+    ],
+    selectedCalendarId: "cal-4",
     sources: [
       {
         id: "source-1",
@@ -168,6 +189,7 @@ const DestinationDetailPage: FC<DestinationDetailPageProps> = ({ params }) => {
 
   const destination = MOCK_DESTINATIONS[destinationId];
   const [sources, setSources] = useState(destination?.sources || []);
+  const [selectedCalendarId, setSelectedCalendarId] = useState(destination?.selectedCalendarId || "");
 
   const handleToggleSource = (sourceId: string) => {
     setSources((prev) =>
@@ -175,6 +197,10 @@ const DestinationDetailPage: FC<DestinationDetailPageProps> = ({ params }) => {
         source.id === sourceId ? { ...source, enabled: !source.enabled } : source
       )
     );
+  };
+
+  const handleSelectCalendar = (calendarId: string) => {
+    setSelectedCalendarId(calendarId);
   };
 
   if (!destination) {
@@ -227,6 +253,27 @@ const DestinationDetailPage: FC<DestinationDetailPageProps> = ({ params }) => {
           }}
         />
       )}
+
+      <div className="flex flex-col gap-2">
+        <SectionHeader
+          title="Calendars"
+          description="Select which calendar to push events to."
+        />
+        <List>
+          {destination.subCalendars.map((calendar) => (
+            <CalendarRadioItem
+              key={calendar.id}
+              id={calendar.id}
+              name={calendar.name}
+              color={calendar.color}
+              radioName={`destination-${destinationId}-calendar`}
+              value={calendar.id}
+              checked={selectedCalendarId === calendar.id}
+              onChange={handleSelectCalendar}
+            />
+          ))}
+        </List>
+      </div>
 
       <div className="flex flex-col gap-2">
         <Heading2>Sources</Heading2>

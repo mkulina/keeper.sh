@@ -1,10 +1,12 @@
 "use client";
 
 import type { FC, PropsWithChildren, ReactNode } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
-import { Home, Calendar, List, Settings } from "lucide-react";
+import { Home, Calendar, List, Settings, ChevronDown } from "lucide-react";
 import { cn } from "../utils/cn";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 
 interface TopNavItemProps {
   href: string;

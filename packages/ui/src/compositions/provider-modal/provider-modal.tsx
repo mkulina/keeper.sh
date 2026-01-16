@@ -51,7 +51,7 @@ const ProviderSelectionModal: FC<ProviderSelectionModalProps> = ({
   };
 
   return (
-    <Modal open={open} onClose={onClose} className="max-w-xl overflow-hidden p-0">
+    <Modal open={open} onClose={onClose} className="overflow-hidden p-0 md:max-w-xl">
       <div className="p-4 border-b border-b-border">
         <ModalHeader title={title} onClose={onClose} />
       </div>
@@ -76,15 +76,15 @@ const ProviderSelectionModal: FC<ProviderSelectionModalProps> = ({
         </div>
 
         <div className={details()}>
-          {(() => {
-            const provider = providers.find((provider) => provider.id === selectedProviderId);
-            return provider ? (
-              <ProviderDetails
-                provider={provider}
-                onConnect={handleConnect}
-              />
-            ) : null;
-          })()}
+          {providers.map((provider) => (
+            <ProviderDetails
+              key={provider.id}
+              provider={provider}
+              onConnect={handleConnect}
+              className={selectedProviderId === provider.id ? "visible" : "invisible"}
+              style={{ gridArea: "1 / 1" }}
+            />
+          ))}
         </div>
       </div>
     </Modal>

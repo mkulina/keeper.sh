@@ -1,5 +1,5 @@
 import type { FC, PropsWithChildren } from "react";
-import { Home, List, Calendar, Settings, LogOut } from "lucide-react";
+import { List, Settings, LogOut, Calendar, CalendarSync } from "lucide-react";
 import { Dock, DockItem, Scaffold, TopNav, TopNavItem } from "@keeper.sh/ui";
 
 const DashboardLayout: FC<PropsWithChildren> = ({ children }) => (
@@ -9,14 +9,14 @@ const DashboardLayout: FC<PropsWithChildren> = ({ children }) => (
         <div className="hidden md:block">
           <TopNav>
             <div className="flex items-center gap-px">
-              <TopNavItem href="/playground/dashboard" segment={null} icon={<Home size={14} />}>
-                Home
+              <TopNavItem href="/playground/dashboard" segment={null} icon={<Calendar size={14} />}>
+                Calendar
               </TopNavItem>
               <TopNavItem href="/playground/dashboard/agenda" segment="agenda" icon={<List size={14} />}>
                 Agenda
               </TopNavItem>
-              <TopNavItem href="/playground/dashboard/calendars" segment="calendars" icon={<Calendar size={14} />}>
-                Calendars
+              <TopNavItem href="/playground/dashboard/calendars" segment="calendars" icon={<CalendarSync size={14} />}>
+                Sync
               </TopNavItem>
               <TopNavItem href="/playground/dashboard/settings" segment="settings" icon={<Settings size={14} />}>
                 Settings

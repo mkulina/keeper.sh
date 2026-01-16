@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@source "../../../../packages/ui/src";
+
+@theme {
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+  }
+}

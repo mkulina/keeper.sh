@@ -21,6 +21,34 @@ const checkboxIndicatorVariants = tv({
   },
 });
 
+const radioIndicatorVariants = tv({
+  slots: {
+    outer: [
+      "size-4 rounded-full border flex items-center justify-center",
+      "transition-colors",
+    ],
+    inner: [
+      "size-2 rounded-full bg-primary",
+      "scale-0 transition-transform",
+    ],
+  },
+  variants: {
+    checked: {
+      true: {
+        outer: "bg-surface border-primary",
+        inner: "scale-100",
+      },
+      false: {
+        outer: "bg-surface border-input",
+        inner: "scale-0",
+      },
+    },
+  },
+  defaultVariants: {
+    checked: false,
+  },
+});
+
 interface ListContextValue {
   activeId: string | null;
   setActiveId: (id: string | null) => void;
@@ -174,6 +202,55 @@ const ListItemCheckbox: FC<PropsWithChildren<ListItemCheckboxProps>> = ({
   );
 };
 
+// ListItemRadio - single selection with radio button
+interface ListItemRadioProps {
+  id: string;
+  name: string;
+  value: string;
+  checked?: boolean;
+  defaultChecked?: boolean;
+  onChange?: (value: string) => void;
+  className?: string;
+}
+
+const ListItemRadio: FC<PropsWithChildren<ListItemRadioProps>> = ({
+  id,
+  name,
+  value,
+  checked,
+  defaultChecked,
+  onChange,
+  children,
+  className,
+}) => {
+  const { isActive, hoverProps, indicatorLayoutId } = useListItemHover(id);
+  const [internalChecked, setInternalChecked] = useState(defaultChecked ?? false);
+  const isChecked = checked ?? internalChecked;
+
+  const handleClick = () => {
+    setInternalChecked(true);
+    onChange?.(value);
+  };
+
+  const { outer, inner } = radioIndicatorVariants({ checked: isChecked });
+
+  return (
+    <li className={cn("relative -mx-4", className)} {...hoverProps}>
+      <HoverIndicator isActive={isActive} layoutId={indicatorLayoutId} />
+      <button
+        type="button"
+        onClick={handleClick}
+        className="relative z-10 flex items-center justify-between px-4 py-2 w-full text-left cursor-pointer"
+      >
+        {children}
+        <div className={outer()}>
+          <div className={inner()} />
+        </div>
+      </button>
+    </li>
+  );
+};
+
 // ListItemButton - clickable with selection
 interface ListItemButtonProps {
   id: string;
@@ -260,9 +337,10 @@ List.displayName = "List";
 ListItem.displayName = "ListItem";
 ListItemLink.displayName = "ListItemLink";
 ListItemCheckbox.displayName = "ListItemCheckbox";
+ListItemRadio.displayName = "ListItemRadio";
 ListItemButton.displayName = "ListItemButton";
 ListItemLabel.displayName = "ListItemLabel";
 ListItemValue.displayName = "ListItemValue";
 ListItemAdd.displayName = "ListItemAdd";
 
-export { List, ListItem, ListItemLink, ListItemCheckbox, ListItemButton, ListItemLabel, ListItemValue, ListItemAdd };
+export { List, ListItem, ListItemLink, ListItemCheckbox, ListItemRadio, ListItemButton, ListItemLabel, ListItemValue, ListItemAdd };

@@ -34,9 +34,10 @@ const DropdownMenuTrigger: FC<PropsWithChildren<DropdownMenuTriggerProps>> = ({
 }) => (
   <DropdownMenuPrimitive.Trigger
     className={cn(
-      "bg-gradient-to-b from-surface to-surface-subtle border-y border-t-surface-subtle border-b-surface-skeleton text-foreground shadow-xs",
-      "tracking-tighter font-medium rounded-xl w-fit cursor-pointer",
-      "flex items-center gap-1 hover:brightness-95 transition-all",
+      "bg-surface border border-input text-foreground",
+      "font-medium rounded-xl w-fit cursor-pointer",
+      "flex items-center gap-1 hover:bg-surface-muted transition-colors",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border",
       triggerSizeStyles[size],
       className,
     )}
