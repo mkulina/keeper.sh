@@ -7,16 +7,15 @@ const button = tv({
   base: `
     flex gap-1.5 items-center justify-center rounded-xl w-fit text-sm font-medium text-nowrap select-none
     tracking-tighter border border-transparent shadow-xs
-    enabled:hover:cursor-pointer
+    hover:enabled:cursor-pointer
     focus-visible:outline-2 outline-offset-1 outline-border-emphasis
-    disabled:opacity-75 disabled:brightness-100 disabled:backdrop-brightness-unset disabled:cursor-not-allowed
   `,
   variants: {
     variant: {
-      primary: "bg-primary text-primary-foreground hover:brightness-90 active:brightness-80 dark:hover:brightness-80 dark:active:brightness-70",
-      secondary: "text-foreground backdrop-brightness-95 hover:backdrop-brightness-90 active:backdrop-brightness-85 dark:backdrop-brightness-105 dark:hover:backdrop-brightness-150 dark:active:backdrop-brightness-175 shadow-none",
-      border: "border-border text-foreground hover:backdrop-brightness-95 active:backdrop-brightness-90 dark:hover:backdrop-brightness-150 dark:active:backdrop-brightness-175",
-      ghost: "text-foreground hover:backdrop-brightness-95 active:backdrop-brightness-90 dark:hover:backdrop-brightness-150 dark:active:backdrop-brightness-175 shadow-none"
+      primary: "bg-primary text-primary-foreground hover:enabled:brightness-90 disabled:brightness-80 active:enabled:brightness-80 dark:hover:enabled:brightness-80 dark:active:enabled:brightness-70 dark:disabled:brightness-70",
+      secondary: "text-foreground backdrop-brightness-95 hover:enabled:backdrop-brightness-90 active:enabled:backdrop-brightness-85 disabled:backdrop-brightness-85 dark:backdrop-brightness-105 dark:hover:enabled:backdrop-brightness-150 dark:active:enabled:backdrop-brightness-175 disabled:dark:backdrop-brightness-175 shadow-none",
+      border: "border-border text-foreground hover:enabled:backdrop-brightness-95 active:enabled:backdrop-brightness-90 disabled:backdrop-brightness-90 dark:hover:enabled:backdrop-brightness-150 dark:active:enabled:backdrop-brightness-175 dark:disabled:backdrop-brightness-175",
+      ghost: "text-foreground hover:enabled:backdrop-brightness-95 active:enabled:backdrop-brightness-90 disabled:backdrop-brightness-90 dark:hover:enabled:backdrop-brightness-150 dark:active:enabled:backdrop-brightness-175 dark:disabled:backdrop-brightness-175 shadow-none"
     },
     size: {
       normal: "text-md px-4 py-2.5",
