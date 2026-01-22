@@ -21,19 +21,19 @@ export const CalendarPermissionsPage: FC<CalendarPermissionsPageProps> = ({ prov
       <div className="w-full max-w-sm px-1.5">
         <FlexColumnGroup className="gap-2">
           <div className="p-2 border border-border rounded-3xl shadow-xs">
-            <FlexColumnGroup className="border border-border rounded-2xl p-3 pt-8 shadow-xs">
-              <FlexColumnGroup className="gap-6 px-2">
+            <FlexColumnGroup className="border border-border rounded-2xl p-3 pt-8 shadow-xs gap-2">
+              <FlexColumnGroup className="gap-2 px-2 text-center">
                 <CalendarPermissionsIconPair provider={provider} />
-                <FlexColumnGroup className="gap-2">
+                <FlexColumnGroup className="gap-2 items-center">
                   <Heading1>Connect {providerName}</Heading1>
-                  <Copy>Start importing your calendars, events, and syncing them across each other.</Copy>
+                  <Copy className="max-w-[32ch]">Start importing your calendars, events, and syncing them across each other.</Copy>
                 </FlexColumnGroup>
               </FlexColumnGroup>
               <div className="flex flex-col">
                 <div className="px-2 py-4">
                   <CalendarPermissionsList items={permissions} />
                 </div>
-                <Divider className="mb-3 mt-0" />
+                <Divider className="my-4 mt-0" />
                 <CalendarPermissionsForm provider={provider} backHref={backHref} />
               </div>
             </FlexColumnGroup>

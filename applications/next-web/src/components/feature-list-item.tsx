@@ -4,8 +4,8 @@ import { Copy } from "./copy"
 
 export const FeatureListItem: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <li className="flex items-start gap-2">
-      <Check className="shrink-0 mt-0.5 text-foreground" size={16} />
+    <li className="flex flex-row-reverse justify-between items-center gap-2">
+      <Check className="shrink-0 text-foreground-subtle" size={16} />
       <Copy>{children}</Copy>
     </li>
   )

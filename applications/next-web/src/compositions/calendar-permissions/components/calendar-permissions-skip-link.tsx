@@ -8,7 +8,7 @@ type CalendarPermissionsSkipLinkProps = {
 
 export const CalendarPermissionsSkipLink: FC<PropsWithChildren<CalendarPermissionsSkipLinkProps>> = ({ href, children }) => {
   return (
-    <Link href={href} className="text-center hover:underline pt-2">
+    <Link href={href} className="text-center underline pt-2 opacity-80 hover:opacity-100 active:brightness-80">
       <Copy>{children}</Copy>
     </Link>
   )
