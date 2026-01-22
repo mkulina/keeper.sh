@@ -1,5 +1,6 @@
 import type { FC, PropsWithChildren } from "react";
 import { Header } from "@/compositions/header/header";
+import { Footer } from "@/compositions/footer/footer";
 
 const LandingLayout: FC<PropsWithChildren> = ({ children }) => {
   return (
@@ -8,6 +9,7 @@ const LandingLayout: FC<PropsWithChildren> = ({ children }) => {
       <main>
         {children}
       </main>
+      <Footer />
     </>
   )
 }

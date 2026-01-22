@@ -36,7 +36,7 @@ const FRONT_EVENTS: EventRecord = {
 const LandingPage: FC = () => {
   return (
     <>
-      <main className="pb-12">
+      <main>
         <FlexColumnGroup>
           <HeroSection>
             <FlexColumnGroup className="pt-12 pb-4 gap-2">
