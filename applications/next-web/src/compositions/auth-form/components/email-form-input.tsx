@@ -4,11 +4,21 @@ import { Input } from "@/components/input"
 import { formStateAtom, formErrorAtom } from "../atoms/form-state"
 import { useAtomValue, useSetAtom } from "jotai"
 import { cn } from "@/utils/cn"
+import { useRef, useEffect } from "react"
 
 export const EmailFormInput = () => {
   const formState = useAtomValue(formStateAtom)
   const error = useAtomValue(formErrorAtom)
   const setError = useSetAtom(formErrorAtom)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    return () => {
+      if (inputRef.current) {
+        inputRef.current.value = ""
+      }
+    }
+  }, [])
 
   const handleChange = () => {
     if (error?.isActive) {
@@ -18,6 +28,7 @@ export const EmailFormInput = () => {
 
   return (
     <Input
+      ref={inputRef}
       disabled={formState === 'loading'}
       type="email"
       placeholder="johndoe+keeper@example.com"

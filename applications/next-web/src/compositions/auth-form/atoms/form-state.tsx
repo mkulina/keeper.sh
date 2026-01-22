@@ -23,3 +23,18 @@ formErrorAtom.onMount = (setAtom) => {
     setAtom(null)
   }
 }
+
+const formEmailBaseAtom = atom<string>("")
+
+export const formEmailAtom = atom(
+  (get) => get(formEmailBaseAtom),
+  (get, set, update: string) => {
+    set(formEmailBaseAtom, update)
+  }
+)
+
+formEmailAtom.onMount = (setAtom) => {
+  return () => {
+    setAtom("")
+  }
+}
