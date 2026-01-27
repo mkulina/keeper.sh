@@ -16,7 +16,6 @@
     "@keeper.sh/data-schemas": "workspace:*",
     "@keeper.sh/date-utils": "workspace:*",
     "@keeper.sh/env": "workspace:*",
-    "@keeper.sh/next-web": "workspace:*",
     "@keeper.sh/premium": "workspace:*",
     "@keeper.sh/provider-registry": "workspace:*",
     "@keeper.sh/ui": "workspace:*",
