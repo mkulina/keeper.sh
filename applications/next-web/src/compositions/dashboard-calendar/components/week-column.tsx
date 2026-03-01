@@ -1,15 +1,14 @@
 "use client";
 
 import type { FC } from "react";
-import type { VirtualItem } from "@tanstack/react-virtual";
 import { CURRENT_WEEK_INDEX } from "../utils/constants";
+import { useDashboardCalendar } from "./dashboard-calendar-context";
 
-interface WeekColumnProps {
-  weekColumnRef: React.RefObject<HTMLDivElement | null>;
-  virtualRows: VirtualItem[];
-}
+const WeekColumn: FC = () => {
+  const { meta } = useDashboardCalendar();
+  const { rowVirtualizer, weekColumnRef } = meta;
+  const virtualRows = rowVirtualizer.getVirtualItems();
 
-const WeekColumn: FC<WeekColumnProps> = ({ weekColumnRef, virtualRows }) => {
   return (
     <div className="hidden md:block absolute -left-8 top-0 bottom-0 w-7 overflow-hidden pointer-events-none">
       <div ref={weekColumnRef} className="absolute inset-x-0">

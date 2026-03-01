@@ -65,20 +65,24 @@ class CalDAVClient {
   }): Promise<void> {
     const client = await this.getClient();
 
-    await client.createCalendarObject({
+    const response = await client.createCalendarObject({
       calendar: { url: params.calendarUrl },
       filename: params.filename,
       iCalString: params.iCalString,
     });
+
+    await response.body?.cancel();
   }
 
   async deleteCalendarObject(params: { calendarUrl: string; filename: string }): Promise<void> {
     const client = await this.getClient();
     const objectUrl = CalDAVClient.normalizeUrl(params.calendarUrl, params.filename);
 
-    await client.deleteCalendarObject({
+    const response = await client.deleteCalendarObject({
       calendarObject: { url: objectUrl },
     });
+
+    await response.body?.cancel();
   }
 
   async fetchCalendarObjects(params: {

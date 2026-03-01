@@ -3,15 +3,12 @@
 import type { FC } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { MONTH_NAMES } from "../utils/constants";
-import type { MonthSpan } from "../utils/date-utils";
+import { useDashboardCalendar } from "./dashboard-calendar-context";
 
-interface MonthRowProps {
-  monthSpans: MonthSpan[];
-  monthCompositionKey: string;
-  scrollDirection: 'up' | 'down';
-}
+const MonthRow: FC = () => {
+  const { state } = useDashboardCalendar();
+  const { monthSpans, monthCompositionKey, scrollDirection } = state;
 
-const MonthRow: FC<MonthRowProps> = ({ monthSpans, monthCompositionKey, scrollDirection }) => {
   const getYOffset = () => {
     if (scrollDirection === "down") {
       return 16;

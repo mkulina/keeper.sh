@@ -2,6 +2,7 @@
 
 import type { FC } from "react";
 import { useState, useEffect } from "react";
+import { useDashboardCalendar } from "./dashboard-calendar-context";
 
 const MAGIC_NUMBER_MINUTES_IN_DAY = 24 * 60;
 const MAGIC_NUMBER_MILLISECONDS_IN_MINUTE = 60_000;
@@ -11,12 +12,11 @@ const MAGIC_NUMBER_VISIBLE_WEEKS = 4;
 const MAGIC_NUMBER_ROW_HEIGHT_OFFSET = 1;
 const MAGIC_NUMBER_PERCENTAGE_BASE = 100;
 
-interface CurrentTimeIndicatorProps {
-  virtualListStartDate: Date;
-  containerRef: React.RefObject<HTMLDivElement | null>;
-}
+const CurrentTimeIndicator: FC = () => {
+  const { state, meta } = useDashboardCalendar();
+  const { virtualListStartDate } = state;
+  const { containerRef } = meta;
 
-const CurrentTimeIndicator: FC<CurrentTimeIndicatorProps> = ({ virtualListStartDate, containerRef }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

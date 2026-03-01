@@ -10,7 +10,7 @@ type FeatureRow = {
 }
 
 const features: FeatureRow[] = [
-  { name: "Sync Interval", free: "Every 30 minutes", pro: "Every minute" },
+  { name: "Sync Interval", free: "Every 30 minutes", pro: "Every 60 seconds" },
   { name: "Number of Source Calendars", free: "0-2", pro: "∞" },
   { name: "Number of Destination Calendars", free: "0-1", pro: "∞" },
   { name: "Aggregated iCal Link", free: true, pro: true },
