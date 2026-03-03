@@ -34,7 +34,7 @@ export const EmailFormBackButton = () => {
           exit="hidden"
           transition={{ width: { duration: 0.24 }, opacity: { duration: 0.12 } }}
         >
-          <LinkButton href="/" className="h-full px-3.5 mr-2" variant="border">
+          <LinkButton href="/" className="h-full mr-2" variant="border">
             <ArrowLeft size={17} />
           </LinkButton>
         </motion.div>
