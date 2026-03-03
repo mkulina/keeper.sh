@@ -3,8 +3,9 @@ import { Layout, LayoutItem } from '../../components/ui/layout'
 import { MarketingHeader, MarketingHeaderActions, MarketingHeaderBranding } from '../../components/marketing/marketing-header'
 import { MarketingFooter, MarketingFooterTagline, MarketingFooterNav, MarketingFooterNavGroup, MarketingFooterNavGroupLabel, MarketingFooterNavItem } from '../../components/marketing/marketing-footer'
 import KeeperLogo from "../../assets/keeper.svg?react";
-import { ButtonIcon, ButtonText, ExternalLinkButton, LinkButton } from '../../components/ui/button';
-import { HeartIcon, StarIcon } from 'lucide-react';
+import { ButtonText, LinkButton } from '../../components/ui/button';
+import { GithubStarButton } from '../../components/ui/github-star-button';
+import { HeartIcon } from 'lucide-react';
 
 export const Route = createFileRoute('/(marketing)')({
   component: RouteComponent,
@@ -12,28 +13,22 @@ export const Route = createFileRoute('/(marketing)')({
 
 function RouteComponent() {
   return (
-    <Layout>
-      <LayoutItem>
-        <MarketingHeader>
-          <MarketingHeaderBranding>
-            <KeeperLogo className="max-w-6" />
-          </MarketingHeaderBranding>
-          <MarketingHeaderActions>
-            <ExternalLinkButton size="compact" variant="ghost" href="https://github.com" target="_blank" rel="noreferrer">
-              <ButtonIcon>
-                <StarIcon size={14} />
-              </ButtonIcon>
-              <ButtonText>403</ButtonText>
-            </ExternalLinkButton>
-            <LinkButton size="compact" variant="border" to="/login">
-              <ButtonText>Login</ButtonText>
-            </LinkButton>
-            <LinkButton size="compact" variant="highlight" to="/register">
-              <ButtonText>Register</ButtonText>
-            </LinkButton>
-          </MarketingHeaderActions>
-        </MarketingHeader>
-      </LayoutItem>
+    <>
+      <MarketingHeader>
+        <MarketingHeaderBranding>
+          <KeeperLogo className="max-w-6" />
+        </MarketingHeaderBranding>
+        <MarketingHeaderActions>
+          <GithubStarButton />
+          <LinkButton size="compact" variant="border" to="/login">
+            <ButtonText>Login</ButtonText>
+          </LinkButton>
+          <LinkButton size="compact" variant="highlight" to="/register">
+            <ButtonText>Register</ButtonText>
+          </LinkButton>
+        </MarketingHeaderActions>
+      </MarketingHeader>
+      <Layout>
       <LayoutItem>
         <main>
           <Outlet />
@@ -66,5 +61,6 @@ function RouteComponent() {
         </MarketingFooter>
       </LayoutItem>
     </Layout>
+    </>
   )
 }

@@ -12,7 +12,7 @@ const button = tv({
     variant: {
       highlight: "shadow-xs border-transparent bg-foreground text-background hover:bg-foreground-hover",
       border: "border-interactive-border shadow-xs bg-background hover:bg-background-hover",
-      ghost: "border-transparent bg-background hover:bg-background-hover",
+      ghost: "border-transparent bg-transparent hover:bg-foreground/5",
     },
   },
   defaultVariants: {
