@@ -6,7 +6,7 @@ const input = tv({
   variants: {
     tone: {
       neutral: "",
-      error: "border-red-400 dark:border-red-500",
+      error: "border-destructive dark:border-destructive",
     },
   },
   defaultVariants: {

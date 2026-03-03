@@ -25,15 +25,24 @@ const MenuVariantContext = createContext<MenuVariant>("default");
 const ItemIsLinkContext = createContext(false);
 
 const navigationMenuItem = tv({
-  base: "rounded-xl flex items-center justify-between p-3 w-full hover:cursor-pointer",
+  base: "rounded-xl flex items-center justify-between p-3 w-full",
   variants: {
     variant: {
-      default: "hover:bg-background-hover",
-      highlight: "bg-foreground hover:bg-background-inverse-hover",
+      default: "",
+      highlight: "bg-foreground",
+    },
+    interactive: {
+      true: "hover:cursor-pointer",
+      false: "",
     },
   },
+  compoundVariants: [
+    { variant: "default", interactive: true, className: "hover:bg-background-hover" },
+    { variant: "highlight", interactive: true, className: "hover:bg-background-inverse-hover" },
+  ],
   defaultVariants: {
     variant: "default",
+    interactive: true,
   },
 });
 
@@ -154,7 +163,8 @@ type NavigationMenuItemProps = PropsWithChildren<{
 
 export function NavigationMenuItem({ to, onClick, className, children }: NavigationMenuItemProps) {
   const variant = use(MenuVariantContext);
-  const itemClass = navigationMenuItem({ variant, className });
+  const interactive = !!(to || onClick);
+  const itemClass = navigationMenuItem({ variant, interactive, className });
 
   const content = (
     <ItemIsLinkContext value={!!to}>

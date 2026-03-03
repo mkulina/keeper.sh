@@ -141,7 +141,7 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-2 pt-8">
       <Heading1 className="text-center">All of your calendars in-sync.</Heading1>
-      <Text className="max-w-[42ch] mx-auto">
+      <Text align="center" className="max-w-[42ch] mx-auto">
         Synchronize events between your personal, work, business and school calendars. Open-source under AGPL-3.0.
       </Text>
       <div className="contents *:z-20">
@@ -197,7 +197,7 @@ function RouteComponent() {
           <MarketingPricingSection>
             <MarketingPricingIntro>
               <Heading2 className="text-center">Hosted Pricing</Heading2>
-              <Text size='sm'>
+              <Text size='sm' align="center">
                 Keeper uses a low-cost freemium model to give you a solid range of choice. Check the GitHub repository for self-hosting options.
               </Text>
             </MarketingPricingIntro>

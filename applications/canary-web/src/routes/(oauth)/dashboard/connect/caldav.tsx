@@ -5,7 +5,7 @@ import { Text } from "../../../../components/ui/text";
 import { ProviderIconPair } from "../../../../components/auth/oauth-preamble";
 import { CalDAVConnectForm } from "../../../../components/auth/caldav-connect-form";
 
-export const Route = createFileRoute("/(dashboard)/dashboard/connect/caldav")({
+export const Route = createFileRoute("/(oauth)/dashboard/connect/caldav")({
   component: RouteComponent,
 });
 

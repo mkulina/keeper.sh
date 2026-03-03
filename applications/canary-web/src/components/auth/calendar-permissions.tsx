@@ -111,7 +111,7 @@ function ConnectForm({ backHref }: { backHref: string }) {
 function SkipLink({ href, children }: PropsWithChildren<{ href: string }>) {
   return (
     <Link to={href} className="text-center pt-2 opacity-80 hover:opacity-100 underline underline-offset-2">
-      <Text size="sm" tone="muted">{children}</Text>
+      <Text size="sm" tone="muted" align="center">{children}</Text>
     </Link>
   );
 }

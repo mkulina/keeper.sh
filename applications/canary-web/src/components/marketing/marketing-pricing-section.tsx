@@ -195,7 +195,7 @@ export function MarketingPricingFeatureDisplay({
   }
 
   return (
-    <Text size="sm" tone={muted ? "muted" : "default"}>
+    <Text size="sm" tone={muted ? "muted" : "default"} align="center">
       {value}
     </Text>
   );

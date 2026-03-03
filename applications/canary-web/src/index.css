@@ -45,6 +45,10 @@ html {
     var(--ui-foreground),
     var(--ui-background) 96.125%
   );
+  --ui-destructive: var(--color-red-700);
+  --ui-destructive-background: var(--color-red-50);
+  --ui-destructive-border: var(--color-red-200);
+  --ui-destructive-background-hover: var(--color-red-100);
 }
 
 @font-face {
@@ -73,6 +77,10 @@ html {
   --color-border-elevated: var(--ui-border-elevated);
   --color-background-inverse-hover: var(--ui-background-inverse-hover);
   --color-background-hover: var(--ui-background-hover);
+  --color-destructive: var(--ui-destructive);
+  --color-destructive-background: var(--ui-destructive-background);
+  --color-destructive-border: var(--ui-destructive-border);
+  --color-destructive-background-hover: var(--ui-destructive-background-hover);
 
   --font-sans: "Geist Sans", system-ui, sans-serif;
   --font-serif: "Lora", Georgia, serif;
@@ -124,6 +132,22 @@ html {
       in srgb,
       var(--ui-foreground),
       var(--ui-background) 90%
+    );
+    --ui-destructive: var(--color-red-300);
+    --ui-destructive-background: color-mix(
+      in srgb,
+      var(--color-red-500),
+      transparent 90%
+    );
+    --ui-destructive-border: color-mix(
+      in srgb,
+      var(--color-red-500),
+      transparent 80%
+    );
+    --ui-destructive-background-hover: color-mix(
+      in srgb,
+      var(--color-red-500),
+      transparent 80%
     );
   }
 }

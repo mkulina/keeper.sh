@@ -16,19 +16,26 @@ import { Route as authRouteRouteImport } from './../../routes/(auth)/route'
 import { Route as marketingIndexRouteImport } from './../../routes/(marketing)/index'
 import { Route as authRegisterRouteImport } from './../../routes/(auth)/register'
 import { Route as authLoginRouteImport } from './../../routes/(auth)/login'
+import { Route as oauthDashboardRouteRouteImport } from './../../routes/(oauth)/dashboard/route'
+import { Route as oauthAuthRouteRouteImport } from './../../routes/(oauth)/auth/route'
 import { Route as dashboardDashboardIndexRouteImport } from './../../routes/(dashboard)/dashboard/index'
-import { Route as oauthAuthOutlookRouteImport } from './../../routes/(oauth)/auth.outlook'
-import { Route as oauthAuthGoogleRouteImport } from './../../routes/(oauth)/auth.google'
+import { Route as oauthAuthOutlookRouteImport } from './../../routes/(oauth)/auth/outlook'
+import { Route as oauthAuthGoogleRouteImport } from './../../routes/(oauth)/auth/google'
+import { Route as oauthDashboardConnectRouteRouteImport } from './../../routes/(oauth)/dashboard/connect/route'
+import { Route as dashboardDashboardSettingsRouteRouteImport } from './../../routes/(dashboard)/dashboard/settings/route'
 import { Route as dashboardDashboardConnectRouteRouteImport } from './../../routes/(dashboard)/dashboard/connect/route'
+import { Route as dashboardDashboardSettingsIndexRouteImport } from './../../routes/(dashboard)/dashboard/settings/index'
 import { Route as dashboardDashboardConnectIndexRouteImport } from './../../routes/(dashboard)/dashboard/connect/index'
-import { Route as dashboardDashboardConnectOutlookRouteImport } from './../../routes/(dashboard)/dashboard/connect/outlook'
-import { Route as dashboardDashboardConnectMicrosoftRouteImport } from './../../routes/(dashboard)/dashboard/connect/microsoft'
-import { Route as dashboardDashboardConnectIcsFileRouteImport } from './../../routes/(dashboard)/dashboard/connect/ics-file'
-import { Route as dashboardDashboardConnectIcalLinkRouteImport } from './../../routes/(dashboard)/dashboard/connect/ical-link'
-import { Route as dashboardDashboardConnectGoogleRouteImport } from './../../routes/(dashboard)/dashboard/connect/google'
-import { Route as dashboardDashboardConnectFastmailRouteImport } from './../../routes/(dashboard)/dashboard/connect/fastmail'
-import { Route as dashboardDashboardConnectCaldavRouteImport } from './../../routes/(dashboard)/dashboard/connect/caldav'
-import { Route as dashboardDashboardConnectAppleRouteImport } from './../../routes/(dashboard)/dashboard/connect/apple'
+import { Route as oauthDashboardConnectOutlookRouteImport } from './../../routes/(oauth)/dashboard/connect/outlook'
+import { Route as oauthDashboardConnectMicrosoftRouteImport } from './../../routes/(oauth)/dashboard/connect/microsoft'
+import { Route as oauthDashboardConnectIcsFileRouteImport } from './../../routes/(oauth)/dashboard/connect/ics-file'
+import { Route as oauthDashboardConnectIcalLinkRouteImport } from './../../routes/(oauth)/dashboard/connect/ical-link'
+import { Route as oauthDashboardConnectGoogleRouteImport } from './../../routes/(oauth)/dashboard/connect/google'
+import { Route as oauthDashboardConnectFastmailRouteImport } from './../../routes/(oauth)/dashboard/connect/fastmail'
+import { Route as oauthDashboardConnectCaldavRouteImport } from './../../routes/(oauth)/dashboard/connect/caldav'
+import { Route as oauthDashboardConnectAppleRouteImport } from './../../routes/(oauth)/dashboard/connect/apple'
+import { Route as dashboardDashboardSettingsPasskeysRouteImport } from './../../routes/(dashboard)/dashboard/settings/passkeys'
+import { Route as dashboardDashboardSettingsChangePasswordRouteImport } from './../../routes/(dashboard)/dashboard/settings/change-password'
 
 const oauthRouteRoute = oauthRouteRouteImport.update({
   id: '/(oauth)',
@@ -61,26 +68,54 @@ const authLoginRoute = authLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => authRouteRoute,
 } as any)
+const oauthDashboardRouteRoute = oauthDashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => oauthRouteRoute,
+} as any)
+const oauthAuthRouteRoute = oauthAuthRouteRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => oauthRouteRoute,
+} as any)
 const dashboardDashboardIndexRoute = dashboardDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
 const oauthAuthOutlookRoute = oauthAuthOutlookRouteImport.update({
-  id: '/auth/outlook',
-  path: '/auth/outlook',
-  getParentRoute: () => oauthRouteRoute,
+  id: '/outlook',
+  path: '/outlook',
+  getParentRoute: () => oauthAuthRouteRoute,
 } as any)
 const oauthAuthGoogleRoute = oauthAuthGoogleRouteImport.update({
-  id: '/auth/google',
-  path: '/auth/google',
-  getParentRoute: () => oauthRouteRoute,
+  id: '/google',
+  path: '/google',
+  getParentRoute: () => oauthAuthRouteRoute,
 } as any)
+const oauthDashboardConnectRouteRoute =
+  oauthDashboardConnectRouteRouteImport.update({
+    id: '/connect',
+    path: '/connect',
+    getParentRoute: () => oauthDashboardRouteRoute,
+  } as any)
+const dashboardDashboardSettingsRouteRoute =
+  dashboardDashboardSettingsRouteRouteImport.update({
+    id: '/dashboard/settings',
+    path: '/dashboard/settings',
+    getParentRoute: () => dashboardRouteRoute,
+  } as any)
 const dashboardDashboardConnectRouteRoute =
   dashboardDashboardConnectRouteRouteImport.update({
     id: '/dashboard/connect',
     path: '/dashboard/connect',
     getParentRoute: () => dashboardRouteRoute,
+  } as any)
+const dashboardDashboardSettingsIndexRoute =
+  dashboardDashboardSettingsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => dashboardDashboardSettingsRouteRoute,
   } as any)
 const dashboardDashboardConnectIndexRoute =
   dashboardDashboardConnectIndexRouteImport.update({
@@ -88,89 +123,111 @@ const dashboardDashboardConnectIndexRoute =
     path: '/',
     getParentRoute: () => dashboardDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectOutlookRoute =
-  dashboardDashboardConnectOutlookRouteImport.update({
+const oauthDashboardConnectOutlookRoute =
+  oauthDashboardConnectOutlookRouteImport.update({
     id: '/outlook',
     path: '/outlook',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectMicrosoftRoute =
-  dashboardDashboardConnectMicrosoftRouteImport.update({
+const oauthDashboardConnectMicrosoftRoute =
+  oauthDashboardConnectMicrosoftRouteImport.update({
     id: '/microsoft',
     path: '/microsoft',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectIcsFileRoute =
-  dashboardDashboardConnectIcsFileRouteImport.update({
+const oauthDashboardConnectIcsFileRoute =
+  oauthDashboardConnectIcsFileRouteImport.update({
     id: '/ics-file',
     path: '/ics-file',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectIcalLinkRoute =
-  dashboardDashboardConnectIcalLinkRouteImport.update({
+const oauthDashboardConnectIcalLinkRoute =
+  oauthDashboardConnectIcalLinkRouteImport.update({
     id: '/ical-link',
     path: '/ical-link',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectGoogleRoute =
-  dashboardDashboardConnectGoogleRouteImport.update({
+const oauthDashboardConnectGoogleRoute =
+  oauthDashboardConnectGoogleRouteImport.update({
     id: '/google',
     path: '/google',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectFastmailRoute =
-  dashboardDashboardConnectFastmailRouteImport.update({
+const oauthDashboardConnectFastmailRoute =
+  oauthDashboardConnectFastmailRouteImport.update({
     id: '/fastmail',
     path: '/fastmail',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectCaldavRoute =
-  dashboardDashboardConnectCaldavRouteImport.update({
+const oauthDashboardConnectCaldavRoute =
+  oauthDashboardConnectCaldavRouteImport.update({
     id: '/caldav',
     path: '/caldav',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
   } as any)
-const dashboardDashboardConnectAppleRoute =
-  dashboardDashboardConnectAppleRouteImport.update({
+const oauthDashboardConnectAppleRoute =
+  oauthDashboardConnectAppleRouteImport.update({
     id: '/apple',
     path: '/apple',
-    getParentRoute: () => dashboardDashboardConnectRouteRoute,
+    getParentRoute: () => oauthDashboardConnectRouteRoute,
+  } as any)
+const dashboardDashboardSettingsPasskeysRoute =
+  dashboardDashboardSettingsPasskeysRouteImport.update({
+    id: '/passkeys',
+    path: '/passkeys',
+    getParentRoute: () => dashboardDashboardSettingsRouteRoute,
+  } as any)
+const dashboardDashboardSettingsChangePasswordRoute =
+  dashboardDashboardSettingsChangePasswordRouteImport.update({
+    id: '/change-password',
+    path: '/change-password',
+    getParentRoute: () => dashboardDashboardSettingsRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/auth': typeof oauthAuthRouteRouteWithChildren
+  '/dashboard': typeof oauthDashboardRouteRouteWithChildren
   '/login': typeof authLoginRoute
   '/register': typeof authRegisterRoute
   '/': typeof marketingIndexRoute
-  '/dashboard/connect': typeof dashboardDashboardConnectRouteRouteWithChildren
+  '/dashboard/connect': typeof oauthDashboardConnectRouteRouteWithChildren
+  '/dashboard/settings': typeof dashboardDashboardSettingsRouteRouteWithChildren
   '/auth/google': typeof oauthAuthGoogleRoute
   '/auth/outlook': typeof oauthAuthOutlookRoute
   '/dashboard/': typeof dashboardDashboardIndexRoute
-  '/dashboard/connect/apple': typeof dashboardDashboardConnectAppleRoute
-  '/dashboard/connect/caldav': typeof dashboardDashboardConnectCaldavRoute
-  '/dashboard/connect/fastmail': typeof dashboardDashboardConnectFastmailRoute
-  '/dashboard/connect/google': typeof dashboardDashboardConnectGoogleRoute
-  '/dashboard/connect/ical-link': typeof dashboardDashboardConnectIcalLinkRoute
-  '/dashboard/connect/ics-file': typeof dashboardDashboardConnectIcsFileRoute
-  '/dashboard/connect/microsoft': typeof dashboardDashboardConnectMicrosoftRoute
-  '/dashboard/connect/outlook': typeof dashboardDashboardConnectOutlookRoute
+  '/dashboard/settings/change-password': typeof dashboardDashboardSettingsChangePasswordRoute
+  '/dashboard/settings/passkeys': typeof dashboardDashboardSettingsPasskeysRoute
+  '/dashboard/connect/apple': typeof oauthDashboardConnectAppleRoute
+  '/dashboard/connect/caldav': typeof oauthDashboardConnectCaldavRoute
+  '/dashboard/connect/fastmail': typeof oauthDashboardConnectFastmailRoute
+  '/dashboard/connect/google': typeof oauthDashboardConnectGoogleRoute
+  '/dashboard/connect/ical-link': typeof oauthDashboardConnectIcalLinkRoute
+  '/dashboard/connect/ics-file': typeof oauthDashboardConnectIcsFileRoute
+  '/dashboard/connect/microsoft': typeof oauthDashboardConnectMicrosoftRoute
+  '/dashboard/connect/outlook': typeof oauthDashboardConnectOutlookRoute
   '/dashboard/connect/': typeof dashboardDashboardConnectIndexRoute
+  '/dashboard/settings/': typeof dashboardDashboardSettingsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/auth': typeof oauthAuthRouteRouteWithChildren
+  '/dashboard': typeof dashboardDashboardIndexRoute
   '/login': typeof authLoginRoute
   '/register': typeof authRegisterRoute
   '/': typeof marketingIndexRoute
+  '/dashboard/connect': typeof dashboardDashboardConnectIndexRoute
   '/auth/google': typeof oauthAuthGoogleRoute
   '/auth/outlook': typeof oauthAuthOutlookRoute
-  '/dashboard': typeof dashboardDashboardIndexRoute
-  '/dashboard/connect/apple': typeof dashboardDashboardConnectAppleRoute
-  '/dashboard/connect/caldav': typeof dashboardDashboardConnectCaldavRoute
-  '/dashboard/connect/fastmail': typeof dashboardDashboardConnectFastmailRoute
-  '/dashboard/connect/google': typeof dashboardDashboardConnectGoogleRoute
-  '/dashboard/connect/ical-link': typeof dashboardDashboardConnectIcalLinkRoute
-  '/dashboard/connect/ics-file': typeof dashboardDashboardConnectIcsFileRoute
-  '/dashboard/connect/microsoft': typeof dashboardDashboardConnectMicrosoftRoute
-  '/dashboard/connect/outlook': typeof dashboardDashboardConnectOutlookRoute
-  '/dashboard/connect': typeof dashboardDashboardConnectIndexRoute
+  '/dashboard/settings/change-password': typeof dashboardDashboardSettingsChangePasswordRoute
+  '/dashboard/settings/passkeys': typeof dashboardDashboardSettingsPasskeysRoute
+  '/dashboard/connect/apple': typeof oauthDashboardConnectAppleRoute
+  '/dashboard/connect/caldav': typeof oauthDashboardConnectCaldavRoute
+  '/dashboard/connect/fastmail': typeof oauthDashboardConnectFastmailRoute
+  '/dashboard/connect/google': typeof oauthDashboardConnectGoogleRoute
+  '/dashboard/connect/ical-link': typeof oauthDashboardConnectIcalLinkRoute
+  '/dashboard/connect/ics-file': typeof oauthDashboardConnectIcsFileRoute
+  '/dashboard/connect/microsoft': typeof oauthDashboardConnectMicrosoftRoute
+  '/dashboard/connect/outlook': typeof oauthDashboardConnectOutlookRoute
+  '/dashboard/settings': typeof dashboardDashboardSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -178,33 +235,45 @@ export interface FileRoutesById {
   '/(dashboard)': typeof dashboardRouteRouteWithChildren
   '/(marketing)': typeof marketingRouteRouteWithChildren
   '/(oauth)': typeof oauthRouteRouteWithChildren
+  '/(oauth)/auth': typeof oauthAuthRouteRouteWithChildren
+  '/(oauth)/dashboard': typeof oauthDashboardRouteRouteWithChildren
   '/(auth)/login': typeof authLoginRoute
   '/(auth)/register': typeof authRegisterRoute
   '/(marketing)/': typeof marketingIndexRoute
   '/(dashboard)/dashboard/connect': typeof dashboardDashboardConnectRouteRouteWithChildren
+  '/(dashboard)/dashboard/settings': typeof dashboardDashboardSettingsRouteRouteWithChildren
+  '/(oauth)/dashboard/connect': typeof oauthDashboardConnectRouteRouteWithChildren
   '/(oauth)/auth/google': typeof oauthAuthGoogleRoute
   '/(oauth)/auth/outlook': typeof oauthAuthOutlookRoute
   '/(dashboard)/dashboard/': typeof dashboardDashboardIndexRoute
-  '/(dashboard)/dashboard/connect/apple': typeof dashboardDashboardConnectAppleRoute
-  '/(dashboard)/dashboard/connect/caldav': typeof dashboardDashboardConnectCaldavRoute
-  '/(dashboard)/dashboard/connect/fastmail': typeof dashboardDashboardConnectFastmailRoute
-  '/(dashboard)/dashboard/connect/google': typeof dashboardDashboardConnectGoogleRoute
-  '/(dashboard)/dashboard/connect/ical-link': typeof dashboardDashboardConnectIcalLinkRoute
-  '/(dashboard)/dashboard/connect/ics-file': typeof dashboardDashboardConnectIcsFileRoute
-  '/(dashboard)/dashboard/connect/microsoft': typeof dashboardDashboardConnectMicrosoftRoute
-  '/(dashboard)/dashboard/connect/outlook': typeof dashboardDashboardConnectOutlookRoute
+  '/(dashboard)/dashboard/settings/change-password': typeof dashboardDashboardSettingsChangePasswordRoute
+  '/(dashboard)/dashboard/settings/passkeys': typeof dashboardDashboardSettingsPasskeysRoute
+  '/(oauth)/dashboard/connect/apple': typeof oauthDashboardConnectAppleRoute
+  '/(oauth)/dashboard/connect/caldav': typeof oauthDashboardConnectCaldavRoute
+  '/(oauth)/dashboard/connect/fastmail': typeof oauthDashboardConnectFastmailRoute
+  '/(oauth)/dashboard/connect/google': typeof oauthDashboardConnectGoogleRoute
+  '/(oauth)/dashboard/connect/ical-link': typeof oauthDashboardConnectIcalLinkRoute
+  '/(oauth)/dashboard/connect/ics-file': typeof oauthDashboardConnectIcsFileRoute
+  '/(oauth)/dashboard/connect/microsoft': typeof oauthDashboardConnectMicrosoftRoute
+  '/(oauth)/dashboard/connect/outlook': typeof oauthDashboardConnectOutlookRoute
   '/(dashboard)/dashboard/connect/': typeof dashboardDashboardConnectIndexRoute
+  '/(dashboard)/dashboard/settings/': typeof dashboardDashboardSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/auth'
+    | '/dashboard'
     | '/login'
     | '/register'
     | '/'
     | '/dashboard/connect'
+    | '/dashboard/settings'
     | '/auth/google'
     | '/auth/outlook'
     | '/dashboard/'
+    | '/dashboard/settings/change-password'
+    | '/dashboard/settings/passkeys'
     | '/dashboard/connect/apple'
     | '/dashboard/connect/caldav'
     | '/dashboard/connect/fastmail'
@@ -214,14 +283,19 @@ export interface FileRouteTypes {
     | '/dashboard/connect/microsoft'
     | '/dashboard/connect/outlook'
     | '/dashboard/connect/'
+    | '/dashboard/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/auth'
+    | '/dashboard'
     | '/login'
     | '/register'
     | '/'
+    | '/dashboard/connect'
     | '/auth/google'
     | '/auth/outlook'
-    | '/dashboard'
+    | '/dashboard/settings/change-password'
+    | '/dashboard/settings/passkeys'
     | '/dashboard/connect/apple'
     | '/dashboard/connect/caldav'
     | '/dashboard/connect/fastmail'
@@ -230,29 +304,36 @@ export interface FileRouteTypes {
     | '/dashboard/connect/ics-file'
     | '/dashboard/connect/microsoft'
     | '/dashboard/connect/outlook'
-    | '/dashboard/connect'
+    | '/dashboard/settings'
   id:
     | '__root__'
     | '/(auth)'
     | '/(dashboard)'
     | '/(marketing)'
     | '/(oauth)'
+    | '/(oauth)/auth'
+    | '/(oauth)/dashboard'
     | '/(auth)/login'
     | '/(auth)/register'
     | '/(marketing)/'
     | '/(dashboard)/dashboard/connect'
+    | '/(dashboard)/dashboard/settings'
+    | '/(oauth)/dashboard/connect'
     | '/(oauth)/auth/google'
     | '/(oauth)/auth/outlook'
     | '/(dashboard)/dashboard/'
-    | '/(dashboard)/dashboard/connect/apple'
-    | '/(dashboard)/dashboard/connect/caldav'
-    | '/(dashboard)/dashboard/connect/fastmail'
-    | '/(dashboard)/dashboard/connect/google'
-    | '/(dashboard)/dashboard/connect/ical-link'
-    | '/(dashboard)/dashboard/connect/ics-file'
-    | '/(dashboard)/dashboard/connect/microsoft'
-    | '/(dashboard)/dashboard/connect/outlook'
+    | '/(dashboard)/dashboard/settings/change-password'
+    | '/(dashboard)/dashboard/settings/passkeys'
+    | '/(oauth)/dashboard/connect/apple'
+    | '/(oauth)/dashboard/connect/caldav'
+    | '/(oauth)/dashboard/connect/fastmail'
+    | '/(oauth)/dashboard/connect/google'
+    | '/(oauth)/dashboard/connect/ical-link'
+    | '/(oauth)/dashboard/connect/ics-file'
+    | '/(oauth)/dashboard/connect/microsoft'
+    | '/(oauth)/dashboard/connect/outlook'
     | '/(dashboard)/dashboard/connect/'
+    | '/(dashboard)/dashboard/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -313,6 +394,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authLoginRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/(oauth)/dashboard': {
+      id: '/(oauth)/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof oauthDashboardRouteRouteImport
+      parentRoute: typeof oauthRouteRoute
+    }
+    '/(oauth)/auth': {
+      id: '/(oauth)/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof oauthAuthRouteRouteImport
+      parentRoute: typeof oauthRouteRoute
+    }
     '/(dashboard)/dashboard/': {
       id: '/(dashboard)/dashboard/'
       path: '/dashboard'
@@ -322,17 +417,31 @@ declare module '@tanstack/react-router' {
     }
     '/(oauth)/auth/outlook': {
       id: '/(oauth)/auth/outlook'
-      path: '/auth/outlook'
+      path: '/outlook'
       fullPath: '/auth/outlook'
       preLoaderRoute: typeof oauthAuthOutlookRouteImport
-      parentRoute: typeof oauthRouteRoute
+      parentRoute: typeof oauthAuthRouteRoute
     }
     '/(oauth)/auth/google': {
       id: '/(oauth)/auth/google'
-      path: '/auth/google'
+      path: '/google'
       fullPath: '/auth/google'
       preLoaderRoute: typeof oauthAuthGoogleRouteImport
-      parentRoute: typeof oauthRouteRoute
+      parentRoute: typeof oauthAuthRouteRoute
+    }
+    '/(oauth)/dashboard/connect': {
+      id: '/(oauth)/dashboard/connect'
+      path: '/connect'
+      fullPath: '/dashboard/connect'
+      preLoaderRoute: typeof oauthDashboardConnectRouteRouteImport
+      parentRoute: typeof oauthDashboardRouteRoute
+    }
+    '/(dashboard)/dashboard/settings': {
+      id: '/(dashboard)/dashboard/settings'
+      path: '/dashboard/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof dashboardDashboardSettingsRouteRouteImport
+      parentRoute: typeof dashboardRouteRoute
     }
     '/(dashboard)/dashboard/connect': {
       id: '/(dashboard)/dashboard/connect'
@@ -341,6 +450,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardDashboardConnectRouteRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
+    '/(dashboard)/dashboard/settings/': {
+      id: '/(dashboard)/dashboard/settings/'
+      path: '/'
+      fullPath: '/dashboard/settings/'
+      preLoaderRoute: typeof dashboardDashboardSettingsIndexRouteImport
+      parentRoute: typeof dashboardDashboardSettingsRouteRoute
+    }
     '/(dashboard)/dashboard/connect/': {
       id: '/(dashboard)/dashboard/connect/'
       path: '/'
@@ -348,61 +464,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardDashboardConnectIndexRouteImport
       parentRoute: typeof dashboardDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/outlook': {
-      id: '/(dashboard)/dashboard/connect/outlook'
+    '/(oauth)/dashboard/connect/outlook': {
+      id: '/(oauth)/dashboard/connect/outlook'
       path: '/outlook'
       fullPath: '/dashboard/connect/outlook'
-      preLoaderRoute: typeof dashboardDashboardConnectOutlookRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectOutlookRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/microsoft': {
-      id: '/(dashboard)/dashboard/connect/microsoft'
+    '/(oauth)/dashboard/connect/microsoft': {
+      id: '/(oauth)/dashboard/connect/microsoft'
       path: '/microsoft'
       fullPath: '/dashboard/connect/microsoft'
-      preLoaderRoute: typeof dashboardDashboardConnectMicrosoftRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectMicrosoftRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/ics-file': {
-      id: '/(dashboard)/dashboard/connect/ics-file'
+    '/(oauth)/dashboard/connect/ics-file': {
+      id: '/(oauth)/dashboard/connect/ics-file'
       path: '/ics-file'
       fullPath: '/dashboard/connect/ics-file'
-      preLoaderRoute: typeof dashboardDashboardConnectIcsFileRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectIcsFileRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/ical-link': {
-      id: '/(dashboard)/dashboard/connect/ical-link'
+    '/(oauth)/dashboard/connect/ical-link': {
+      id: '/(oauth)/dashboard/connect/ical-link'
       path: '/ical-link'
       fullPath: '/dashboard/connect/ical-link'
-      preLoaderRoute: typeof dashboardDashboardConnectIcalLinkRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectIcalLinkRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/google': {
-      id: '/(dashboard)/dashboard/connect/google'
+    '/(oauth)/dashboard/connect/google': {
+      id: '/(oauth)/dashboard/connect/google'
       path: '/google'
       fullPath: '/dashboard/connect/google'
-      preLoaderRoute: typeof dashboardDashboardConnectGoogleRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectGoogleRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/fastmail': {
-      id: '/(dashboard)/dashboard/connect/fastmail'
+    '/(oauth)/dashboard/connect/fastmail': {
+      id: '/(oauth)/dashboard/connect/fastmail'
       path: '/fastmail'
       fullPath: '/dashboard/connect/fastmail'
-      preLoaderRoute: typeof dashboardDashboardConnectFastmailRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectFastmailRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/caldav': {
-      id: '/(dashboard)/dashboard/connect/caldav'
+    '/(oauth)/dashboard/connect/caldav': {
+      id: '/(oauth)/dashboard/connect/caldav'
       path: '/caldav'
       fullPath: '/dashboard/connect/caldav'
-      preLoaderRoute: typeof dashboardDashboardConnectCaldavRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectCaldavRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
     }
-    '/(dashboard)/dashboard/connect/apple': {
-      id: '/(dashboard)/dashboard/connect/apple'
+    '/(oauth)/dashboard/connect/apple': {
+      id: '/(oauth)/dashboard/connect/apple'
       path: '/apple'
       fullPath: '/dashboard/connect/apple'
-      preLoaderRoute: typeof dashboardDashboardConnectAppleRouteImport
-      parentRoute: typeof dashboardDashboardConnectRouteRoute
+      preLoaderRoute: typeof oauthDashboardConnectAppleRouteImport
+      parentRoute: typeof oauthDashboardConnectRouteRoute
+    }
+    '/(dashboard)/dashboard/settings/passkeys': {
+      id: '/(dashboard)/dashboard/settings/passkeys'
+      path: '/passkeys'
+      fullPath: '/dashboard/settings/passkeys'
+      preLoaderRoute: typeof dashboardDashboardSettingsPasskeysRouteImport
+      parentRoute: typeof dashboardDashboardSettingsRouteRoute
+    }
+    '/(dashboard)/dashboard/settings/change-password': {
+      id: '/(dashboard)/dashboard/settings/change-password'
+      path: '/change-password'
+      fullPath: '/dashboard/settings/change-password'
+      preLoaderRoute: typeof dashboardDashboardSettingsChangePasswordRouteImport
+      parentRoute: typeof dashboardDashboardSettingsRouteRoute
     }
   }
 }
@@ -422,32 +552,11 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 )
 
 interface dashboardDashboardConnectRouteRouteChildren {
-  dashboardDashboardConnectAppleRoute: typeof dashboardDashboardConnectAppleRoute
-  dashboardDashboardConnectCaldavRoute: typeof dashboardDashboardConnectCaldavRoute
-  dashboardDashboardConnectFastmailRoute: typeof dashboardDashboardConnectFastmailRoute
-  dashboardDashboardConnectGoogleRoute: typeof dashboardDashboardConnectGoogleRoute
-  dashboardDashboardConnectIcalLinkRoute: typeof dashboardDashboardConnectIcalLinkRoute
-  dashboardDashboardConnectIcsFileRoute: typeof dashboardDashboardConnectIcsFileRoute
-  dashboardDashboardConnectMicrosoftRoute: typeof dashboardDashboardConnectMicrosoftRoute
-  dashboardDashboardConnectOutlookRoute: typeof dashboardDashboardConnectOutlookRoute
   dashboardDashboardConnectIndexRoute: typeof dashboardDashboardConnectIndexRoute
 }
 
 const dashboardDashboardConnectRouteRouteChildren: dashboardDashboardConnectRouteRouteChildren =
   {
-    dashboardDashboardConnectAppleRoute: dashboardDashboardConnectAppleRoute,
-    dashboardDashboardConnectCaldavRoute: dashboardDashboardConnectCaldavRoute,
-    dashboardDashboardConnectFastmailRoute:
-      dashboardDashboardConnectFastmailRoute,
-    dashboardDashboardConnectGoogleRoute: dashboardDashboardConnectGoogleRoute,
-    dashboardDashboardConnectIcalLinkRoute:
-      dashboardDashboardConnectIcalLinkRoute,
-    dashboardDashboardConnectIcsFileRoute:
-      dashboardDashboardConnectIcsFileRoute,
-    dashboardDashboardConnectMicrosoftRoute:
-      dashboardDashboardConnectMicrosoftRoute,
-    dashboardDashboardConnectOutlookRoute:
-      dashboardDashboardConnectOutlookRoute,
     dashboardDashboardConnectIndexRoute: dashboardDashboardConnectIndexRoute,
   }
 
@@ -456,14 +565,37 @@ const dashboardDashboardConnectRouteRouteWithChildren =
     dashboardDashboardConnectRouteRouteChildren,
   )
 
+interface dashboardDashboardSettingsRouteRouteChildren {
+  dashboardDashboardSettingsChangePasswordRoute: typeof dashboardDashboardSettingsChangePasswordRoute
+  dashboardDashboardSettingsPasskeysRoute: typeof dashboardDashboardSettingsPasskeysRoute
+  dashboardDashboardSettingsIndexRoute: typeof dashboardDashboardSettingsIndexRoute
+}
+
+const dashboardDashboardSettingsRouteRouteChildren: dashboardDashboardSettingsRouteRouteChildren =
+  {
+    dashboardDashboardSettingsChangePasswordRoute:
+      dashboardDashboardSettingsChangePasswordRoute,
+    dashboardDashboardSettingsPasskeysRoute:
+      dashboardDashboardSettingsPasskeysRoute,
+    dashboardDashboardSettingsIndexRoute: dashboardDashboardSettingsIndexRoute,
+  }
+
+const dashboardDashboardSettingsRouteRouteWithChildren =
+  dashboardDashboardSettingsRouteRoute._addFileChildren(
+    dashboardDashboardSettingsRouteRouteChildren,
+  )
+
 interface dashboardRouteRouteChildren {
   dashboardDashboardConnectRouteRoute: typeof dashboardDashboardConnectRouteRouteWithChildren
+  dashboardDashboardSettingsRouteRoute: typeof dashboardDashboardSettingsRouteRouteWithChildren
   dashboardDashboardIndexRoute: typeof dashboardDashboardIndexRoute
 }
 
 const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
   dashboardDashboardConnectRouteRoute:
     dashboardDashboardConnectRouteRouteWithChildren,
+  dashboardDashboardSettingsRouteRoute:
+    dashboardDashboardSettingsRouteRouteWithChildren,
   dashboardDashboardIndexRoute: dashboardDashboardIndexRoute,
 }
 
@@ -483,14 +615,67 @@ const marketingRouteRouteWithChildren = marketingRouteRoute._addFileChildren(
   marketingRouteRouteChildren,
 )
 
-interface oauthRouteRouteChildren {
+interface oauthAuthRouteRouteChildren {
   oauthAuthGoogleRoute: typeof oauthAuthGoogleRoute
   oauthAuthOutlookRoute: typeof oauthAuthOutlookRoute
 }
 
-const oauthRouteRouteChildren: oauthRouteRouteChildren = {
+const oauthAuthRouteRouteChildren: oauthAuthRouteRouteChildren = {
   oauthAuthGoogleRoute: oauthAuthGoogleRoute,
   oauthAuthOutlookRoute: oauthAuthOutlookRoute,
+}
+
+const oauthAuthRouteRouteWithChildren = oauthAuthRouteRoute._addFileChildren(
+  oauthAuthRouteRouteChildren,
+)
+
+interface oauthDashboardConnectRouteRouteChildren {
+  oauthDashboardConnectAppleRoute: typeof oauthDashboardConnectAppleRoute
+  oauthDashboardConnectCaldavRoute: typeof oauthDashboardConnectCaldavRoute
+  oauthDashboardConnectFastmailRoute: typeof oauthDashboardConnectFastmailRoute
+  oauthDashboardConnectGoogleRoute: typeof oauthDashboardConnectGoogleRoute
+  oauthDashboardConnectIcalLinkRoute: typeof oauthDashboardConnectIcalLinkRoute
+  oauthDashboardConnectIcsFileRoute: typeof oauthDashboardConnectIcsFileRoute
+  oauthDashboardConnectMicrosoftRoute: typeof oauthDashboardConnectMicrosoftRoute
+  oauthDashboardConnectOutlookRoute: typeof oauthDashboardConnectOutlookRoute
+}
+
+const oauthDashboardConnectRouteRouteChildren: oauthDashboardConnectRouteRouteChildren =
+  {
+    oauthDashboardConnectAppleRoute: oauthDashboardConnectAppleRoute,
+    oauthDashboardConnectCaldavRoute: oauthDashboardConnectCaldavRoute,
+    oauthDashboardConnectFastmailRoute: oauthDashboardConnectFastmailRoute,
+    oauthDashboardConnectGoogleRoute: oauthDashboardConnectGoogleRoute,
+    oauthDashboardConnectIcalLinkRoute: oauthDashboardConnectIcalLinkRoute,
+    oauthDashboardConnectIcsFileRoute: oauthDashboardConnectIcsFileRoute,
+    oauthDashboardConnectMicrosoftRoute: oauthDashboardConnectMicrosoftRoute,
+    oauthDashboardConnectOutlookRoute: oauthDashboardConnectOutlookRoute,
+  }
+
+const oauthDashboardConnectRouteRouteWithChildren =
+  oauthDashboardConnectRouteRoute._addFileChildren(
+    oauthDashboardConnectRouteRouteChildren,
+  )
+
+interface oauthDashboardRouteRouteChildren {
+  oauthDashboardConnectRouteRoute: typeof oauthDashboardConnectRouteRouteWithChildren
+}
+
+const oauthDashboardRouteRouteChildren: oauthDashboardRouteRouteChildren = {
+  oauthDashboardConnectRouteRoute: oauthDashboardConnectRouteRouteWithChildren,
+}
+
+const oauthDashboardRouteRouteWithChildren =
+  oauthDashboardRouteRoute._addFileChildren(oauthDashboardRouteRouteChildren)
+
+interface oauthRouteRouteChildren {
+  oauthAuthRouteRoute: typeof oauthAuthRouteRouteWithChildren
+  oauthDashboardRouteRoute: typeof oauthDashboardRouteRouteWithChildren
+}
+
+const oauthRouteRouteChildren: oauthRouteRouteChildren = {
+  oauthAuthRouteRoute: oauthAuthRouteRouteWithChildren,
+  oauthDashboardRouteRoute: oauthDashboardRouteRouteWithChildren,
 }
 
 const oauthRouteRouteWithChildren = oauthRouteRoute._addFileChildren(

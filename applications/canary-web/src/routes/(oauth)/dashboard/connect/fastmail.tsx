@@ -5,7 +5,7 @@ import { ProviderIconPair } from "../../../../components/auth/oauth-preamble";
 import { CalDAVConnectForm } from "../../../../components/auth/caldav-connect-form";
 
 export const Route = createFileRoute(
-  "/(dashboard)/dashboard/connect/fastmail",
+  "/(oauth)/dashboard/connect/fastmail",
 )({
   component: RouteComponent,
 });

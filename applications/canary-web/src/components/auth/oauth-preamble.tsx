@@ -25,9 +25,10 @@ const PERMISSIONS = [
 interface OAuthPreambleProps {
   provider: Provider;
   backHref: string;
+  context: "auth" | "link";
 }
 
-export function OAuthPreamble({ provider, backHref }: OAuthPreambleProps) {
+export function OAuthPreamble({ provider, backHref, context }: OAuthPreambleProps) {
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
   };
@@ -68,9 +69,11 @@ export function OAuthPreamble({ provider, backHref }: OAuthPreambleProps) {
           </Button>
         </div>
       </form>
-      <TextLink to={backHref}>
-        Don&apos;t import my calendars yet, just log me in.
-      </TextLink>
+      {context === "auth" && (
+        <TextLink to={backHref}>
+          Don&apos;t import my calendars yet, just log me in.
+        </TextLink>
+      )}
     </>
   );
 }

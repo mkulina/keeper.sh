@@ -121,7 +121,7 @@ function AuthError() {
       }}
       transition={{ duration: 0.2 }}
     >
-      <p className="text-sm tracking-tight text-red-400 text-center">
+      <p className="text-sm tracking-tight text-destructive text-center">
         {error?.message}
       </p>
     </motion.div>
