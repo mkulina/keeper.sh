@@ -1,4 +1,4 @@
-import type { SubmitEvent } from "react";
+import type { ReactNode, SubmitEvent } from "react";
 import { ArrowLeft, ArrowLeftRight, Check } from "lucide-react";
 import KeeperLogo from "../../assets/keeper.svg?react";
 import { Heading2 } from "../ui/heading";
@@ -7,11 +7,12 @@ import { TextLink } from "../ui/text-link";
 import { Divider } from "../ui/divider";
 import { Button, ButtonText, LinkButton, ButtonIcon } from "../ui/button";
 
-type Provider = "google" | "outlook";
+type Provider = "google" | "outlook" | "microsoft-365";
 
 const PROVIDER_LABELS: Record<Provider, string> = {
   google: "Google",
   outlook: "Outlook",
+  "microsoft-365": "Microsoft 365",
 };
 
 const PERMISSIONS = [
@@ -33,7 +34,15 @@ export function OAuthPreamble({ provider, backHref }: OAuthPreambleProps) {
 
   return (
     <>
-      <IconPair provider={provider} />
+      <ProviderIconPair>
+        <img
+          src={`/integrations/icon-${provider}.svg`}
+          alt={PROVIDER_LABELS[provider]}
+          width={40}
+          height={40}
+          className="size-full rounded-lg p-3"
+        />
+      </ProviderIconPair>
       <Heading2 as="h1">Connect {PROVIDER_LABELS[provider]}</Heading2>
       <Text size="sm" tone="muted" align="left">
         Start importing your events and sync them across all your calendars.
@@ -66,7 +75,7 @@ export function OAuthPreamble({ provider, backHref }: OAuthPreambleProps) {
   );
 }
 
-function IconPair({ provider }: { provider: Provider }) {
+export function ProviderIconPair({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center justify-center gap-4 pb-4">
       <div className="size-14 rounded-xl border border-interactive-border shadow-xs p-3 flex items-center justify-center bg-background-inverse">
@@ -74,13 +83,7 @@ function IconPair({ provider }: { provider: Provider }) {
       </div>
       <ArrowLeftRight size={20} className="text-foreground-muted" />
       <div className="size-14 rounded-xl border border-interactive-border shadow-xs p-1 flex items-center justify-center">
-        <img
-          src={`/integrations/icon-${provider}.svg`}
-          alt={PROVIDER_LABELS[provider]}
-          width={40}
-          height={40}
-          className="size-full rounded-lg p-3"
-        />
+        {children}
       </div>
     </div>
   );
