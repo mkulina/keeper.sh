@@ -1,8 +1,9 @@
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { createContext, use } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { tv, type VariantProps } from "tailwind-variants";
+import { cn } from "tailwind-variants/lite";
 import { Text } from "./text";
 
 const navigationMenu = tv({
@@ -46,6 +47,83 @@ const navigationMenuItemIcon = tv({
   },
   defaultVariants: {
     variant: "default",
+  },
+});
+
+const navigationMenuCheckbox = tv({
+  base: "size-4 rounded shrink-0 flex items-center justify-center border",
+  variants: {
+    variant: {
+      default: "border-interactive-border",
+      highlight: "border-foreground-inverse-muted",
+    },
+    checked: {
+      true: "",
+      false: "",
+    },
+  },
+  compoundVariants: [
+    { variant: "default", checked: true, className: "bg-foreground border-foreground" },
+    { variant: "highlight", checked: true, className: "bg-foreground-inverse border-foreground-inverse" },
+  ],
+  defaultVariants: {
+    variant: "default",
+    checked: false,
+  },
+});
+
+const navigationMenuCheckboxIcon = tv({
+  base: "shrink-0",
+  variants: {
+    variant: {
+      default: "text-foreground-inverse",
+      highlight: "text-foreground",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
+
+const navigationMenuToggleTrack = tv({
+  base: "w-8 h-5 rounded-full shrink-0 flex items-center p-0.5",
+  variants: {
+    variant: {
+      default: "",
+      highlight: "",
+    },
+    checked: {
+      true: "",
+      false: "",
+    },
+  },
+  compoundVariants: [
+    { variant: "default", checked: false, className: "bg-interactive-border" },
+    { variant: "default", checked: true, className: "bg-foreground" },
+    { variant: "highlight", checked: false, className: "bg-foreground-inverse-muted" },
+    { variant: "highlight", checked: true, className: "bg-foreground-inverse" },
+  ],
+  defaultVariants: {
+    variant: "default",
+    checked: false,
+  },
+});
+
+const navigationMenuToggleThumb = tv({
+  base: "size-4 rounded-full",
+  variants: {
+    variant: {
+      default: "bg-background-elevated",
+      highlight: "bg-foreground",
+    },
+    checked: {
+      true: "ml-auto",
+      false: "",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+    checked: false,
   },
 });
 
@@ -117,7 +195,7 @@ export function NavigationMenuItemIcon({ children }: PropsWithChildren) {
   const variant = use(MenuVariantContext);
 
   return (
-    <div className={`flex items-center gap-2 ${navigationMenuItemIcon({ variant })}`}>
+    <div className={cn("flex items-center gap-2", navigationMenuItemIcon({ variant }))()}>
       {children}
     </div>
   );
@@ -136,7 +214,65 @@ export function NavigationMenuItemTrailing({ children }: PropsWithChildren) {
   return (
     <div className="flex items-center gap-2">
       {children}
-      {isLink && <ArrowRight className={`shrink-0 ${navigationMenuItemIcon({ variant })}`} size={15} />}
+      {isLink && <ArrowRight className={cn("shrink-0", navigationMenuItemIcon({ variant }))()} size={15} />}
     </div>
+  );
+}
+
+type NavigationMenuToggleableItemProps = PropsWithChildren<{
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  className?: string;
+}>;
+
+export function NavigationMenuCheckboxItem({
+  checked,
+  onCheckedChange,
+  className,
+  children,
+}: NavigationMenuToggleableItemProps) {
+  const variant = use(MenuVariantContext);
+
+  return (
+    <li>
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={checked}
+        onClick={() => onCheckedChange(!checked)}
+        className={navigationMenuItem({ variant, className })}
+      >
+        {children}
+        <div className={navigationMenuCheckbox({ variant, checked })}>
+          {checked && <Check size={12} className={navigationMenuCheckboxIcon({ variant })} />}
+        </div>
+      </button>
+    </li>
+  );
+}
+
+export function NavigationMenuToggleItem({
+  checked,
+  onCheckedChange,
+  className,
+  children,
+}: NavigationMenuToggleableItemProps) {
+  const variant = use(MenuVariantContext);
+
+  return (
+    <li>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onCheckedChange(!checked)}
+        className={navigationMenuItem({ variant, className })}
+      >
+        {children}
+        <div className={navigationMenuToggleTrack({ variant, checked })}>
+          <div className={navigationMenuToggleThumb({ variant, checked })} />
+        </div>
+      </button>
+    </li>
   );
 }

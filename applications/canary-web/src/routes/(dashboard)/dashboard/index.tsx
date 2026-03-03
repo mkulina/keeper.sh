@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Calendar, CalendarDays, Settings, Sparkles, LogOut } from "lucide-react";
+import { Link2, Calendar, CalendarDays, Settings, Sparkles, LogOut, Bell, Eye } from "lucide-react";
 import KeeperLogo from "../../../assets/keeper.svg?react";
 import {
   NavigationMenu,
@@ -7,6 +8,8 @@ import {
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
   NavigationMenuItemTrailing,
+  NavigationMenuCheckboxItem,
+  NavigationMenuToggleItem,
 } from "../../../components/ui/navigation-menu";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/")({
@@ -15,11 +18,20 @@ export const Route = createFileRoute("/(dashboard)/dashboard/")({
 
 function RouteComponent() {
   const handleLogout = () => {};
+  const [notifications, setNotifications] = useState(true);
+  const [publicProfile, setPublicProfile] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <NavigationMenu>
+          <NavigationMenuItem to="/dashboard/connect">
+            <NavigationMenuItemIcon>
+              <Link2 size={15} />
+              <NavigationMenuItemLabel>Link Calendar Account</NavigationMenuItemLabel>
+            </NavigationMenuItemIcon>
+            <NavigationMenuItemTrailing />
+          </NavigationMenuItem>
           <NavigationMenuItem to="/dashboard/calendars">
             <NavigationMenuItemIcon>
               <Calendar size={15} />
@@ -34,13 +46,20 @@ function RouteComponent() {
             </NavigationMenuItemIcon>
             <NavigationMenuItemTrailing />
           </NavigationMenuItem>
-          <NavigationMenuItem to="/dashboard/settings">
+        </NavigationMenu>
+        <NavigationMenu>
+          <NavigationMenuToggleItem checked={notifications} onCheckedChange={setNotifications}>
             <NavigationMenuItemIcon>
-              <Settings size={15} />
-              <NavigationMenuItemLabel>Account Settings</NavigationMenuItemLabel>
+              <Bell size={15} />
+              <NavigationMenuItemLabel>Notifications</NavigationMenuItemLabel>
             </NavigationMenuItemIcon>
-            <NavigationMenuItemTrailing />
-          </NavigationMenuItem>
+          </NavigationMenuToggleItem>
+          <NavigationMenuCheckboxItem checked={publicProfile} onCheckedChange={setPublicProfile}>
+            <NavigationMenuItemIcon>
+              <Eye size={15} />
+              <NavigationMenuItemLabel>Public Profile</NavigationMenuItemLabel>
+            </NavigationMenuItemIcon>
+          </NavigationMenuCheckboxItem>
         </NavigationMenu>
         <NavigationMenu variant="highlight">
           <NavigationMenuItem to="/dashboard/upgrade">
@@ -52,6 +71,13 @@ function RouteComponent() {
           </NavigationMenuItem>
         </NavigationMenu>
         <NavigationMenu>
+          <NavigationMenuItem to="/dashboard/settings">
+            <NavigationMenuItemIcon>
+              <Settings size={15} />
+              <NavigationMenuItemLabel>Settings</NavigationMenuItemLabel>
+            </NavigationMenuItemIcon>
+            <NavigationMenuItemTrailing />
+          </NavigationMenuItem>
           <NavigationMenuItem onClick={handleLogout}>
             <NavigationMenuItemIcon>
               <LogOut size={15} />

@@ -13,14 +13,14 @@ export function Layout({ children }: PropsWithChildren) {
 
 export function LayoutItem({ children }: PropsWithChildren) {
   return (
-    <div className="contents *:col-[2_/_span_1]">{children}</div>
+    <div className="contents *:col-[2/span_1]">{children}</div>
   )
 }
 
 export function LayoutRow({ children, className }: PropsWithChildren<{ className?: string }>) {
   return (
     <div className={cn(GRID_COLS, className)()}>
-      <div className="col-[2_/_span_1]">{children}</div>
+      <div className="col-[2/span_1]">{children}</div>
     </div>
   )
 }
