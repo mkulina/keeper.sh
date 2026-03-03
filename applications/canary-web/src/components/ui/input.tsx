@@ -2,7 +2,7 @@ import type { ComponentPropsWithoutRef } from "react";
 import { tv, type VariantProps } from "tailwind-variants";
 
 const input = tv({
-  base: "w-full rounded-xl border border-interactive-border bg-background px-4 py-2.5 text-foreground tracking-tight outline-none placeholder:text-foreground-muted disabled:opacity-50 disabled:cursor-not-allowed",
+  base: "w-full rounded-xl border border-interactive-border bg-background px-4 py-2.5 text-foreground tracking-tight placeholder:text-foreground-muted disabled:opacity-50 disabled:cursor-not-allowed",
   variants: {
     tone: {
       neutral: "",
