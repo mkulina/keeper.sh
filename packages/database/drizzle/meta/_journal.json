@@ -281,6 +281,13 @@
       "when": 1772606278747,
       "tag": "0039_fat_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1772607203052,
+      "tag": "0040_sparkling_toad",
+      "breakpoints": true
     }
   ]
 }
