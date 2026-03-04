@@ -1,15 +1,27 @@
+import { useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import useSWR from "swr";
-import { Plus, RefreshCw } from "lucide-react";
+import useSWR, { useSWRConfig } from "swr";
+import { LoaderCircle, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { BackButton } from "../../../../components/ui/back-button";
+import { Button, ButtonText } from "../../../../components/ui/button";
+import { ProviderIcon } from "../../../../components/ui/provider-icon";
+import { Text } from "../../../../components/ui/text";
 import {
   NavigationMenu,
+  NavigationMenuCheckboxItem,
+  NavigationMenuEditableItem,
   NavigationMenuEmptyItem,
-  NavigationMenuItem,
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
-  NavigationMenuItemTrailing,
+  NavigationMenuItem,
 } from "../../../../components/ui/navigation-menu";
+import {
+  Modal,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalTitle,
+} from "../../../../components/ui/modal";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/calendars/")({
   component: RouteComponent,
@@ -23,6 +35,14 @@ interface SyncProfile {
   createdAt: string;
 }
 
+interface CalendarEntry {
+  id: string;
+  name: string;
+  calendarType: string;
+  capabilities: string[];
+  provider?: string;
+}
+
 const fetcher = async <T,>(url: string): Promise<T> => {
   const response = await fetch(url, { credentials: "include" });
   if (!response.ok) throw new Error("Failed to fetch");
@@ -30,47 +50,412 @@ const fetcher = async <T,>(url: string): Promise<T> => {
 };
 
 function RouteComponent() {
-  const { data: profiles, mutate } = useSWR<SyncProfile[]>("/api/profiles", fetcher);
+  const { mutate: globalMutate } = useSWRConfig();
+  const { data: profiles, isLoading, mutate: mutateProfiles } = useSWR<SyncProfile[]>(
+    "/api/profiles",
+    fetcher,
+  );
+  const { data: calendars } = useSWR<CalendarEntry[]>("/api/sources", fetcher);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [newProfileName, setNewProfileName] = useState("New Profile");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const handleCreate = async () => {
-    const response = await fetch("/api/profiles", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "New Profile" }),
-    });
+  if (isLoading || !profiles) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <BackButton />
+        <div className="flex justify-center py-6">
+          <LoaderCircle size={20} className="animate-spin text-foreground-muted" />
+        </div>
+      </div>
+    );
+  }
 
-    if (response.ok) {
-      await mutate();
+  const isNewSlot = currentIndex >= profiles.length;
+  const profile = isNewSlot ? null : profiles[currentIndex];
+  const totalSlots = profiles.length + 1;
+
+  const canGoLeft = currentIndex > 0;
+  const canGoRight = currentIndex < totalSlots - 1;
+
+  const profileName = isNewSlot ? newProfileName : profile?.name ?? "";
+
+  const handleNameCommit = async (name: string) => {
+    if (isNewSlot) {
+      setNewProfileName(name);
+      await fetch("/api/profiles", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      await mutateProfiles();
+      setNewProfileName("New Profile");
+      return;
     }
+    if (!profile) return;
+    const updated = profiles.map((p) => (p.id === profile.id ? { ...p, name } : p));
+    await mutateProfiles(
+      async () => {
+        await fetch(`/api/profiles/${profile.id}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        return updated;
+      },
+      {
+        optimisticData: updated,
+        rollbackOnError: true,
+        revalidate: false,
+      },
+    );
   };
 
   return (
     <div className="flex flex-col gap-1.5">
       <BackButton />
+      <div className="flex items-center gap-1">
+        <Button
+          variant="elevated"
+          size="compact"
+          className="aspect-square"
+          onClick={() => setCurrentIndex(currentIndex - 1)}
+          disabled={!canGoLeft}
+        >
+          <ChevronLeft size={16} />
+        </Button>
+        <NavigationMenu className="flex-1 min-w-0">
+          <NavigationMenuEditableItem
+            key={isNewSlot ? "__new__" : profile?.id}
+            value={profileName}
+            onCommit={handleNameCommit}
+          />
+        </NavigationMenu>
+        <Button
+          variant="elevated"
+          size="compact"
+          className="aspect-square"
+          onClick={() => setCurrentIndex(currentIndex + 1)}
+          disabled={!canGoRight}
+        >
+          <ChevronRight size={16} />
+        </Button>
+      </div>
+      {isNewSlot ? (
+        <NewProfileSlot
+          name={newProfileName}
+          calendars={calendars ?? []}
+          onProfileCreated={() => mutateProfiles()}
+        />
+      ) : profile ? (
+        <ProfileDetail
+          profile={profile}
+          profiles={profiles}
+          calendars={calendars ?? []}
+          mutateProfiles={mutateProfiles}
+          onDelete={profiles.length > 1 ? () => setDeleteOpen(true) : undefined}
+        />
+      ) : null}
+      {profile && (
+        <DeleteConfirmation
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          deleting={deleting}
+          onConfirm={async () => {
+            setDeleting(true);
+            const response = await fetch(`/api/profiles/${profile.id}`, {
+              credentials: "include",
+              method: "DELETE",
+            });
+            setDeleting(false);
+            if (response.ok) {
+              await mutateProfiles();
+              globalMutate("/api/profiles");
+              const newLength = profiles.length - 1;
+              if (currentIndex >= newLength) {
+                setCurrentIndex(Math.max(0, newLength - 1));
+              }
+              setDeleteOpen(false);
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+interface NewProfileSlotProps {
+  name: string;
+  calendars: CalendarEntry[];
+  onProfileCreated: () => void;
+}
+
+function NewProfileSlot({ name, calendars, onProfileCreated }: NewProfileSlotProps) {
+  const [sources, setSources] = useState<Set<string>>(new Set());
+  const [destinations, setDestinations] = useState<Set<string>>(new Set());
+  const profileIdRef = useRef<string | null>(null);
+  const creatingRef = useRef<Promise<string> | null>(null);
+  const nameRef = useRef(name);
+  nameRef.current = name;
+
+  const pullCalendars = calendars.filter((calendar) => calendar.capabilities.includes("pull"));
+  const pushCalendars = calendars.filter((calendar) => calendar.capabilities.includes("push"));
+
+  const ensureProfile = async (): Promise<string> => {
+    if (profileIdRef.current) return profileIdRef.current;
+    if (creatingRef.current) return creatingRef.current;
+
+    creatingRef.current = fetch("/api/profiles", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: nameRef.current }),
+    })
+      .then((response) => response.json())
+      .then(({ id }) => {
+        profileIdRef.current = id;
+        return id as string;
+      });
+
+    return creatingRef.current;
+  };
+
+  const toggleSource = async (calendarId: string, checked: boolean) => {
+    const next = new Set(sources);
+    if (checked) {
+      next.add(calendarId);
+    } else {
+      next.delete(calendarId);
+    }
+    setSources(next);
+
+    const profileId = await ensureProfile();
+    await fetch(`/api/profiles/${profileId}/sources`, {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ calendarIds: [...next] }),
+    });
+    onProfileCreated();
+  };
+
+  const toggleDestination = async (calendarId: string, checked: boolean) => {
+    const next = new Set(destinations);
+    if (checked) {
+      next.add(calendarId);
+    } else {
+      next.delete(calendarId);
+    }
+    setDestinations(next);
+
+    const profileId = await ensureProfile();
+    await fetch(`/api/profiles/${profileId}/destinations`, {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ calendarIds: [...next] }),
+    });
+    onProfileCreated();
+  };
+
+  return (
+    <>
       <NavigationMenu>
-        {(profiles ?? []).length === 0 ? (
-          <NavigationMenuEmptyItem>No sync profiles</NavigationMenuEmptyItem>
+        {pullCalendars.length === 0 ? (
+          <NavigationMenuEmptyItem>No source calendars</NavigationMenuEmptyItem>
         ) : (
-          (profiles ?? []).map((profile) => (
-            <NavigationMenuItem key={profile.id} to={`/dashboard/calendars/${profile.id}`}>
+          pullCalendars.map((calendar) => (
+            <NavigationMenuCheckboxItem
+              key={calendar.id}
+              checked={sources.has(calendar.id)}
+              onCheckedChange={(checked) => toggleSource(calendar.id, checked)}
+            >
               <NavigationMenuItemIcon>
-                <RefreshCw size={15} />
-                <NavigationMenuItemLabel>{profile.name}</NavigationMenuItemLabel>
+                <ProviderIcon provider={calendar.provider ?? calendar.calendarType} calendarType={calendar.calendarType} />
+                <NavigationMenuItemLabel>{calendar.name}</NavigationMenuItemLabel>
               </NavigationMenuItemIcon>
-              <NavigationMenuItemTrailing />
-            </NavigationMenuItem>
+            </NavigationMenuCheckboxItem>
           ))
         )}
       </NavigationMenu>
+      <div className="self-center py-2">
+        <ArrowDown size={16} className="text-foreground-muted" />
+      </div>
       <NavigationMenu>
-        <NavigationMenuItem onClick={handleCreate}>
-          <NavigationMenuItemIcon>
-            <Plus size={15} />
-            <NavigationMenuItemLabel>Create Sync Profile</NavigationMenuItemLabel>
-          </NavigationMenuItemIcon>
-        </NavigationMenuItem>
+        {pushCalendars.length === 0 ? (
+          <NavigationMenuEmptyItem>No destination calendars</NavigationMenuEmptyItem>
+        ) : (
+          pushCalendars.map((calendar) => (
+            <NavigationMenuCheckboxItem
+              key={calendar.id}
+              checked={destinations.has(calendar.id)}
+              onCheckedChange={(checked) => toggleDestination(calendar.id, checked)}
+            >
+              <NavigationMenuItemIcon>
+                <ProviderIcon provider={calendar.provider ?? calendar.calendarType} calendarType={calendar.calendarType} />
+                <NavigationMenuItemLabel>{calendar.name}</NavigationMenuItemLabel>
+              </NavigationMenuItemIcon>
+            </NavigationMenuCheckboxItem>
+          ))
+        )}
       </NavigationMenu>
-    </div>
+    </>
+  );
+}
+
+interface ProfileDetailProps {
+  profile: SyncProfile;
+  profiles: SyncProfile[];
+  calendars: CalendarEntry[];
+  mutateProfiles: (
+    data?: SyncProfile[] | Promise<SyncProfile[] | undefined> | ((current?: SyncProfile[]) => Promise<SyncProfile[] | undefined>),
+    opts?: { optimisticData?: SyncProfile[]; rollbackOnError?: boolean; revalidate?: boolean },
+  ) => Promise<SyncProfile[] | undefined>;
+  onDelete?: () => void;
+}
+
+function ProfileDetail({ profile, profiles, calendars, mutateProfiles, onDelete }: ProfileDetailProps) {
+  const pullCalendars = calendars.filter((calendar) => calendar.capabilities.includes("pull"));
+  const pushCalendars = calendars.filter((calendar) => calendar.capabilities.includes("push"));
+
+  const sourceSet = new Set(profile.sources);
+  const destinationSet = new Set(profile.destinations);
+
+  const replaceProfile = (updated: SyncProfile) =>
+    profiles.map((p) => (p.id === profile.id ? updated : p));
+
+  const updateProfile = async (
+    updatedProfile: SyncProfile,
+    apiCall: () => Promise<void>,
+  ) => {
+    const updated = replaceProfile(updatedProfile);
+    await mutateProfiles(
+      async () => {
+        await apiCall();
+        return updated;
+      },
+      {
+        optimisticData: updated,
+        rollbackOnError: true,
+        revalidate: false,
+      },
+    );
+  };
+
+  const toggleSource = async (calendarId: string, checked: boolean) => {
+    const updatedSources = checked
+      ? [...profile.sources, calendarId]
+      : profile.sources.filter((id) => id !== calendarId);
+
+    await updateProfile(
+      { ...profile, sources: updatedSources },
+      () => fetch(`/api/profiles/${profile.id}/sources`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ calendarIds: updatedSources }),
+      }).then(() => {}),
+    );
+  };
+
+  const toggleDestination = async (calendarId: string, checked: boolean) => {
+    const updatedDestinations = checked
+      ? [...profile.destinations, calendarId]
+      : profile.destinations.filter((id) => id !== calendarId);
+
+    await updateProfile(
+      { ...profile, destinations: updatedDestinations },
+      () => fetch(`/api/profiles/${profile.id}/destinations`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ calendarIds: updatedDestinations }),
+      }).then(() => {}),
+    );
+  };
+
+  return (
+    <>
+      <NavigationMenu>
+        {pullCalendars.length === 0 ? (
+          <NavigationMenuEmptyItem>No source calendars</NavigationMenuEmptyItem>
+        ) : (
+          pullCalendars.map((calendar) => (
+            <NavigationMenuCheckboxItem
+              key={calendar.id}
+              checked={sourceSet.has(calendar.id)}
+              onCheckedChange={(checked) => toggleSource(calendar.id, checked)}
+            >
+              <NavigationMenuItemIcon>
+                <ProviderIcon provider={calendar.provider ?? calendar.calendarType} calendarType={calendar.calendarType} />
+                <NavigationMenuItemLabel>{calendar.name}</NavigationMenuItemLabel>
+              </NavigationMenuItemIcon>
+            </NavigationMenuCheckboxItem>
+          ))
+        )}
+      </NavigationMenu>
+      <div className="self-center py-2">
+        <ArrowDown size={16} className="text-foreground-muted" />
+      </div>
+      <NavigationMenu>
+        {pushCalendars.length === 0 ? (
+          <NavigationMenuEmptyItem>No destination calendars</NavigationMenuEmptyItem>
+        ) : (
+          pushCalendars.map((calendar) => (
+            <NavigationMenuCheckboxItem
+              key={calendar.id}
+              checked={destinationSet.has(calendar.id)}
+              onCheckedChange={(checked) => toggleDestination(calendar.id, checked)}
+            >
+              <NavigationMenuItemIcon>
+                <ProviderIcon provider={calendar.provider ?? calendar.calendarType} calendarType={calendar.calendarType} />
+                <NavigationMenuItemLabel>{calendar.name}</NavigationMenuItemLabel>
+              </NavigationMenuItemIcon>
+            </NavigationMenuCheckboxItem>
+          ))
+        )}
+      </NavigationMenu>
+      {onDelete && (
+        <NavigationMenu>
+          <NavigationMenuItem onClick={onDelete}>
+            <NavigationMenuItemIcon>
+              <Text size="sm" tone="danger">Delete Profile</Text>
+            </NavigationMenuItemIcon>
+          </NavigationMenuItem>
+        </NavigationMenu>
+      )}
+    </>
+  );
+}
+
+interface DeleteConfirmationProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  deleting: boolean;
+  onConfirm: () => void;
+}
+
+function DeleteConfirmation({ open, onOpenChange, deleting, onConfirm }: DeleteConfirmationProps) {
+  return (
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent>
+        <ModalTitle>Delete sync profile?</ModalTitle>
+        <ModalDescription>
+          This will remove the profile and all its sync mappings. Your calendars will not be deleted.
+        </ModalDescription>
+        <ModalFooter>
+          <Button variant="destructive" className="w-full justify-center" onClick={onConfirm} disabled={deleting}>
+            {deleting && <LoaderCircle size={16} className="animate-spin" />}
+            <ButtonText>{deleting ? "Deleting..." : "Delete"}</ButtonText>
+          </Button>
+          <Button variant="elevated" className="w-full justify-center" onClick={() => onOpenChange(false)}>
+            <ButtonText>Cancel</ButtonText>
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }

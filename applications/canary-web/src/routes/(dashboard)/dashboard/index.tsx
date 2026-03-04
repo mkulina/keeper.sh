@@ -16,20 +16,21 @@ import {
   NavigationMenuToggleItem,
 } from "../../../components/ui/navigation-menu";
 import { Text } from "../../../components/ui/text";
+import { getAccountLabel } from "../../../utils/accounts";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/")({
   component: RouteComponent,
 });
 
-interface CalendarAccount {
+interface CalendarSource {
   id: string;
+  name: string;
+  calendarType: string;
+  capabilities: string[];
+  accountId: string;
   provider: string;
   displayName: string | null;
   email: string | null;
-  authType: string;
-  needsReauthentication: boolean;
-  calendarCount: number;
-  createdAt: string;
 }
 
 const fetcher = async <T,>(url: string): Promise<T> => {
@@ -46,9 +47,8 @@ function RouteComponent() {
   };
   const [notifications, setNotifications] = useState(true);
   const [publicProfile, setPublicProfile] = useState(false);
-  const { data: accountsData } = useSWR<CalendarAccount[]>("/api/accounts", fetcher);
-  const accounts = accountsData ?? [];
-  const hasCalendars = accounts.some((account) => account.calendarCount > 0);
+  const { data: calendarsData } = useSWR<CalendarSource[]>("/api/sources", fetcher);
+  const calendars = calendarsData ?? [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -63,23 +63,30 @@ function RouteComponent() {
             <NavigationMenuItemTrailing />
           </NavigationMenuItem>
         </NavigationMenu>
-        {accounts.length > 0 && (
+        <NavigationMenu>
+          {calendars.map((calendar) => (
+            <NavigationMenuItem key={calendar.id} to={`/dashboard/accounts/${calendar.accountId}/${calendar.id}`}>
+              <div className="flex items-center gap-2 shrink-0">
+                <ProviderIcon provider={calendar.provider} calendarType={calendar.calendarType} />
+                <Text size="sm" tone="muted">{calendar.name}</Text>
+              </div>
+              <div className="min-w-0">
+                <Text size="sm" tone="muted" className="truncate">
+                  {getAccountLabel(calendar)}
+                </Text>
+              </div>
+            </NavigationMenuItem>
+          ))}
+        </NavigationMenu>
+        {calendars.length > 0 && (
           <NavigationMenu>
-            {accounts.map((account) => (
-                <NavigationMenuItem key={account.id} to={`/dashboard/accounts/${account.id}`}>
-                  <NavigationMenuItemIcon>
-                    <ProviderIcon provider={account.provider} />
-                    <NavigationMenuItemLabel>{account.displayName ?? account.email ?? account.provider}</NavigationMenuItemLabel>
-                  </NavigationMenuItemIcon>
-                  <NavigationMenuItemTrailing>
-                    <div className="pl-2">
-                      <Text size="sm" tone="muted" className="whitespace-nowrap">
-                        {account.calendarCount} {account.calendarCount === 1 ? "calendar" : "calendars"}
-                      </Text>
-                    </div>
-                  </NavigationMenuItemTrailing>
-                </NavigationMenuItem>
-            ))}
+            <NavigationMenuItem to="/dashboard/calendars">
+              <NavigationMenuItemIcon>
+                <CalendarSync size={15} />
+                <NavigationMenuItemLabel>Sync Settings</NavigationMenuItemLabel>
+              </NavigationMenuItemIcon>
+              <NavigationMenuItemTrailing />
+            </NavigationMenuItem>
           </NavigationMenu>
         )}
         <NavigationMenu>
@@ -90,15 +97,6 @@ function RouteComponent() {
             </NavigationMenuItemIcon>
             <NavigationMenuItemTrailing />
           </NavigationMenuItem>
-          {hasCalendars && (
-            <NavigationMenuItem to="/dashboard/calendars">
-              <NavigationMenuItemIcon>
-                <CalendarSync size={15} />
-                <NavigationMenuItemLabel>Calendar Syncing</NavigationMenuItemLabel>
-              </NavigationMenuItemIcon>
-              <NavigationMenuItemTrailing />
-            </NavigationMenuItem>
-          )}
         </NavigationMenu>
         <NavigationMenu>
           <NavigationMenuToggleItem checked={notifications} onCheckedChange={setNotifications}>

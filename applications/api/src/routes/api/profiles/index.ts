@@ -1,9 +1,10 @@
 import { withAuth, withWideEvent } from "../../../utils/middleware";
 import { ErrorResponse } from "../../../utils/responses";
-import { getUserProfiles, createProfile } from "../../../utils/sync-profiles";
+import { ensureDefaultProfile, getUserProfiles, createProfile } from "../../../utils/sync-profiles";
 
 export const GET = withWideEvent(
   withAuth(async ({ userId }) => {
+    await ensureDefaultProfile(userId);
     const profiles = await getUserProfiles(userId);
     return Response.json(profiles);
   }),

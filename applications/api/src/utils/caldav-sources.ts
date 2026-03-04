@@ -142,40 +142,69 @@ const createCalDAVSource = async (
     throw new Error("Encryption key not configured");
   }
 
-  const encryptedPassword = encryptPassword(data.password, encryptionKey);
-
-  const [credential] = await database
-    .insert(caldavCredentialsTable)
-    .values({
-      encryptedPassword,
-      serverUrl: data.serverUrl,
-      username: data.username,
+  // Reuse existing account for same user/provider/server, or create new one
+  const [existingAccount] = await database
+    .select({
+      id: calendarAccountsTable.id,
+      caldavCredentialId: calendarAccountsTable.caldavCredentialId,
     })
-    .returning({ id: caldavCredentialsTable.id });
+    .from(calendarAccountsTable)
+    .innerJoin(
+      caldavCredentialsTable,
+      eq(calendarAccountsTable.caldavCredentialId, caldavCredentialsTable.id),
+    )
+    .where(
+      and(
+        eq(calendarAccountsTable.userId, userId),
+        eq(calendarAccountsTable.provider, data.provider),
+        eq(caldavCredentialsTable.serverUrl, data.serverUrl),
+        eq(caldavCredentialsTable.username, data.username),
+      ),
+    )
+    .limit(1);
 
-  if (!credential) {
-    throw new Error("Failed to create CalDAV source credential");
-  }
+  let accountId: string;
 
-  const [account] = await database
-    .insert(calendarAccountsTable)
-    .values({
-      authType: "caldav",
-      caldavCredentialId: credential.id,
-      displayName: data.serverUrl,
-      provider: data.provider,
-      userId,
-    })
-    .returning({ id: calendarAccountsTable.id });
+  if (existingAccount) {
+    accountId = existingAccount.id;
+  } else {
+    const encryptedPassword = encryptPassword(data.password, encryptionKey);
 
-  if (!account) {
-    throw new Error("Failed to create calendar account");
+    const [credential] = await database
+      .insert(caldavCredentialsTable)
+      .values({
+        encryptedPassword,
+        serverUrl: data.serverUrl,
+        username: data.username,
+      })
+      .returning({ id: caldavCredentialsTable.id });
+
+    if (!credential) {
+      throw new Error("Failed to create CalDAV source credential");
+    }
+
+    const [account] = await database
+      .insert(calendarAccountsTable)
+      .values({
+        authType: "caldav",
+        caldavCredentialId: credential.id,
+        displayName: data.username,
+        provider: data.provider,
+        userId,
+      })
+      .returning({ id: calendarAccountsTable.id });
+
+    if (!account) {
+      throw new Error("Failed to create calendar account");
+    }
+
+    accountId = account.id;
   }
 
   const [source] = await database
     .insert(calendarsTable)
     .values({
-      accountId: account.id,
+      accountId,
       calendarType: CALDAV_CALENDAR_TYPE,
       capabilities: ["pull", "push"],
       calendarUrl: data.calendarUrl,

@@ -239,6 +239,30 @@ const syncProfilesTable = pgTable(
   ],
 );
 
+// --- Profile calendar memberships ---
+
+const profileCalendarsTable = pgTable(
+  "profile_calendars",
+  {
+    calendarId: uuid()
+      .notNull()
+      .references(() => calendarsTable.id, { onDelete: "cascade" }),
+    id: uuid().notNull().primaryKey().defaultRandom(),
+    profileId: uuid()
+      .notNull()
+      .references(() => syncProfilesTable.id, { onDelete: "cascade" }),
+    role: text().notNull(), // "source" | "destination"
+  },
+  (table) => [
+    uniqueIndex("profile_calendars_unique_idx").on(
+      table.profileId,
+      table.calendarId,
+      table.role,
+    ),
+    index("profile_calendars_profile_idx").on(table.profileId),
+  ],
+);
+
 // --- Source-destination calendar mappings ---
 
 const sourceDestinationMappingsTable = pgTable(
@@ -276,6 +300,7 @@ export {
   eventMappingsTable,
   eventStatesTable,
   oauthCredentialsTable,
+  profileCalendarsTable,
   sourceDestinationMappingsTable,
   syncProfilesTable,
   syncStatusTable,

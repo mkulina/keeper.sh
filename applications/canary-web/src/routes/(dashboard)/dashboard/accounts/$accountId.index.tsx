@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useSWR, { useSWRConfig } from "swr";
-import { LoaderCircle } from "lucide-react";
+import { Calendar, LoaderCircle } from "lucide-react";
 import { BackButton } from "../../../../components/ui/back-button";
 import { Button, ButtonText } from "../../../../components/ui/button";
-import { ProviderIcon } from "../../../../components/ui/provider-icon";
 import { Text } from "../../../../components/ui/text";
+import { getAccountLabel } from "../../../../utils/accounts";
 import {
   NavigationMenu,
   NavigationMenuEmptyItem,
@@ -56,12 +56,6 @@ const fetcher = async <T,>(url: string): Promise<T> => {
   return response.json();
 };
 
-function formatAuthType(authType: string): string {
-  if (authType === "oauth") return "OAuth";
-  if (authType === "caldav") return "CalDAV";
-  return "ICS Feed";
-}
-
 function RouteComponent() {
   const { accountId } = Route.useParams();
   const navigate = useNavigate();
@@ -107,7 +101,7 @@ function RouteComponent() {
           calendars.map((calendar) => (
             <NavigationMenuItem key={calendar.id} to={`/dashboard/accounts/${accountId}/${calendar.id}`}>
               <NavigationMenuItemIcon>
-                <ProviderIcon provider={calendar.provider} calendarType={calendar.calendarType} />
+                <Calendar size={15} />
                 <NavigationMenuItemLabel>
                   {calendar.name}
                 </NavigationMenuItemLabel>
@@ -118,21 +112,31 @@ function RouteComponent() {
         )}
       </NavigationMenu>
       <NavigationMenu>
-        {(account.displayName ?? account.email) && (
-          <NavigationMenuItem>
-            <Text size="sm" tone="muted" className="shrink-0">Identifier</Text>
-            <div className="min-w-0">
-              <Text size="sm" tone="muted" className="truncate">{account.displayName ?? account.email}</Text>
-            </div>
-          </NavigationMenuItem>
-        )}
+        <NavigationMenuItem>
+          <Text size="sm" tone="muted" className="shrink-0">Resource Type</Text>
+          <div className="min-w-0">
+            <Text size="sm" tone="muted" className="truncate">Account</Text>
+          </div>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <Text size="sm" tone="muted" className="shrink-0">Calendar Count</Text>
+          <div className="min-w-0">
+            <Text size="sm" tone="muted" className="truncate">{calendars.length}</Text>
+          </div>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <Text size="sm" tone="muted" className="shrink-0">Identifier</Text>
+          <div className="min-w-0">
+            <Text size="sm" tone="muted" className="truncate">{getAccountLabel(account)}</Text>
+          </div>
+        </NavigationMenuItem>
         <NavigationMenuItem>
           <Text size="sm" tone="muted" className="shrink-0">Provider</Text>
           <Text size="sm" tone="muted">{account.provider}</Text>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Text size="sm" tone="muted" className="shrink-0">Auth Type</Text>
-          <Text size="sm" tone="muted">{formatAuthType(account.authType)}</Text>
+          <Text size="sm" tone="muted" className="shrink-0">Authenticated</Text>
+          <Text size="sm" tone="muted">{account.authType}</Text>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <Text size="sm" tone="muted" className="shrink-0">Connected</Text>

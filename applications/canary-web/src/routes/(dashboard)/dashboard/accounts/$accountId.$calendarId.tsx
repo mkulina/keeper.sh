@@ -3,6 +3,7 @@ import useSWR from "swr";
 import { LoaderCircle } from "lucide-react";
 import { BackButton } from "../../../../components/ui/back-button";
 import { Text } from "../../../../components/ui/text";
+import { getAccountLabel } from "../../../../utils/accounts";
 import {
   NavigationMenu,
   NavigationMenuEditableItem,
@@ -42,13 +43,6 @@ const fetcher = async <T,>(url: string): Promise<T> => {
   if (!response.ok) throw new Error("Failed to fetch");
   return response.json();
 };
-
-function formatCalendarType(type: string): string {
-  if (type === "ical") return "ICS Feed";
-  if (type === "oauth") return "OAuth";
-  if (type === "caldav") return "CalDAV";
-  return type;
-}
 
 function RouteComponent() {
   const { accountId, calendarId } = Route.useParams();
@@ -101,8 +95,12 @@ function RouteComponent() {
       </NavigationMenu>
       <NavigationMenu>
         <NavigationMenuItem>
+          <Text size="sm" tone="muted" className="shrink-0">Resource Type</Text>
+          <Text size="sm" tone="muted">Calendar</Text>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
           <Text size="sm" tone="muted" className="shrink-0">Type</Text>
-          <Text size="sm" tone="muted">{formatCalendarType(calendar.calendarType)}</Text>
+          <Text size="sm" tone="muted">{calendar.calendarType}</Text>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <Text size="sm" tone="muted" className="shrink-0">Capabilities</Text>
@@ -130,7 +128,9 @@ function RouteComponent() {
         </NavigationMenuItem>
         <NavigationMenuItem to={`/dashboard/accounts/${accountId}`}>
           <Text size="sm" tone="muted" className="shrink-0">Account</Text>
-          <Text size="sm" tone="muted">{account.displayName ?? account.email ?? account.provider}</Text>
+          <div className="min-w-0">
+            <Text size="sm" tone="muted" className="truncate">{getAccountLabel(account)}</Text>
+          </div>
         </NavigationMenuItem>
       </NavigationMenu>
     </div>

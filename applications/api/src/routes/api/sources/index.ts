@@ -13,6 +13,7 @@ const GET = withWideEvent(
         capabilities: calendarsTable.capabilities,
         accountId: calendarAccountsTable.id,
         provider: calendarAccountsTable.provider,
+        displayName: calendarAccountsTable.displayName,
         email: calendarAccountsTable.email,
         needsReauthentication: calendarAccountsTable.needsReauthentication,
       })

@@ -288,6 +288,13 @@
       "when": 1772607203052,
       "tag": "0040_sparkling_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1772611192679,
+      "tag": "0041_keen_black_panther",
+      "breakpoints": true
     }
   ]
 }
