@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import useSWR from "swr";
+import { motion } from "motion/react";
 import { tv } from "tailwind-variants/lite";
 import { eventGraphHoverIndexAtom } from "../../state/event-graph-hover";
 import { fetcher } from "../../lib/fetcher";
@@ -166,12 +167,14 @@ export function EventGraph() {
               className="flex items-end"
               style={{ height: GRAPH_HEIGHT }}
             >
-              <div
+              <motion.div
                 className={graphBar({
                   period: day.period,
                   className: "w-full",
                 })}
-                style={{ height: day.height }}
+                initial={{ height: MIN_BAR_HEIGHT }}
+                animate={{ height: day.height }}
+                transition={{ duration: 0.3, delay: dayIndex * 0.015, ease: [0.4, 0, 0.2, 1] }}
               />
             </div>
             <Text
