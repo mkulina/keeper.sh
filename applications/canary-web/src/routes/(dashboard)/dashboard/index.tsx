@@ -44,7 +44,7 @@ function DashboardPage() {
           <NavigationMenuItem to="/dashboard/connect">
             <NavigationMenuItemIcon>
               <CalendarPlus size={15} />
-              <NavigationMenuItemLabel>Link Calendar</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>Link Calendar Account</NavigationMenuItemLabel>
             </NavigationMenuItemIcon>
             <NavigationMenuItemTrailing />
           </NavigationMenuItem>
