@@ -29,26 +29,17 @@ export interface CalendarDetail {
   provider: string;
   url: string | null;
   calendarUrl: string | null;
-  excludeWorkingLocation: boolean;
+  excludeAllDayEvents: boolean;
+  excludeEventDescription: boolean;
+  excludeEventLocation: boolean;
+  excludeEventName: boolean;
   excludeFocusTime: boolean;
   excludeOutOfOffice: boolean;
+  excludeWorkingLocation: boolean;
+  destinationIds: string[];
+  sourceIds: string[];
   createdAt: string;
   updatedAt: string;
-}
-
-export interface SyncProfile {
-  id: string;
-  name: string;
-  sources: string[];
-  destinations: string[];
-  syncEvents: boolean;
-  syncFocusTime: boolean;
-  syncWorkingLocation: boolean;
-  syncOutOfOffice: boolean;
-  syncEventName: boolean;
-  syncEventDescription: boolean;
-  syncEventLocation: boolean;
-  createdAt: string;
 }
 
 export interface CalendarEntry {

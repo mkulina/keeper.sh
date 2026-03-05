@@ -6,6 +6,10 @@ import { database } from "../../../context";
 import { deleteSource as deleteIcsSource } from "../../../utils/sources";
 import { deleteOAuthSource } from "../../../utils/oauth-sources";
 import { deleteCalDAVSource } from "../../../utils/caldav-sources";
+import {
+  getDestinationsForSource,
+  getSourcesForDestination,
+} from "../../../utils/source-destination-mappings";
 
 export const GET = withWideEvent(
   withAuth(async ({ params, userId }) => {
@@ -24,9 +28,13 @@ export const GET = withWideEvent(
         provider: calendarAccountsTable.provider,
         url: calendarsTable.url,
         calendarUrl: calendarsTable.calendarUrl,
-        excludeWorkingLocation: calendarsTable.excludeWorkingLocation,
+        excludeAllDayEvents: calendarsTable.excludeAllDayEvents,
+        excludeEventDescription: calendarsTable.excludeEventDescription,
+        excludeEventLocation: calendarsTable.excludeEventLocation,
+        excludeEventName: calendarsTable.excludeEventName,
         excludeFocusTime: calendarsTable.excludeFocusTime,
         excludeOutOfOffice: calendarsTable.excludeOutOfOffice,
+        excludeWorkingLocation: calendarsTable.excludeWorkingLocation,
         createdAt: calendarsTable.createdAt,
         updatedAt: calendarsTable.updatedAt,
       })
@@ -44,7 +52,12 @@ export const GET = withWideEvent(
       return ErrorResponse.notFound().toResponse();
     }
 
-    return Response.json(source);
+    const [destinationIds, sourceIds] = await Promise.all([
+      getDestinationsForSource(id),
+      getSourcesForDestination(id),
+    ]);
+
+    return Response.json({ ...source, destinationIds, sourceIds });
   }),
 );
 
@@ -56,11 +69,32 @@ export const PATCH = withWideEvent(
       return ErrorResponse.badRequest("ID is required").toResponse();
     }
 
-    const body = (await request.json()) as { name?: string };
-    const { name } = body;
+    const body = (await request.json()) as {
+      name?: string;
+      excludeAllDayEvents?: boolean;
+      excludeEventDescription?: boolean;
+      excludeEventLocation?: boolean;
+      excludeEventName?: boolean;
+      excludeFocusTime?: boolean;
+      excludeOutOfOffice?: boolean;
+      excludeWorkingLocation?: boolean;
+    };
 
-    const updates: Record<string, string> = {};
-    if (name && typeof name === "string") updates.name = name;
+    const booleanFields = [
+      "excludeAllDayEvents",
+      "excludeEventDescription",
+      "excludeEventLocation",
+      "excludeEventName",
+      "excludeFocusTime",
+      "excludeOutOfOffice",
+      "excludeWorkingLocation",
+    ] as const;
+
+    const updates: Record<string, string | boolean> = {};
+    if (body.name && typeof body.name === "string") updates.name = body.name;
+    for (const field of booleanFields) {
+      if (typeof body[field] === "boolean") updates[field] = body[field];
+    }
 
     if (Object.keys(updates).length === 0) {
       return ErrorResponse.badRequest("No valid fields to update").toResponse();

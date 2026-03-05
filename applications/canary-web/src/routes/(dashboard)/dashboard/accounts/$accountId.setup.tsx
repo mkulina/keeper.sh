@@ -37,7 +37,7 @@ function AccountSetupPage() {
     <div className="flex flex-col gap-1.5">
       <BackButton fallback="/dashboard" />
       <RenameSection calendars={calendars} mutateCalendars={mutateCalendars} />
-      <ActionSection />
+      <ActionSection accountId={accountId} />
     </div>
   );
 }
@@ -88,11 +88,11 @@ function RenameSection({
   );
 }
 
-function ActionSection() {
+function ActionSection({ accountId }: { accountId: string }) {
   return (
     <div className="flex flex-col gap-1.5">
       <LinkButton
-        to="/dashboard/sync-profiles"
+        to={`/dashboard/accounts/${accountId}`}
         className="w-full justify-center"
       >
         <ButtonText>Configure</ButtonText>

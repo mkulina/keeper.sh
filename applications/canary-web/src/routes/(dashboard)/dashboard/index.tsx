@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useSWR, { preload } from "swr";
 import { AnimatePresence, motion } from "motion/react";
-import { Calendar, CalendarPlus, CalendarSync, CalendarDays, Settings, Sparkles, LogOut, LoaderCircle } from "lucide-react";
+import { Calendar, CalendarPlus, CalendarDays, Settings, Sparkles, LogOut, LoaderCircle } from "lucide-react";
 import { ErrorState } from "../../../components/ui/error-state";
 import { signOut } from "../../../lib/auth";
 import { fetcher } from "../../../lib/fetcher";
@@ -43,7 +43,7 @@ function DashboardPage() {
     navigate({ to: "/login" });
   };
 
-  const { data: accountsData, shouldAnimate: animateAccounts } = useAnimatedSWR<CalendarAccount[]>("/api/accounts");
+  const { data: accountsData } = useAnimatedSWR<CalendarAccount[]>("/api/accounts");
   const accounts = accountsData ?? [];
 
   const { data: calendarsData, shouldAnimate: animateCalendars, isLoading: calendarsLoading, error, mutate: mutateCalendars } = useAnimatedSWR<CalendarSource[]>("/api/sources");
@@ -52,43 +52,11 @@ function DashboardPage() {
   const { data: eventCountData } = useSWR<{ count: number }>("/api/events/count");
   const eventCount = eventCountData?.count;
 
-  const { data: profileCountData } = useSWR<{ count: number }>("/api/profiles/count");
-  const profileCount = profileCountData?.count;
-
   return (
     <div className="flex flex-col">
       <EventGraph />
       <div className="flex flex-col gap-1.5">
         <NavigationMenu>
-          <NavigationMenuPopover
-            disabled={accounts.length === 0}
-            trigger={
-              <>
-                <NavigationMenuItemIcon>
-                  <User size={15} />
-                </NavigationMenuItemIcon>
-                <NavigationMenuItemLabel>
-                  {accounts.length > 0 ? "Calendar Sources" : "No Calendar Sources"}
-                </NavigationMenuItemLabel>
-                <NavigationMenuItemTrailing>
-                  <ProviderIconStack providers={accounts} />
-                </NavigationMenuItemTrailing>
-              </>
-            }
-          >
-            {accounts.map((account) => (
-              <NavigationMenuItem
-                key={account.id}
-                to={`/dashboard/accounts/${account.id}`}
-              >
-                <NavigationMenuItemIcon>
-                  <ProviderIcon provider={account.provider} />
-                </NavigationMenuItemIcon>
-                <NavigationMenuItemLabel>{getAccountLabel(account)}</NavigationMenuItemLabel>
-                <NavigationMenuItemTrailing />
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuPopover>
           <NavigationMenuItem to="/dashboard/connect">
             <NavigationMenuItemIcon>
               <CalendarPlus size={15} />
@@ -158,15 +126,6 @@ function DashboardPage() {
                     {eventCount != null && <Text size="sm" tone="muted">{pluralize(eventCount, "event")}</Text>}
                   </NavigationMenuItemTrailing>
                 </NavigationMenuItem>
-                <NavigationMenuItem to="/dashboard/sync-profiles">
-                  <NavigationMenuItemIcon>
-                    <CalendarSync size={15} />
-                  </NavigationMenuItemIcon>
-                  <NavigationMenuItemLabel>Sync Settings</NavigationMenuItemLabel>
-                  <NavigationMenuItemTrailing>
-                    {profileCount != null && <Text size="sm" tone="muted">{pluralize(profileCount, "profile")}</Text>}
-                  </NavigationMenuItemTrailing>
-                </NavigationMenuItem>
               </motion.div>
             )}
           </AnimatePresence>
@@ -181,6 +140,35 @@ function DashboardPage() {
           </NavigationMenuItem>
         </NavigationMenu>
         <NavigationMenu>
+          <NavigationMenuPopover
+            disabled={accounts.length === 0}
+            trigger={
+              <>
+                <NavigationMenuItemIcon>
+                  <User size={15} />
+                </NavigationMenuItemIcon>
+                <NavigationMenuItemLabel>
+                  {accounts.length > 0 ? "Calendar Sources" : "No Calendar Sources"}
+                </NavigationMenuItemLabel>
+                <NavigationMenuItemTrailing>
+                  <ProviderIconStack providers={accounts} />
+                </NavigationMenuItemTrailing>
+              </>
+            }
+          >
+            {accounts.map((account) => (
+              <NavigationMenuItem
+                key={account.id}
+                to={`/dashboard/accounts/${account.id}`}
+              >
+                <NavigationMenuItemIcon>
+                  <ProviderIcon provider={account.provider} />
+                </NavigationMenuItemIcon>
+                <NavigationMenuItemLabel>{getAccountLabel(account)}</NavigationMenuItemLabel>
+                <NavigationMenuItemTrailing />
+              </NavigationMenuItem>
+            ))}
+          </NavigationMenuPopover>
           <NavigationMenuItem to="/dashboard/settings">
             <NavigationMenuItemIcon>
               <Settings size={15} />

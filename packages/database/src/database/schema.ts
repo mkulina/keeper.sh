@@ -95,6 +95,10 @@ const calendarsTable = pgTable(
     calendarType: text().notNull(),
     calendarUrl: text(),
     createdAt: timestamp().notNull().defaultNow(),
+    excludeAllDayEvents: boolean().notNull().default(false),
+    excludeEventDescription: boolean().notNull().default(false),
+    excludeEventLocation: boolean().notNull().default(false),
+    excludeEventName: boolean().notNull().default(false),
     excludeFocusTime: boolean().notNull().default(false),
     excludeOutOfOffice: boolean().notNull().default(false),
     excludeWorkingLocation: boolean().notNull().default(false),
@@ -218,51 +222,6 @@ const eventMappingsTable = pgTable(
   ],
 );
 
-// --- Sync profiles ---
-
-const syncProfilesTable = pgTable(
-  "sync_profiles",
-  {
-    createdAt: timestamp().notNull().defaultNow(),
-    id: uuid().notNull().primaryKey().defaultRandom(),
-    name: text().notNull(),
-    updatedAt: timestamp()
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-    userId: text()
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-  },
-  (table) => [
-    index("sync_profiles_user_idx").on(table.userId),
-  ],
-);
-
-// --- Profile calendar memberships ---
-
-const profileCalendarsTable = pgTable(
-  "profile_calendars",
-  {
-    calendarId: uuid()
-      .notNull()
-      .references(() => calendarsTable.id, { onDelete: "cascade" }),
-    id: uuid().notNull().primaryKey().defaultRandom(),
-    profileId: uuid()
-      .notNull()
-      .references(() => syncProfilesTable.id, { onDelete: "cascade" }),
-    role: text().notNull(), // "source" | "destination"
-  },
-  (table) => [
-    uniqueIndex("profile_calendars_unique_idx").on(
-      table.profileId,
-      table.calendarId,
-      table.role,
-    ),
-    index("profile_calendars_profile_idx").on(table.profileId),
-  ],
-);
-
 // --- Source-destination calendar mappings ---
 
 const sourceDestinationMappingsTable = pgTable(
@@ -273,9 +232,6 @@ const sourceDestinationMappingsTable = pgTable(
       .notNull()
       .references(() => calendarsTable.id, { onDelete: "cascade" }),
     id: uuid().notNull().primaryKey().defaultRandom(),
-    profileId: uuid()
-      .notNull()
-      .references(() => syncProfilesTable.id, { onDelete: "cascade" }),
     sourceCalendarId: uuid()
       .notNull()
       .references(() => calendarsTable.id, { onDelete: "cascade" }),
@@ -284,11 +240,9 @@ const sourceDestinationMappingsTable = pgTable(
     uniqueIndex("source_destination_mapping_idx").on(
       table.sourceCalendarId,
       table.destinationCalendarId,
-      table.profileId,
     ),
     index("source_destination_mappings_source_idx").on(table.sourceCalendarId),
     index("source_destination_mappings_destination_idx").on(table.destinationCalendarId),
-    index("source_destination_mappings_profile_idx").on(table.profileId),
   ],
 );
 
@@ -300,9 +254,7 @@ export {
   eventMappingsTable,
   eventStatesTable,
   oauthCredentialsTable,
-  profileCalendarsTable,
   sourceDestinationMappingsTable,
-  syncProfilesTable,
   syncStatusTable,
   userSubscriptionsTable,
 };
