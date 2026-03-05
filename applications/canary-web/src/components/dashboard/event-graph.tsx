@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import useSWR from "swr";
 import { motion } from "motion/react";
@@ -143,10 +143,18 @@ function EventGraphSummary({ days }: EventGraphSummaryProps) {
 }
 
 const GRAPH_URL = buildGraphUrl();
+const ANIMATED_TRANSITION = { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const };
+const INSTANT_TRANSITION = { duration: 0 };
+
+function resolveBarTransition(shouldAnimate: boolean, dayIndex: number) {
+  if (!shouldAnimate) return INSTANT_TRANSITION;
+  return { ...ANIMATED_TRANSITION, delay: dayIndex * 0.015 };
+}
 
 export function EventGraph() {
-  const { data: events } = useSWR<ApiEvent[]>(GRAPH_URL, fetcher);
-  const days = useMemo(() => buildDays(events ?? []), [events]);
+  const { data: events, isLoading } = useSWR<ApiEvent[]>(GRAPH_URL, fetcher);
+  const [wasLoading] = useState(isLoading);
+  const days = buildDays(events ?? []);
   const setHoverIndex = useSetAtom(eventGraphHoverIndexAtom);
 
   return (
@@ -174,7 +182,7 @@ export function EventGraph() {
                 })}
                 initial={{ height: MIN_BAR_HEIGHT }}
                 animate={{ height: day.height }}
-                transition={{ duration: 0.3, delay: dayIndex * 0.015, ease: [0.4, 0, 0.2, 1] }}
+                transition={resolveBarTransition(wasLoading, dayIndex)}
               />
             </div>
             <Text
