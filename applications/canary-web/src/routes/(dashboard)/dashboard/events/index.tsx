@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { BackButton } from "../../../../components/ui/back-button";
 import { ErrorState } from "../../../../components/ui/error-state";
-import { Heading3 } from "../../../../components/ui/heading";
+import { DashboardHeading1, DashboardHeading2 } from "../../../../components/ui/dashboard-heading";
 import { Text } from "../../../../components/ui/text";
 import { formatTime, formatTimeUntil, isEventPast, formatDayHeader } from "../../../../lib/time";
 import { useEvents, type CalendarEvent } from "../../../../hooks/use-events";
@@ -65,6 +65,7 @@ function EventsContent() {
 
   return (
     <div className="flex flex-col gap-3">
+      <DashboardHeading1>Events</DashboardHeading1>
       {dayGroups.map((group) => (
         <DaySection key={group.label} label={group.label} events={group.events} />
       ))}
@@ -128,7 +129,7 @@ const areDaySectionPropsEqual = (prev: DaySectionProps, next: DaySectionProps): 
 const DaySection = memo(function DaySection({ label, events }: DaySectionProps) {
   return (
     <div className="flex flex-col gap-0.5">
-      <Heading3 as="h3" className="font-sans text-sm">{label}</Heading3>
+      <DashboardHeading2>{label}</DashboardHeading2>
       <div className="flex flex-col">
         {events.map((event) => (
           <EventRow key={event.id} event={event} />
