@@ -32,6 +32,7 @@ class InvalidSourceUrlError extends Error {
 
 interface Source {
   id: string;
+  accountId: string;
   userId: string;
   name: string;
   url: string | null;

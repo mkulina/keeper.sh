@@ -374,7 +374,7 @@ interface ImportOAuthAccountOptions {
   email: string | null;
 }
 
-const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): Promise<void> => {
+const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): Promise<string> => {
   const { userId, provider, oauthCredentialId, accessToken, email } = options;
 
   const listCalendars = listProviderCalendars[provider];
@@ -430,7 +430,7 @@ const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): 
   const existingIds = new Set(existingCalendars.map((c) => c.externalCalendarId));
   const newCalendars = externalCalendars.filter((c) => !existingIds.has(c.externalId));
 
-  if (newCalendars.length === 0) return;
+  if (newCalendars.length === 0) return accountId;
 
   // Insert all new calendars
   const inserted = await database
@@ -452,6 +452,8 @@ const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): 
     await syncOAuthSourcesByProvider(provider);
     triggerDestinationSync(userId);
   });
+
+  return accountId;
 };
 
 const deleteOAuthSource = async (userId: string, calendarId: string): Promise<boolean> => {

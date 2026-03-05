@@ -63,7 +63,7 @@ const GET = withWideEvent(async ({ request, params }) => {
       refreshToken: tokens.refresh_token,
     });
 
-    await importOAuthAccountCalendars({
+    const accountId = await importOAuthAccountCalendars({
       accessToken: tokens.access_token,
       email: userInfo.email,
       oauthCredentialId: credentialId,
@@ -71,7 +71,7 @@ const GET = withWideEvent(async ({ request, params }) => {
       userId,
     });
 
-    const successUrl = buildRedirectUrl("/dashboard/calendars", {});
+    const successUrl = buildRedirectUrl(`/dashboard/accounts/${accountId}/setup`, {});
     return Response.redirect(successUrl.toString());
   } catch (error) {
     if (error instanceof OAuthError) {

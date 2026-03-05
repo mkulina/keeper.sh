@@ -285,6 +285,25 @@ function ProfileDetail({ profile, profiles, calendars, mutateProfiles, onDelete 
       />
 
       <div className="flex flex-col px-0.5 pt-4">
+        <DashboardHeading2>Synced Details</DashboardHeading2>
+        <Text size="sm">Choose which event details to copy to destinations.</Text>
+      </div>
+      <NavigationMenu>
+        <NavigationMenuToggleItem checked={profile.syncEventName} onCheckedChange={(v) => togglePreference("syncEventName", v)}>
+          <NavigationMenuItemIcon><Tag size={15} /></NavigationMenuItemIcon>
+          <NavigationMenuItemLabel>Event Name</NavigationMenuItemLabel>
+        </NavigationMenuToggleItem>
+        <NavigationMenuToggleItem checked={profile.syncEventDescription} onCheckedChange={(v) => togglePreference("syncEventDescription", v)}>
+          <NavigationMenuItemIcon><MessageSquare size={15} /></NavigationMenuItemIcon>
+          <NavigationMenuItemLabel>Event Description</NavigationMenuItemLabel>
+        </NavigationMenuToggleItem>
+        <NavigationMenuToggleItem checked={profile.syncEventLocation} onCheckedChange={(v) => togglePreference("syncEventLocation", v)}>
+          <NavigationMenuItemIcon><MapPin size={15} /></NavigationMenuItemIcon>
+          <NavigationMenuItemLabel>Event Location</NavigationMenuItemLabel>
+        </NavigationMenuToggleItem>
+      </NavigationMenu>
+
+      <div className="flex flex-col px-0.5 pt-4">
         <DashboardHeading2>Sync Types</DashboardHeading2>
         <Text size="sm">Choose which event types to include when syncing.</Text>
       </div>
@@ -304,25 +323,6 @@ function ProfileDetail({ profile, profiles, calendars, mutateProfiles, onDelete 
         <NavigationMenuToggleItem checked={profile.syncOutOfOffice} onCheckedChange={(v) => togglePreference("syncOutOfOffice", v)}>
           <NavigationMenuItemIcon><UserRoundX size={15} /></NavigationMenuItemIcon>
           <NavigationMenuItemLabel>Out of Office</NavigationMenuItemLabel>
-        </NavigationMenuToggleItem>
-      </NavigationMenu>
-
-      <div className="flex flex-col px-0.5 pt-4">
-        <DashboardHeading2>Synced Details</DashboardHeading2>
-        <Text size="sm">Choose which event details to copy to destinations.</Text>
-      </div>
-      <NavigationMenu>
-        <NavigationMenuToggleItem checked={profile.syncEventName} onCheckedChange={(v) => togglePreference("syncEventName", v)}>
-          <NavigationMenuItemIcon><Tag size={15} /></NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Event Name</NavigationMenuItemLabel>
-        </NavigationMenuToggleItem>
-        <NavigationMenuToggleItem checked={profile.syncEventDescription} onCheckedChange={(v) => togglePreference("syncEventDescription", v)}>
-          <NavigationMenuItemIcon><MessageSquare size={15} /></NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Event Description</NavigationMenuItemLabel>
-        </NavigationMenuToggleItem>
-        <NavigationMenuToggleItem checked={profile.syncEventLocation} onCheckedChange={(v) => togglePreference("syncEventLocation", v)}>
-          <NavigationMenuItemIcon><MapPin size={15} /></NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Event Location</NavigationMenuItemLabel>
         </NavigationMenuToggleItem>
       </NavigationMenu>
 

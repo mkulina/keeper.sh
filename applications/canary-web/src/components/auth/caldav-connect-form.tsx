@@ -90,8 +90,10 @@ export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
         return;
       }
 
+      let accountId: string | undefined;
+
       try {
-        await Promise.all(
+        const responses = await Promise.all(
           calendars.map((calendar) =>
             apiFetch("/api/sources/caldav", {
               method: "POST",
@@ -107,13 +109,21 @@ export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
             }),
           ),
         );
+
+        const first = await responses[0]?.json();
+        accountId = first?.accountId;
       } catch {
         setError("Failed to import calendars");
         return;
       }
 
       await invalidateAccountsAndSources(globalMutate);
-      navigate({ to: "/dashboard" });
+
+      if (accountId) {
+        navigate({ to: "/dashboard/accounts/$accountId/setup", params: { accountId } });
+      } else {
+        navigate({ to: "/dashboard" });
+      }
     });
   };
 

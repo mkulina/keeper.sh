@@ -31,6 +31,7 @@ class DuplicateCalDAVSourceError extends Error {
 
 interface CalDAVSource {
   id: string;
+  accountId: string;
   userId: string;
   name: string;
   provider: string;
@@ -65,6 +66,7 @@ const getUserCalDAVSources = async (userId: string, provider?: string): Promise<
 
   const sources = await database
     .select({
+      accountId: calendarAccountsTable.id,
       calendarUrl: calendarsTable.calendarUrl,
       createdAt: calendarsTable.createdAt,
       id: calendarsTable.id,
@@ -218,6 +220,7 @@ const createCalDAVSource = async (
   }
 
   return {
+    accountId,
     calendarUrl: data.calendarUrl,
     createdAt: source.createdAt,
     id: source.id,

@@ -44,6 +44,7 @@ import { Route as oauthDashboardConnectAppleRouteImport } from './../../routes/(
 import { Route as dashboardDashboardSettingsPasskeysRouteImport } from './../../routes/(dashboard)/dashboard/settings/passkeys'
 import { Route as dashboardDashboardSettingsChangePasswordRouteImport } from './../../routes/(dashboard)/dashboard/settings/change-password'
 import { Route as dashboardDashboardAccountsAccountIdIndexRouteImport } from './../../routes/(dashboard)/dashboard/accounts/$accountId.index'
+import { Route as dashboardDashboardAccountsAccountIdSetupRouteImport } from './../../routes/(dashboard)/dashboard/accounts/$accountId.setup'
 import { Route as dashboardDashboardAccountsAccountIdCalendarIdRouteImport } from './../../routes/(dashboard)/dashboard/accounts/$accountId.$calendarId'
 
 const oauthRouteRoute = oauthRouteRouteImport.update({
@@ -239,6 +240,12 @@ const dashboardDashboardAccountsAccountIdIndexRoute =
     path: '/$accountId/',
     getParentRoute: () => dashboardDashboardAccountsRouteRoute,
   } as any)
+const dashboardDashboardAccountsAccountIdSetupRoute =
+  dashboardDashboardAccountsAccountIdSetupRouteImport.update({
+    id: '/$accountId/setup',
+    path: '/$accountId/setup',
+    getParentRoute: () => dashboardDashboardAccountsRouteRoute,
+  } as any)
 const dashboardDashboardAccountsAccountIdCalendarIdRoute =
   dashboardDashboardAccountsAccountIdCalendarIdRouteImport.update({
     id: '/$accountId/$calendarId',
@@ -277,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/sync-profiles/': typeof dashboardDashboardSyncProfilesIndexRoute
   '/dashboard/upgrade/': typeof dashboardDashboardUpgradeIndexRoute
   '/dashboard/accounts/$accountId/$calendarId': typeof dashboardDashboardAccountsAccountIdCalendarIdRoute
+  '/dashboard/accounts/$accountId/setup': typeof dashboardDashboardAccountsAccountIdSetupRoute
   '/dashboard/accounts/$accountId/': typeof dashboardDashboardAccountsAccountIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -306,6 +314,7 @@ export interface FileRoutesByTo {
   '/dashboard/sync-profiles': typeof dashboardDashboardSyncProfilesIndexRoute
   '/dashboard/upgrade': typeof dashboardDashboardUpgradeIndexRoute
   '/dashboard/accounts/$accountId/$calendarId': typeof dashboardDashboardAccountsAccountIdCalendarIdRoute
+  '/dashboard/accounts/$accountId/setup': typeof dashboardDashboardAccountsAccountIdSetupRoute
   '/dashboard/accounts/$accountId': typeof dashboardDashboardAccountsAccountIdIndexRoute
 }
 export interface FileRoutesById {
@@ -345,6 +354,7 @@ export interface FileRoutesById {
   '/(dashboard)/dashboard/sync-profiles/': typeof dashboardDashboardSyncProfilesIndexRoute
   '/(dashboard)/dashboard/upgrade/': typeof dashboardDashboardUpgradeIndexRoute
   '/(dashboard)/dashboard/accounts/$accountId/$calendarId': typeof dashboardDashboardAccountsAccountIdCalendarIdRoute
+  '/(dashboard)/dashboard/accounts/$accountId/setup': typeof dashboardDashboardAccountsAccountIdSetupRoute
   '/(dashboard)/dashboard/accounts/$accountId/': typeof dashboardDashboardAccountsAccountIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -380,6 +390,7 @@ export interface FileRouteTypes {
     | '/dashboard/sync-profiles/'
     | '/dashboard/upgrade/'
     | '/dashboard/accounts/$accountId/$calendarId'
+    | '/dashboard/accounts/$accountId/setup'
     | '/dashboard/accounts/$accountId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/dashboard/sync-profiles'
     | '/dashboard/upgrade'
     | '/dashboard/accounts/$accountId/$calendarId'
+    | '/dashboard/accounts/$accountId/setup'
     | '/dashboard/accounts/$accountId'
   id:
     | '__root__'
@@ -447,6 +459,7 @@ export interface FileRouteTypes {
     | '/(dashboard)/dashboard/sync-profiles/'
     | '/(dashboard)/dashboard/upgrade/'
     | '/(dashboard)/dashboard/accounts/$accountId/$calendarId'
+    | '/(dashboard)/dashboard/accounts/$accountId/setup'
     | '/(dashboard)/dashboard/accounts/$accountId/'
   fileRoutesById: FileRoutesById
 }
@@ -704,6 +717,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardDashboardAccountsAccountIdIndexRouteImport
       parentRoute: typeof dashboardDashboardAccountsRouteRoute
     }
+    '/(dashboard)/dashboard/accounts/$accountId/setup': {
+      id: '/(dashboard)/dashboard/accounts/$accountId/setup'
+      path: '/$accountId/setup'
+      fullPath: '/dashboard/accounts/$accountId/setup'
+      preLoaderRoute: typeof dashboardDashboardAccountsAccountIdSetupRouteImport
+      parentRoute: typeof dashboardDashboardAccountsRouteRoute
+    }
     '/(dashboard)/dashboard/accounts/$accountId/$calendarId': {
       id: '/(dashboard)/dashboard/accounts/$accountId/$calendarId'
       path: '/$accountId/$calendarId'
@@ -732,6 +752,7 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 
 interface dashboardDashboardAccountsRouteRouteChildren {
   dashboardDashboardAccountsAccountIdCalendarIdRoute: typeof dashboardDashboardAccountsAccountIdCalendarIdRoute
+  dashboardDashboardAccountsAccountIdSetupRoute: typeof dashboardDashboardAccountsAccountIdSetupRoute
   dashboardDashboardAccountsAccountIdIndexRoute: typeof dashboardDashboardAccountsAccountIdIndexRoute
 }
 
@@ -739,6 +760,8 @@ const dashboardDashboardAccountsRouteRouteChildren: dashboardDashboardAccountsRo
   {
     dashboardDashboardAccountsAccountIdCalendarIdRoute:
       dashboardDashboardAccountsAccountIdCalendarIdRoute,
+    dashboardDashboardAccountsAccountIdSetupRoute:
+      dashboardDashboardAccountsAccountIdSetupRoute,
     dashboardDashboardAccountsAccountIdIndexRoute:
       dashboardDashboardAccountsAccountIdIndexRoute,
   }

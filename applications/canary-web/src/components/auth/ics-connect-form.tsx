@@ -32,19 +32,28 @@ export function ICSFeedForm() {
     setError(null);
 
     startTransition(async () => {
+      let accountId: string | undefined;
+
       try {
-        await apiFetch("/api/ics", {
+        const response = await apiFetch("/api/ics", {
           body: JSON.stringify({ name: "iCal Feed", url }),
           headers: { "Content-Type": "application/json" },
           method: "POST",
         });
+        const data = await response.json();
+        accountId = data?.accountId;
       } catch {
         setError("Failed to subscribe to feed");
         return;
       }
 
       await invalidateAccountsAndSources(globalMutate);
-      navigate({ to: "/dashboard/sync-profiles" });
+
+      if (accountId) {
+        navigate({ to: "/dashboard/accounts/$accountId/setup", params: { accountId } });
+      } else {
+        navigate({ to: "/dashboard" });
+      }
     });
   };
 

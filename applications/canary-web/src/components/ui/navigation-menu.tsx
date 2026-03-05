@@ -199,7 +199,7 @@ export function NavigationMenuItem({ to, onClick, onMouseEnter, className, child
   if (to) {
     return (
       <Wrapper>
-        <Link to={to} className={itemClass} onMouseEnter={onMouseEnter}>
+        <Link draggable="false" to={to} className={itemClass} onMouseEnter={onMouseEnter}>
           {content}
         </Link>
       </Wrapper>
