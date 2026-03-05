@@ -59,10 +59,17 @@ const handleAuthResponseStatus = (event: WideEvent, response: Response): void =>
   }
 };
 
-const hasSessionTokenCookie = (response: Response): boolean => {
+const hasSessionTokenSet = (response: Response): boolean => {
   const cookies = response.headers.getSetCookie();
   return cookies.some(
     (cookie) => cookie.includes("better-auth.session_token=") && !cookie.includes("Max-Age=0"),
+  );
+};
+
+const hasSessionTokenCleared = (response: Response): boolean => {
+  const cookies = response.headers.getSetCookie();
+  return cookies.some(
+    (cookie) => cookie.includes("better-auth.session_token=") && cookie.includes("Max-Age=0"),
   );
 };
 
@@ -77,8 +84,12 @@ const withCompanionCookie = (response: Response, cookie: string): Response => {
 };
 
 const processAuthResponse = async (pathname: string, response: Response): Promise<Response> => {
-  if (hasSessionTokenCookie(response)) {
+  if (hasSessionTokenSet(response)) {
     return withCompanionCookie(response, COMPANION_COOKIE_SET);
+  }
+
+  if (hasSessionTokenCleared(response)) {
+    return withCompanionCookie(response, COMPANION_COOKIE_CLEAR);
   }
 
   if (pathname !== "/api/auth/get-session") {

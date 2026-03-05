@@ -1,6 +1,12 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+
+const hasSessionCookie = (): boolean =>
+  document.cookie.split("; ").some((cookie) => cookie.startsWith("keeper.has_session=1"));
 
 export const Route = createFileRoute("/(auth)")({
+  beforeLoad: () => {
+    if (hasSessionCookie()) throw redirect({ to: "/dashboard" });
+  },
   component: AuthLayout,
 });
 
