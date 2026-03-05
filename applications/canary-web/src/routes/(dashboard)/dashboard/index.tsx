@@ -86,7 +86,7 @@ function DashboardPage() {
                 </NavigationMenuItemIcon>
                 <NavigationMenuItemLabel>Calendars</NavigationMenuItemLabel>
                 <NavigationMenuItemTrailing>
-                  <Text size="sm" tone="muted">{calendars.length}</Text>
+                  <ProviderIconStack providers={calendars} />
                 </NavigationMenuItemTrailing>
               </>
             }
