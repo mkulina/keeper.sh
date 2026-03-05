@@ -30,7 +30,7 @@ function ProviderIconStack({ providers, max = 4, animate = false }: ProviderIcon
   const initial = resolveInitial(animate);
 
   return (
-    <div className="absolute flex items-center justify-end overflow-visible">
+    <div className="absolute flex items-center justify-end overflow-visible pr-1">
       <div className="flex items-center">
         <AnimatePresence mode="sync">
             {visible.map((entry, index) => (
@@ -39,7 +39,7 @@ function ProviderIconStack({ providers, max = 4, animate = false }: ProviderIcon
                 initial={initial}
                 animate={VISIBLE}
                 exit={HIDDEN}
-                className="max-w-3 flex justify-end"
+                className="max-w-3 flex justify-start"
               >
                 <div className="size-6">
                   <ProviderIconStackItem provider={entry.provider} calendarType={entry.calendarType} />
@@ -52,7 +52,7 @@ function ProviderIconStack({ providers, max = 4, animate = false }: ProviderIcon
                 initial={initial}
                 animate={VISIBLE}
                 exit={HIDDEN}
-                className="max-w-3 flex justify-end"
+                className="max-w-3 flex justify-start"
             >
               <div className="size-6 min-w-6 grid place-items-center bg-background-elevated border border-border-elevated rounded-full">
                   <Text size="xs" tone="muted" className="tabular-nums text-[0.625rem]">+{overflow}</Text>
