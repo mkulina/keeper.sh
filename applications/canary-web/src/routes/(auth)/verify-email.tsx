@@ -14,7 +14,11 @@ function VerifyEmailPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const email = sessionStorage.getItem("pendingVerificationEmail");
+  const [email] = useState(() => {
+    const stored = sessionStorage.getItem("pendingVerificationEmail");
+    if (stored) sessionStorage.removeItem("pendingVerificationEmail");
+    return stored;
+  });
 
   const handleResend = async () => {
     if (!email) return;

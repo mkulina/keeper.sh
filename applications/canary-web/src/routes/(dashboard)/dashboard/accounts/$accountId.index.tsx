@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useSWR, { preload, useSWRConfig } from "swr";
 import { Calendar } from "lucide-react";
@@ -65,24 +65,24 @@ function AccountDetailPage() {
   );
 
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [isDeleting, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const isLoading = accountLoading || calendarsLoading;
   const error = accountError || calendarsError;
 
-  const handleConfirmDelete = async () => {
-    setDeleting(true);
+  const handleConfirmDelete = () => {
     setDeleteError(null);
-    try {
-      await apiFetch(`/api/accounts/${accountId}`, { method: "DELETE" });
-      await invalidateAccountsAndSources(globalMutate, `/api/accounts/${accountId}`);
-      navigate({ to: "/dashboard" });
-    } catch (err) {
-      setDeleteError(resolveErrorMessage(err, "Failed to delete account."));
-    } finally {
-      setDeleting(false);
-    }
+
+    startDeleteTransition(async () => {
+      try {
+        await apiFetch(`/api/accounts/${accountId}`, { method: "DELETE" });
+        await invalidateAccountsAndSources(globalMutate, `/api/accounts/${accountId}`);
+        navigate({ to: "/dashboard" });
+      } catch (err) {
+        setDeleteError(resolveErrorMessage(err, "Failed to delete account."));
+      }
+    });
   };
 
   if (error || isLoading || !account) {
@@ -120,7 +120,7 @@ function AccountDetailPage() {
         description="This will remove the account and all its calendars. Any sync profiles using these calendars will be affected."
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        deleting={deleting}
+        deleting={isDeleting}
         onConfirm={handleConfirmDelete}
       />
     </div>

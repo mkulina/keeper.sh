@@ -1,5 +1,4 @@
 import type { ReactNode, SubmitEvent } from "react";
-import { useLocation } from "@tanstack/react-router";
 import { ArrowLeftRight, Check } from "lucide-react";
 import KeeperLogo from "../../assets/keeper.svg?react";
 import { authClient } from "../../lib/auth-client";
@@ -100,11 +99,8 @@ interface LinkOAuthPreambleProps {
 }
 
 export function LinkOAuthPreamble({ provider }: LinkOAuthPreambleProps) {
-  const location = useLocation();
-
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    sessionStorage.setItem("oauth:returnTo", location.pathname);
     window.location.href = `/api/sources/authorize?provider=${provider}`;
   };
 

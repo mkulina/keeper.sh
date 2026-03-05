@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { useSWRConfig } from "swr";
@@ -27,8 +27,8 @@ function resolvePasswordPlaceholder(provider: CalDAVProvider): string {
   return "App-Specific Password";
 }
 
-function resolveSubmitLabel(loading: boolean): string {
-  if (loading) return "Connecting...";
+function resolveSubmitLabel(pending: boolean): string {
+  if (pending) return "Connecting...";
   return "Connect";
 }
 
@@ -60,59 +60,58 @@ export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
   const [serverUrl, setServerUrl] = useState(SERVER_URLS[provider]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoading(true);
     setError(null);
 
-    let discoverResponse: Response;
-    try {
-      discoverResponse = await apiFetch("/api/sources/caldav/discover", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ serverUrl, username, password }),
-      });
-    } catch (err) {
-      setLoading(false);
-      setError(resolveErrorMessage(err, "Failed to discover calendars"));
-      return;
-    }
-
-    const { calendars } = (await discoverResponse.json()) as { calendars: CalendarOption[] };
-
-    if (calendars.length === 0) {
-      setLoading(false);
-      setError("No calendars found");
-      return;
-    }
-
-    for (const calendar of calendars) {
+    startTransition(async () => {
+      let discoverResponse: Response;
       try {
-        await apiFetch("/api/sources/caldav", {
+        discoverResponse = await apiFetch("/api/sources/caldav/discover", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            calendarUrl: calendar.url,
-            name: calendar.displayName,
-            password,
-            provider,
-            serverUrl,
-            username,
-          }),
+          body: JSON.stringify({ serverUrl, username, password }),
         });
-      } catch {
-        setLoading(false);
-        setError(`Failed to import ${calendar.displayName}`);
+      } catch (err) {
+        setError(resolveErrorMessage(err, "Failed to discover calendars"));
         return;
       }
-    }
 
-    setLoading(false);
-    await invalidateAccountsAndSources(globalMutate);
-    navigate({ to: "/dashboard" });
+      const { calendars } = (await discoverResponse.json()) as { calendars: CalendarOption[] };
+
+      if (calendars.length === 0) {
+        setError("No calendars found");
+        return;
+      }
+
+      try {
+        await Promise.all(
+          calendars.map((calendar) =>
+            apiFetch("/api/sources/caldav", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                calendarUrl: calendar.url,
+                name: calendar.displayName,
+                password,
+                provider,
+                serverUrl,
+                username,
+              }),
+            }),
+          ),
+        );
+      } catch {
+        setError("Failed to import calendars");
+        return;
+      }
+
+      await invalidateAccountsAndSources(globalMutate);
+      navigate({ to: "/dashboard" });
+    });
   };
 
   return (
@@ -146,9 +145,9 @@ export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
       <Divider />
       <div className="flex items-stretch gap-2">
         <BackButton variant="border" size="standard" className="self-stretch justify-center px-3.5" />
-        <Button type="submit" className="grow justify-center" disabled={loading}>
-          {loading && <LoaderCircle size={16} className="animate-spin" />}
-          <ButtonText>{resolveSubmitLabel(loading)}</ButtonText>
+        <Button type="submit" className="grow justify-center" disabled={isPending}>
+          {isPending && <LoaderCircle size={16} className="animate-spin" />}
+          <ButtonText>{resolveSubmitLabel(isPending)}</ButtonText>
         </Button>
       </div>
     </form>

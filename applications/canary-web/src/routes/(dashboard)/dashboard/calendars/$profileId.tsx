@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useSWR, { useSWRConfig } from "swr";
 import { ArrowDown } from "lucide-react";
@@ -7,7 +7,7 @@ import { RouteShell } from "../../../../components/ui/route-shell";
 import { Text } from "../../../../components/ui/text";
 import { apiFetch } from "../../../../lib/fetcher";
 import { invalidateAccountsAndSources } from "../../../../lib/swr";
-import { canPull, canPush } from "../../../../utils/calendars";
+import { partitionCalendars } from "../../../../utils/calendars";
 import { useProfileCalendarActions } from "../../../../hooks/use-profile-calendars";
 import { CalendarCheckboxList } from "../../../../components/dashboard/calendar-checkbox-list";
 import type { SyncProfile, CalendarEntry } from "../../../../types/api";
@@ -39,32 +39,31 @@ function ProfileDetailPage() {
   );
   const { data: calendars, error: calendarsError } = useSWR<CalendarEntry[]>("/api/sources");
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [isDeleting, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const emptyProfile: SyncProfile = { id: profileId, name: "", sources: [], destinations: [], createdAt: "" };
   const { toggleSource, toggleDestination, updateName } = useProfileCalendarActions(profileId, profile ?? emptyProfile, mutateProfile);
 
-  const handleConfirmDelete = async () => {
-    setDeleting(true);
+  const handleConfirmDelete = () => {
     setDeleteError(null);
-    try {
-      await apiFetch(`/api/profiles/${profileId}`, { method: "DELETE" });
-      await invalidateAccountsAndSources(globalMutate, "/api/profiles", `/api/profiles/${profileId}`);
-      navigate({ to: "/dashboard/calendars" });
-    } catch (err) {
-      setDeleteError(resolveErrorMessage(err, "Failed to delete profile."));
-    } finally {
-      setDeleting(false);
-    }
+
+    startDeleteTransition(async () => {
+      try {
+        await apiFetch(`/api/profiles/${profileId}`, { method: "DELETE" });
+        await invalidateAccountsAndSources(globalMutate, "/api/profiles", `/api/profiles/${profileId}`);
+        navigate({ to: "/dashboard/calendars" });
+      } catch (err) {
+        setDeleteError(resolveErrorMessage(err, "Failed to delete profile."));
+      }
+    });
   };
 
   if (error || calendarsError || isLoading || !profile) {
     return <RouteShell backFallback="/dashboard/calendars" isLoading={isLoading || !profile} error={error || calendarsError} onRetry={() => mutateProfile()}>{null}</RouteShell>;
   }
 
-  const pullCalendars = (calendars ?? []).filter(canPull);
-  const pushCalendars = (calendars ?? []).filter(canPush);
+  const { pull: pullCalendars, push: pushCalendars } = partitionCalendars(calendars ?? []);
 
   const sourceSet = new Set(profile.sources);
   const destinationSet = new Set(profile.destinations);
@@ -106,7 +105,7 @@ function ProfileDetailPage() {
         description="This will remove the profile and all its sync mappings. Your calendars will not be deleted."
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        deleting={deleting}
+        deleting={isDeleting}
         onConfirm={handleConfirmDelete}
       />
     </div>

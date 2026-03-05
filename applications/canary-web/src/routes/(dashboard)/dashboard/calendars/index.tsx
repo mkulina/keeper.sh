@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import useSWR from "swr";
 import type { KeyedMutator } from "swr";
@@ -8,7 +8,7 @@ import { RouteShell } from "../../../../components/ui/route-shell";
 import { Button } from "../../../../components/ui/button";
 import { Text } from "../../../../components/ui/text";
 import { apiFetch } from "../../../../lib/fetcher";
-import { canPull, canPush } from "../../../../utils/calendars";
+import { partitionCalendars } from "../../../../utils/calendars";
 import { useProfileCalendarActions, useProfileMutatorFromList } from "../../../../hooks/use-profile-calendars";
 import { CalendarCheckboxList } from "../../../../components/dashboard/calendar-checkbox-list";
 import type { SyncProfile, CalendarEntry } from "../../../../types/api";
@@ -101,7 +101,7 @@ function CalendarsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [newProfileName, setNewProfileName] = useState("New Profile");
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   if (error || calendarsError || isLoading || !profiles) {
     return <RouteShell isLoading={isLoading || !profiles} error={error || calendarsError} onRetry={() => mutateProfiles()}>{null}</RouteShell>;
@@ -116,11 +116,11 @@ function CalendarsPage() {
 
   const profileName = resolveProfileName(isNewSlot, newProfileName, profile);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!profile) return;
-    setDeleting(true);
     const remaining = profiles.filter((entry) => entry.id !== profile.id);
-    try {
+
+    startDeleteTransition(async () => {
       await mutateProfiles(
         async () => {
           await apiFetch(`/api/profiles/${profile.id}`, { method: "DELETE" });
@@ -137,9 +137,7 @@ function CalendarsPage() {
         setCurrentIndex(Math.max(0, newLength - 1));
       }
       setDeleteOpen(false);
-    } finally {
-      setDeleting(false);
-    }
+    });
   };
 
   const handleNameCommit = async (name: string) => {
@@ -186,7 +184,7 @@ function CalendarsPage() {
             variant="elevated"
             size="compact"
             className="aspect-square"
-            onClick={() => setCurrentIndex(currentIndex - 1)}
+            onClick={() => setCurrentIndex((prev) => prev - 1)}
             disabled={!canGoLeft}
           >
             <ChevronLeft size={16} />
@@ -195,7 +193,7 @@ function CalendarsPage() {
             variant="elevated"
             size="compact"
             className="aspect-square"
-            onClick={() => setCurrentIndex(currentIndex + 1)}
+            onClick={() => setCurrentIndex((prev) => prev + 1)}
             disabled={!canGoRight}
           >
             <ChevronRight size={16} />
@@ -224,7 +222,7 @@ function CalendarsPage() {
           description="This will remove the profile and all its sync mappings. Your calendars will not be deleted."
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
-          deleting={deleting}
+          deleting={isDeleting}
           onConfirm={handleConfirmDelete}
         />
       )}
@@ -246,8 +244,7 @@ function NewProfileSlot({ name, calendars, onProfileCreated }: NewProfileSlotPro
   const nameRef = useRef(name);
   useEffect(() => { nameRef.current = name; });
 
-  const pullCalendars = calendars.filter(canPull);
-  const pushCalendars = calendars.filter(canPush);
+  const { pull: pullCalendars, push: pushCalendars } = partitionCalendars(calendars);
 
   const ensureProfile = async (): Promise<string> => {
     if (profileIdRef.current) return profileIdRef.current;
@@ -335,8 +332,7 @@ interface ProfileDetailProps {
 }
 
 function ProfileDetail({ profile, profiles, calendars, mutateProfiles, onDelete }: ProfileDetailProps) {
-  const pullCalendars = calendars.filter(canPull);
-  const pushCalendars = calendars.filter(canPush);
+  const { pull: pullCalendars, push: pushCalendars } = partitionCalendars(calendars);
 
   const sourceSet = new Set(profile.sources);
   const destinationSet = new Set(profile.destinations);

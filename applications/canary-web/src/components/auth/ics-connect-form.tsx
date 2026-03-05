@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type SubmitEvent } from "react";
+import { useState, useTransition, type ChangeEvent, type SubmitEvent } from "react";
 import { LoaderCircle, Upload } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useSWRConfig } from "swr";
@@ -10,18 +10,18 @@ import { Divider } from "../ui/divider";
 import { Input } from "../ui/input";
 import { Text } from "../ui/text";
 
-function resolveSubmitLabel(submitting: boolean): string {
-  if (submitting) return "Subscribing...";
+function resolveSubmitLabel(pending: boolean): string {
+  if (pending) return "Subscribing...";
   return "Subscribe";
 }
 
 export function ICSFeedForm() {
   const navigate = useNavigate();
   const { mutate: globalMutate } = useSWRConfig();
-  const [submitting, setSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -29,23 +29,23 @@ export function ICSFeedForm() {
 
     if (!url || typeof url !== "string") return;
 
-    setSubmitting(true);
     setError(null);
 
-    try {
-      await apiFetch("/api/ics", {
-        body: JSON.stringify({ name: "iCal Feed", url }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-    } catch {
-      setError("Failed to subscribe to feed");
-      setSubmitting(false);
-      return;
-    }
+    startTransition(async () => {
+      try {
+        await apiFetch("/api/ics", {
+          body: JSON.stringify({ name: "iCal Feed", url }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+      } catch {
+        setError("Failed to subscribe to feed");
+        return;
+      }
 
-    await invalidateAccountsAndSources(globalMutate);
-    navigate({ to: "/dashboard/calendars" });
+      await invalidateAccountsAndSources(globalMutate);
+      navigate({ to: "/dashboard/calendars" });
+    });
   };
 
   return (
@@ -55,14 +55,14 @@ export function ICSFeedForm() {
         name="feed-url"
         type="url"
         placeholder="Calendar Feed URL"
-        disabled={submitting}
+        disabled={isPending}
       />
       <Divider />
       <div className="flex items-stretch gap-2">
         <BackButton variant="border" size="standard" className="self-stretch justify-center px-3.5" />
-        <Button type="submit" className="grow justify-center" disabled={submitting}>
-          {submitting && <LoaderCircle size={16} className="animate-spin" />}
-          <ButtonText>{resolveSubmitLabel(submitting)}</ButtonText>
+        <Button type="submit" className="grow justify-center" disabled={isPending}>
+          {isPending && <LoaderCircle size={16} className="animate-spin" />}
+          <ButtonText>{resolveSubmitLabel(isPending)}</ButtonText>
         </Button>
       </div>
       {error && <Text size="sm" tone="danger" align="center">{error}</Text>}
