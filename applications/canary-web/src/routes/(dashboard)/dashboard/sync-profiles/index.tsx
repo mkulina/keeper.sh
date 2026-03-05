@@ -18,8 +18,9 @@ import {
   NavigationMenuItem,
 } from "../../../../components/ui/navigation-menu";
 import { DeleteConfirmation } from "../../../../components/ui/delete-confirmation";
+import { DashboardHeading1, DashboardHeading2 } from "../../../../components/ui/dashboard-heading";
 
-export const Route = createFileRoute("/(dashboard)/dashboard/calendars/")({
+export const Route = createFileRoute("/(dashboard)/dashboard/sync-profiles/")({
   component: CalendarsPage,
 });
 
@@ -199,6 +200,10 @@ function CalendarsPage() {
           </Button>
         </div>
       </div>
+      <div className="flex flex-col">
+        <DashboardHeading1>{isNewSlot ? "Create New Profile" : "Profile"}</DashboardHeading1>
+        <Text size="sm">{isNewSlot ? "Editing any of the information below will create the new profile, and apply the changes." : "You can use multiple profiles for different syncing configurations. Name them to organize them."}</Text>
+      </div>
       <NavigationMenu className="flex-1 min-w-0">
         <NavigationMenuEditableItem
           key={resolveEditableItemKey(isNewSlot, profile)}
@@ -301,6 +306,10 @@ function NewProfileSlot({ name, calendars, onProfileCreated }: NewProfileSlotPro
 
   return (
     <>
+      <div className="flex flex-col">
+        <DashboardHeading2>Event Sources</DashboardHeading2>
+        <Text size="sm">Events from the marked calendars will be pooled, and pushed to the calendars marked as destinations below.</Text>
+      </div>
       <CalendarCheckboxList
         calendars={pullCalendars}
         selectedIds={sources}
@@ -309,6 +318,10 @@ function NewProfileSlot({ name, calendars, onProfileCreated }: NewProfileSlotPro
       />
       <div className="self-center py-2">
         <ArrowDown size={16} className="text-foreground-muted" />
+      </div>
+      <div className="flex flex-col">
+        <DashboardHeading2>Event Destinations</DashboardHeading2>
+        <Text size="sm">When you mark a calendar below, events from the sources will be pushed to that calendar.</Text>
       </div>
       <CalendarCheckboxList
         calendars={pushCalendars}
@@ -339,6 +352,10 @@ function ProfileDetail({ profile, profiles, calendars, mutateProfiles, onDelete 
 
   return (
     <>
+      <div className="flex flex-col">
+        <DashboardHeading2>Event Sources</DashboardHeading2>
+        <Text size="sm">Events from the marked calendars will be pooled, and pushed to the calendars marked as destinations below.</Text>
+      </div>
       <CalendarCheckboxList
         calendars={pullCalendars}
         selectedIds={sourceSet}
@@ -347,6 +364,10 @@ function ProfileDetail({ profile, profiles, calendars, mutateProfiles, onDelete 
       />
       <div className="self-center py-2">
         <ArrowDown size={16} className="text-foreground-muted" />
+      </div>
+      <div className="flex flex-col">
+        <DashboardHeading2>Event Destinations</DashboardHeading2>
+        <Text size="sm">When you mark a calendar below, events from the sources will be pushed to that calendar.</Text>
       </div>
       <CalendarCheckboxList
         calendars={pushCalendars}

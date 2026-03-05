@@ -5,7 +5,7 @@ import {
   syncProfilesTable,
   syncStatusTable,
 } from "@keeper.sh/database/schema";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { database } from "../context";
 
 interface SyncProfile {
@@ -284,10 +284,19 @@ const ensureDefaultProfile = async (userId: string): Promise<void> => {
     .values({ name: "Default", userId });
 };
 
+const getProfileCount = async (userId: string): Promise<number> => {
+  const [result] = await database
+    .select({ count: count() })
+    .from(syncProfilesTable)
+    .where(eq(syncProfilesTable.userId, userId));
+  return result?.count ?? 0;
+};
+
 export {
   ensureDefaultProfile,
   getUserProfiles,
   getProfile,
+  getProfileCount,
   createProfile,
   updateProfile,
   deleteProfile,

@@ -6,8 +6,8 @@ const dashboardHeading = tv({
   variants: {
     level: {
       1: "text-2xl",
-      2: "text-xl",
-      3: "text-lg",
+      2: "text-lg",
+      3: "text-md",
     },
   },
 });

@@ -20,6 +20,7 @@ import {
   NavigationMenuItemTrailing,
 } from "../../../../components/ui/navigation-menu";
 import { DeleteConfirmation } from "../../../../components/ui/delete-confirmation";
+import { DashboardHeading2 } from "../../../../components/ui/dashboard-heading";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/accounts/$accountId/",
@@ -96,9 +97,10 @@ function AccountDetailPage() {
   return (
     <div className="flex flex-col gap-1.5">
       <BackButton />
-      <NavigationMenu>
-        {renderCalendarList(calendars, accountId)}
-      </NavigationMenu>
+      <div className="flex flex-col">
+        <DashboardHeading2>Account Information</DashboardHeading2>
+        <Text size="sm">View details about the account and its calendars.</Text>
+      </div>
       <NavigationMenu>
         <MetadataRow label="Resource Type" value="Account" />
         <MetadataRow label="Calendar Count" value={String(calendars.length)} />
@@ -111,6 +113,13 @@ function AccountDetailPage() {
         <NavigationMenuItem onClick={() => setDeleteOpen(true)}>
           <Text size="sm" tone="danger">Delete Account</Text>
         </NavigationMenuItem>
+      </NavigationMenu>
+      <div className="flex flex-col">
+        <DashboardHeading2>Account Calendars</DashboardHeading2>
+        <Text size="sm">This account has {calendars.length} accounts connected, click them below to view more details.</Text>
+      </div>
+      <NavigationMenu>
+        {renderCalendarList(calendars, accountId)}
       </NavigationMenu>
       {deleteError && <Text size="sm" tone="danger">{deleteError}</Text>}
       <DeleteConfirmation

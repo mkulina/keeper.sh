@@ -11,6 +11,8 @@ import {
   NavigationMenu,
   NavigationMenuEditableItem,
 } from "../../../../components/ui/navigation-menu";
+import { DashboardHeading2 } from "../../../../components/ui/dashboard-heading";
+import { Text } from "../../../../components/ui/text";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/accounts/$accountId/$calendarId",
@@ -61,12 +63,20 @@ function CalendarDetailPage() {
   return (
     <div className="flex flex-col gap-1.5">
       <BackButton fallback={`/dashboard/accounts/${accountId}`} />
+      <div className="flex flex-col">
+        <DashboardHeading2>Calendar Name</DashboardHeading2>
+        <Text size="sm">Click below to rename the calendar within Keeper. This does not affect the calendar outside of the Keeper ecosystem.</Text>
+      </div>
       <NavigationMenu>
         <NavigationMenuEditableItem
           value={calendar.name}
           onCommit={handleRenameCalendar}
         />
       </NavigationMenu>
+      <div className="flex flex-col">
+        <DashboardHeading2>Calendar Information</DashboardHeading2>
+        <Text size="sm">View details about the calendar.</Text>
+      </div>
       <NavigationMenu>
         <MetadataRow label="Resource Type" value="Calendar" />
         <MetadataRow label="Type" value={calendar.calendarType} />

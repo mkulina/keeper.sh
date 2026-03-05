@@ -44,7 +44,7 @@ export function ICSFeedForm() {
       }
 
       await invalidateAccountsAndSources(globalMutate);
-      navigate({ to: "/dashboard/calendars" });
+      navigate({ to: "/dashboard/sync-profiles" });
     });
   };
 

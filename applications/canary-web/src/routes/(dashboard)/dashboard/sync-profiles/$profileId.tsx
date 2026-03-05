@@ -19,7 +19,7 @@ import {
 import { DeleteConfirmation } from "../../../../components/ui/delete-confirmation";
 
 export const Route = createFileRoute(
-  "/(dashboard)/dashboard/calendars/$profileId",
+  "/(dashboard)/dashboard/sync-profiles/$profileId",
 )({
   component: ProfileDetailPage,
 });
@@ -51,7 +51,7 @@ function ProfileDetailPage() {
       try {
         await apiFetch(`/api/profiles/${profileId}`, { method: "DELETE" });
         await invalidateAccountsAndSources(globalMutate, "/api/profiles", `/api/profiles/${profileId}`);
-        navigate({ to: "/dashboard/calendars" });
+        navigate({ to: "/dashboard/sync-profiles" });
       } catch (err) {
         setDeleteError(resolveErrorMessage(err, "Failed to delete profile."));
       }
@@ -59,7 +59,7 @@ function ProfileDetailPage() {
   };
 
   if (error || calendarsError || isLoading || !profile) {
-    return <RouteShell backFallback="/dashboard/calendars" isLoading={isLoading || !profile} error={error || calendarsError} onRetry={() => mutateProfile()}>{null}</RouteShell>;
+    return <RouteShell backFallback="/dashboard/sync-profiles" isLoading={isLoading || !profile} error={error || calendarsError} onRetry={() => mutateProfile()}>{null}</RouteShell>;
   }
 
   const { pull: pullCalendars, push: pushCalendars } = partitionCalendars(calendars ?? []);
@@ -69,7 +69,7 @@ function ProfileDetailPage() {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <BackButton fallback="/dashboard/calendars" />
+      <BackButton fallback="/dashboard/sync-profiles" />
       <NavigationMenu>
         <NavigationMenuEditableItem
           value={profile.name}

@@ -52,6 +52,9 @@ function DashboardPage() {
   const { data: eventCountData } = useSWR<{ count: number }>("/api/events/count");
   const eventCount = eventCountData?.count;
 
+  const { data: profileCountData } = useSWR<{ count: number }>("/api/profiles/count");
+  const profileCount = profileCountData?.count;
+
   return (
     <div className="flex flex-col">
       <EventGraph />
@@ -149,12 +152,14 @@ function DashboardPage() {
                     {eventCount != null && <Text size="sm" tone="muted">{pluralize(eventCount, "event")}</Text>}
                   </NavigationMenuItemTrailing>
                 </NavigationMenuItem>
-                <NavigationMenuItem to="/dashboard/calendars">
+                <NavigationMenuItem to="/dashboard/sync-profiles">
                   <NavigationMenuItemIcon>
                     <CalendarSync size={15} />
                   </NavigationMenuItemIcon>
                   <NavigationMenuItemLabel>Sync Settings</NavigationMenuItemLabel>
-                  <NavigationMenuItemTrailing />
+                  <NavigationMenuItemTrailing>
+                    {profileCount != null && <Text size="sm" tone="muted">{pluralize(profileCount, "profile")}</Text>}
+                  </NavigationMenuItemTrailing>
                 </NavigationMenuItem>
               </motion.div>
             )}

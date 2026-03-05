@@ -65,7 +65,10 @@ function EventsContent() {
 
   return (
     <div className="flex flex-col gap-3">
-      <DashboardHeading1>Events</DashboardHeading1>
+      <div className="flex flex-col">
+        <DashboardHeading1>Events</DashboardHeading1>
+        <Text size="sm">View all of the events across all of your calendars.</Text>
+      </div>
       {dayGroups.map((group) => (
         <DaySection key={group.label} label={group.label} events={group.events} />
       ))}
