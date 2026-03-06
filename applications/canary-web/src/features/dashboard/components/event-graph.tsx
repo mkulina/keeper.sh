@@ -100,13 +100,8 @@ const buildDays = (events: ApiEventSummary[], todayStart: Date): DayData[] => {
   return normalizeDayData(counts, todayStart);
 };
 
-function resolveActiveDay(hoverIndex: number | null, days: DayData[], today: DayData): DayData {
-  if (hoverIndex !== null) return days[hoverIndex];
-  return today;
-}
-
-function resolveEventCountLabel(count: number): string {
-  return pluralize(count, "event");
+function resolveWeekTotal(days: DayData[]): number {
+  return days.reduce((sum, day) => sum + day.count, 0);
 }
 
 interface EventGraphSummaryProps {
@@ -115,17 +110,17 @@ interface EventGraphSummaryProps {
 
 function EventGraphSummary({ days }: EventGraphSummaryProps) {
   const hoverIndex = useAtomValue(eventGraphHoverIndexAtom);
-  const today = days[DAYS_BEFORE];
-  const activeDay = resolveActiveDay(hoverIndex, days, today);
-  const eventCountLabel = resolveEventCountLabel(activeDay.count);
+  const isHovering = hoverIndex !== null;
+  const eventCount = isHovering ? days[hoverIndex].count : resolveWeekTotal(days);
+  const label = isHovering ? days[hoverIndex].fullLabel : "This Week";
 
   return (
     <div className="flex items-center justify-between">
       <Text size="sm" tone="muted" align="right" className="tabular-nums">
-        {eventCountLabel}
+        {pluralize(eventCount, "event")}
       </Text>
       <Text size="sm" tone="muted" align="right" className="tabular-nums">
-        {activeDay.fullLabel}
+        {label}
       </Text>
     </div>
   );
