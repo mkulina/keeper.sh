@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, KeyboardEvent as ReactKeyboardEvent, PropsWithChildren, ReactNode } from "react";
-import { createContext, use, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { createContext, use, useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Check, ChevronsUpDown, Pencil } from "lucide-react";
@@ -337,7 +337,7 @@ type PopoverContextValue = {
 
 const PopoverContext = createContext<PopoverContextValue | null>(null);
 
-export function usePopover() {
+function usePopover() {
   const ctx = use(PopoverContext);
   if (!ctx) throw new Error("NavigationMenuPopover subcomponents must be used within NavigationMenuPopover");
   return ctx;
@@ -346,33 +346,25 @@ export function usePopover() {
 export function NavigationMenuPopover({ trigger, children, disabled }: { trigger: ReactNode; children: ReactNode; disabled?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [present, setPresent] = useState(false);
-  const [openedAt, setOpenedAt] = useState("");
-  const { pathname } = useLocation();
   const containerRef = useRef<HTMLLIElement>(null);
   const setOverlay = useSetAtom(popoverOverlayAtom);
   const variant = use(MenuVariantContext);
 
-  if (expanded && openedAt !== pathname) {
+  const close = useCallback(() => {
     setExpanded(false);
     setOverlay(false);
-  }
+  }, [setOverlay]);
 
-  const close = () => {
-    setExpanded(false);
-    setOverlay(false);
-  };
-
-  const open = () => {
+  const open = useCallback(() => {
     setExpanded(true);
     setPresent(true);
-    setOpenedAt(pathname);
     setOverlay(true);
-  };
+  }, [setOverlay]);
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     if (expanded) close();
     else open();
-  };
+  }, [expanded, close, open]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -394,7 +386,7 @@ export function NavigationMenuPopover({ trigger, children, disabled }: { trigger
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [expanded, setOverlay]);
+  }, [expanded, close]);
 
   return (
     <PopoverContext value={{ expanded, toggle, close, triggerContent: trigger }}>
@@ -508,15 +500,18 @@ export function NavigationMenuEditableItem({
       return;
     }
     committingRef.current = true;
-    await onCommit(trimmed);
-    committingRef.current = false;
-    setEditing(false);
+    try {
+      await onCommit(trimmed);
+      setEditing(false);
+    } finally {
+      committingRef.current = false;
+    }
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      commit();
+      void commit();
     }
     if (event.key === "Escape") {
       setEditing(false);
@@ -531,7 +526,9 @@ export function NavigationMenuEditableItem({
       type: "text" as const,
       defaultValue: value,
       autoComplete: "off",
-      onBlur: commit,
+      onBlur: () => {
+        void commit();
+      },
       onKeyDown: handleKeyDown,
       autoFocus: true,
     };

@@ -28,8 +28,17 @@ interface SetupSearch {
   index?: number;
 }
 
+type MappingRoute = "destinations" | "sources";
+type MappingResponseKey = "destinationIds" | "sourceIds";
+
 function isValidStep(value: unknown): value is SetupStep {
   return typeof value === "string" && VALID_STEPS.includes(value as SetupStep);
+}
+
+function parseSearchIndex(value: unknown): number | undefined {
+  const parsed = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+  if (!Number.isInteger(parsed) || parsed < 0) return undefined;
+  return parsed;
 }
 
 export const Route = createFileRoute(
@@ -40,7 +49,7 @@ export const Route = createFileRoute(
     return {
       step: isValidStep(search.step) ? search.step : undefined,
       id: typeof search.id === "string" ? search.id : undefined,
-      index: typeof search.index === "number" ? search.index : undefined,
+      index: parseSearchIndex(search.index),
     };
   },
 });
@@ -50,6 +59,61 @@ function parseSelectedIds(commaIds: string | undefined): Set<string> {
   return new Set(commaIds.split(",").filter(Boolean));
 }
 
+function resolveStepCalendarIndex(index: number, length: number): number {
+  if (length === 0) return 0;
+  if (index >= length) return length - 1;
+  return index;
+}
+
+function resolveUpdatedIds(currentIds: string[], calendarId: string, checked: boolean): string[] {
+  if (checked) return currentIds.includes(calendarId) ? currentIds : [...currentIds, calendarId];
+  return currentIds.filter((existingId) => existingId !== calendarId);
+}
+
+function buildMappingData(responseKey: MappingResponseKey, ids: string[]): Record<MappingResponseKey, string[]> {
+  return { [responseKey]: ids } as Record<MappingResponseKey, string[]>;
+}
+
+function useCalendarMapping({
+  calendarId,
+  route,
+  responseKey,
+}: {
+  calendarId?: string;
+  route: MappingRoute;
+  responseKey: MappingResponseKey;
+}) {
+  const endpoint = calendarId ? `/api/sources/${calendarId}/${route}` : null;
+  const { data, mutate } = useSWR<Record<MappingResponseKey, string[]>>(endpoint);
+
+  const selectedIds = new Set(data?.[responseKey] ?? []);
+
+  const handleToggle = async (targetCalendarId: string, checked: boolean) => {
+    if (!endpoint) return;
+    const currentIds = data?.[responseKey] ?? [];
+    const updatedIds = resolveUpdatedIds(currentIds, targetCalendarId, checked);
+    const mappingData = buildMappingData(responseKey, updatedIds);
+
+    await mutate(
+      async () => {
+        await apiFetch(endpoint, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ calendarIds: updatedIds }),
+        });
+        return mappingData;
+      },
+      {
+        optimisticData: mappingData,
+        rollbackOnError: true,
+        revalidate: false,
+      },
+    );
+  };
+
+  return { selectedIds, handleToggle };
+}
+
 function AccountSetupPage() {
   const { accountId } = Route.useParams();
   const search = Route.useSearch();
@@ -57,7 +121,7 @@ function AccountSetupPage() {
 
   const step = search.step ?? "select";
   const selectedIds = parseSelectedIds(search.id);
-  const calendarIndex = search.index ?? 0;
+  const requestedCalendarIndex = search.index ?? 0;
 
   const { data: allCalendars, isLoading, error, mutate: mutateCalendars } = useSWR<CalendarSource[]>(
     "/api/sources",
@@ -70,6 +134,8 @@ function AccountSetupPage() {
   const selectedCalendars = accountCalendars.filter((calendar) => selectedIds.has(calendar.id));
   const pullCapableSelected = selectedCalendars.filter(canPull);
   const pushCapableSelected = selectedCalendars.filter(canPush);
+  const destinationCalendarIndex = resolveStepCalendarIndex(requestedCalendarIndex, pullCapableSelected.length);
+  const sourceCalendarIndex = resolveStepCalendarIndex(requestedCalendarIndex, pushCapableSelected.length);
 
   const navigateToStep = (nextStep: SetupStep, nextIndex?: number) => {
     navigate({
@@ -139,16 +205,16 @@ function AccountSetupPage() {
       )}
       {step === "destinations" && (
         <DestinationsSection
-          calendar={pullCapableSelected[calendarIndex]}
+          calendar={pullCapableSelected[destinationCalendarIndex]}
           allCalendars={allCalendars ?? []}
-          onNext={() => advanceFromDestinations(calendarIndex)}
+          onNext={() => advanceFromDestinations(destinationCalendarIndex)}
         />
       )}
       {step === "sources" && (
         <SourcesSection
-          calendar={pushCapableSelected[calendarIndex]}
+          calendar={pushCapableSelected[sourceCalendarIndex]}
           allCalendars={allCalendars ?? []}
-          onNext={() => advanceFromSources(calendarIndex)}
+          onNext={() => advanceFromSources(sourceCalendarIndex)}
         />
       )}
     </div>
@@ -290,42 +356,33 @@ function DestinationsSection({
   allCalendars,
   onNext,
 }: {
-  calendar: CalendarSource;
+  calendar?: CalendarSource;
   allCalendars: CalendarSource[];
   onNext: () => void;
 }) {
-  const { data: destinationsData, mutate: mutateDestinations } = useSWR<{ destinationIds: string[] }>(
-    `/api/sources/${calendar.id}/destinations`,
-  );
+  const { selectedIds, handleToggle } = useCalendarMapping({
+    calendarId: calendar?.id,
+    route: "destinations",
+    responseKey: "destinationIds",
+  });
+
+  if (!calendar) {
+    return (
+      <>
+        <div className="flex flex-col px-0.5 pt-4">
+          <DashboardHeading2>No destination setup needed</DashboardHeading2>
+          <Text size="sm">None of the selected calendars can send events right now.</Text>
+        </div>
+        <Button className="w-full justify-center" onClick={onNext}>
+          <ButtonText>Continue</ButtonText>
+        </Button>
+      </>
+    );
+  }
 
   const pushCalendars = allCalendars.filter(
     (candidate) => canPush(candidate) && candidate.id !== calendar.id,
   );
-
-  const selectedDestinationIds = new Set(destinationsData?.destinationIds ?? []);
-
-  const handleToggle = async (destinationId: string, checked: boolean) => {
-    const currentIds = destinationsData?.destinationIds ?? [];
-    const updatedIds = checked
-      ? [...currentIds, destinationId]
-      : currentIds.filter((existingId) => existingId !== destinationId);
-
-    await mutateDestinations(
-      async () => {
-        await apiFetch(`/api/sources/${calendar.id}/destinations`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ calendarIds: updatedIds }),
-        });
-        return { destinationIds: updatedIds };
-      },
-      {
-        optimisticData: { destinationIds: updatedIds },
-        rollbackOnError: true,
-        revalidate: false,
-      },
-    );
-  };
 
   return (
     <>
@@ -340,7 +397,7 @@ function DestinationsSection({
         {pushCalendars.map((destination) => (
           <NavigationMenuCheckboxItem
             key={destination.id}
-            checked={selectedDestinationIds.has(destination.id)}
+            checked={selectedIds.has(destination.id)}
             onCheckedChange={(checked) => handleToggle(destination.id, checked)}
           >
             <NavigationMenuItemIcon>
@@ -368,42 +425,33 @@ function SourcesSection({
   allCalendars,
   onNext,
 }: {
-  calendar: CalendarSource;
+  calendar?: CalendarSource;
   allCalendars: CalendarSource[];
   onNext: () => void;
 }) {
-  const { data: sourcesData, mutate: mutateSources } = useSWR<{ sourceIds: string[] }>(
-    `/api/sources/${calendar.id}/sources`,
-  );
+  const { selectedIds, handleToggle } = useCalendarMapping({
+    calendarId: calendar?.id,
+    route: "sources",
+    responseKey: "sourceIds",
+  });
+
+  if (!calendar) {
+    return (
+      <>
+        <div className="flex flex-col px-0.5 pt-4">
+          <DashboardHeading2>No source setup needed</DashboardHeading2>
+          <Text size="sm">None of the selected calendars can pull events right now.</Text>
+        </div>
+        <Button className="w-full justify-center" onClick={onNext}>
+          <ButtonText>Finish</ButtonText>
+        </Button>
+      </>
+    );
+  }
 
   const pullCalendars = allCalendars.filter(
     (candidate) => canPull(candidate) && candidate.id !== calendar.id,
   );
-
-  const selectedSourceIds = new Set(sourcesData?.sourceIds ?? []);
-
-  const handleToggle = async (sourceId: string, checked: boolean) => {
-    const currentIds = sourcesData?.sourceIds ?? [];
-    const updatedIds = checked
-      ? [...currentIds, sourceId]
-      : currentIds.filter((existingId) => existingId !== sourceId);
-
-    await mutateSources(
-      async () => {
-        await apiFetch(`/api/sources/${calendar.id}/sources`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ calendarIds: updatedIds }),
-        });
-        return { sourceIds: updatedIds };
-      },
-      {
-        optimisticData: { sourceIds: updatedIds },
-        rollbackOnError: true,
-        revalidate: false,
-      },
-    );
-  };
 
   return (
     <>
@@ -418,7 +466,7 @@ function SourcesSection({
         {pullCalendars.map((source) => (
           <NavigationMenuCheckboxItem
             key={source.id}
-            checked={selectedSourceIds.has(source.id)}
+            checked={selectedIds.has(source.id)}
             onCheckedChange={(checked) => handleToggle(source.id, checked)}
           >
             <NavigationMenuItemIcon>

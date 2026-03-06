@@ -22,17 +22,13 @@ import {
 } from "../../../../components/ui/navigation-menu";
 import { ErrorState } from "../../../../components/ui/error-state";
 import { Text } from "../../../../components/ui/text";
+import { resolveErrorMessage } from "../../../../utils/errors";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/settings/passkeys",
 )({
   component: PasskeysPage,
 });
-
-function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  return fallback;
-}
 
 function PasskeysPage() {
   const { data: passkeys = [], error, mutate } = usePasskeys();

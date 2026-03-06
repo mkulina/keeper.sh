@@ -5,6 +5,7 @@ import { Heading2 } from "../components/ui/heading";
 import { Text } from "../components/ui/text";
 import { LinkButton, ButtonText } from "../components/ui/button";
 import { fetcher } from "../lib/fetcher";
+import { resolveErrorMessage } from "../utils/errors";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -43,11 +44,6 @@ function NotFound() {
       </LinkButton>
     </div>
   );
-}
-
-function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  return fallback;
 }
 
 function ErrorFallback({ error }: ErrorComponentProps) {

@@ -3,7 +3,7 @@ import { Calendar } from "lucide-react";
 import { Heading2 } from "../../../../components/ui/heading";
 import { Text } from "../../../../components/ui/text";
 import { ProviderIconPair } from "../../../../components/auth/oauth-preamble";
-import { ICSFileForm } from "../../../../components/auth/ics-connect-form";
+import { ButtonText, LinkButton } from "../../../../components/ui/button";
 
 export const Route = createFileRoute(
   "/(oauth)/dashboard/connect/ics-file",
@@ -19,9 +19,11 @@ function ConnectICSFilePage() {
       </ProviderIconPair>
       <Heading2 as="h1">Upload ICS File</Heading2>
       <Text size="sm" tone="muted" align="left">
-        Upload a one-time snapshot of your calendar. Future changes to the original calendar won&apos;t be reflected.
+        ICS snapshot uploads are not available in Canary yet. Use an ICS feed link to keep your events synced.
       </Text>
-      <ICSFileForm />
+      <LinkButton to="/dashboard/connect/ical-link" className="w-full justify-center">
+        <ButtonText>Use ICS Feed Instead</ButtonText>
+      </LinkButton>
     </>
   );
 }

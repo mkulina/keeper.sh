@@ -15,11 +15,7 @@ import { Divider } from "../ui/divider";
 import { Heading2 } from "../ui/heading";
 import { Input } from "../ui/input";
 import { Text } from "../ui/text";
-
-function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  return fallback;
-}
+import { resolveErrorMessage } from "../../utils/errors";
 
 function resolveAuthenticator(action: "signIn" | "signUp") {
   if (action === "signIn") return signInWithEmail;

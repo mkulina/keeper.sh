@@ -6,17 +6,13 @@ import { Text } from "../../../../components/ui/text";
 import { Divider } from "../../../../components/ui/divider";
 import { Input } from "../../../../components/ui/input";
 import { changePassword } from "../../../../lib/auth";
+import { resolveErrorMessage } from "../../../../utils/errors";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/settings/change-password",
 )({
   component: ChangePasswordPage,
 });
-
-function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  return fallback;
-}
 
 function resolveInputTone(error: string | null): "error" | "neutral" {
   if (error) return "error";

@@ -9,13 +9,9 @@ import { Input } from "../ui/input";
 import { Text } from "../ui/text";
 import { apiFetch } from "../../lib/fetcher";
 import { invalidateAccountsAndSources } from "../../lib/swr";
+import { resolveErrorMessage } from "../../utils/errors";
 
 type CalDAVProvider = "fastmail" | "icloud" | "caldav";
-
-function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  return fallback;
-}
 
 function resolveUsernameInputType(provider: CalDAVProvider): string {
   if (provider === "caldav") return "text";

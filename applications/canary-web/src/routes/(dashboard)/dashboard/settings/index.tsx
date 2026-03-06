@@ -23,16 +23,11 @@ import {
   NavigationMenuItemTrailing,
 } from "../../../../components/ui/navigation-menu";
 import { Text } from "../../../../components/ui/text";
+import { resolveErrorMessage } from "../../../../utils/errors";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/settings/")({
   component: SettingsPage,
 });
-
-function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  return fallback;
-}
-
 
 function SettingsPage() {
   const { user } = useSession();

@@ -75,7 +75,7 @@ function ConnectPage() {
           <NavigationMenuItemIcon>
             <Upload size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Upload ICS Snapshot File</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>ICS Snapshot Upload (Coming Soon)</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing />
         </NavigationMenuItem>
       </NavigationMenu>

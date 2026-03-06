@@ -22,17 +22,13 @@ import {
 import { DeleteConfirmation } from "../../../../components/ui/delete-confirmation";
 import { DashboardHeading2 } from "../../../../components/ui/dashboard-heading";
 import { pluralize } from "../../../../lib/pluralize";
+import { resolveErrorMessage } from "../../../../utils/errors";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/accounts/$accountId/",
 )({
   component: AccountDetailPage,
 });
-
-function resolveErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof Error) return error.message;
-  return fallback;
-}
 
 function renderCalendarList(calendars: CalendarSource[], accountId: string) {
   if (calendars.length === 0) {
