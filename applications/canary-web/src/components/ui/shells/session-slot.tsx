@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { hasSessionCookie } from "../../lib/session-cookie";
+import { hasSessionCookie } from "../../../lib/session-cookie";
 
 interface SessionSlotProps {
   authenticated: ReactNode;

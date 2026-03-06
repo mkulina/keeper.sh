@@ -1,9 +1,9 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { SWRConfig } from "swr";
-import { Heading2 } from "../components/ui/heading";
-import { Text } from "../components/ui/text";
-import { LinkButton, ButtonText } from "../components/ui/button";
+import { Heading2 } from "../components/ui/primitives/heading";
+import { Text } from "../components/ui/primitives/text";
+import { LinkButton, ButtonText } from "../components/ui/primitives/button";
 import { fetcher, HttpError } from "../lib/fetcher";
 import { resolveErrorMessage } from "../utils/errors";
 

@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import useSWR from "swr";
-import { BackButton } from "../../../../components/ui/back-button";
-import { RouteShell } from "../../../../components/ui/route-shell";
-import { MetadataRow } from "../../../../components/dashboard/metadata-row";
-import { CalendarCheckboxList } from "../../../../components/dashboard/calendar-checkbox-list";
-import { ProviderIcon } from "../../../../components/ui/provider-icon";
-import { DashboardHeading1 } from "../../../../components/ui/dashboard-heading";
+import { BackButton } from "../../../../components/ui/primitives/back-button";
+import { RouteShell } from "../../../../components/ui/shells/route-shell";
+import { MetadataRow } from "../../../../features/dashboard/components/metadata-row";
+import { CalendarCheckboxList } from "../../../../features/dashboard/components/calendar-checkbox-list";
+import { ProviderIcon } from "../../../../components/ui/primitives/provider-icon";
+import { DashboardHeading1 } from "../../../../components/ui/primitives/dashboard-heading";
 import { apiFetch } from "../../../../lib/fetcher";
 import { formatDate } from "../../../../lib/time";
 import { getAccountLabel } from "../../../../utils/accounts";
@@ -14,14 +14,16 @@ import { resolveUpdatedIds } from "../../../../utils/collections";
 import type { CalendarAccount, CalendarDetail, CalendarSource } from "../../../../types/api";
 import {
   NavigationMenu,
-  NavigationMenuEditableItem,
-  NavigationMenuEditableTemplateItem,
   NavigationMenuToggleItem,
   NavigationMenuItemLabel,
-} from "../../../../components/ui/navigation-menu";
-import { DashboardHeading2 } from "../../../../components/ui/dashboard-heading";
-import { Text } from "../../../../components/ui/text";
-import { TemplateText } from "../../../../components/ui/template-text";
+} from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
+import {
+  NavigationMenuEditableItem,
+  NavigationMenuEditableTemplateItem,
+} from "../../../../components/ui/composites/navigation-menu/navigation-menu-editable";
+import { DashboardHeading2 } from "../../../../components/ui/primitives/dashboard-heading";
+import { Text } from "../../../../components/ui/primitives/text";
+import { TemplateText } from "../../../../components/ui/primitives/template-text";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/accounts/$accountId/$calendarId",

@@ -2,13 +2,13 @@ import { useState, useTransition, type SubmitEvent } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useSWRConfig } from "swr";
-import { apiFetch } from "../../lib/fetcher";
-import { invalidateAccountsAndSources } from "../../lib/swr";
-import { BackButton } from "../ui/back-button";
-import { Button, ButtonText } from "../ui/button";
-import { Divider } from "../ui/divider";
-import { Input } from "../ui/input";
-import { Text } from "../ui/text";
+import { apiFetch } from "../../../lib/fetcher";
+import { invalidateAccountsAndSources } from "../../../lib/swr";
+import { BackButton } from "../../../components/ui/primitives/back-button";
+import { Button, ButtonText } from "../../../components/ui/primitives/button";
+import { Divider } from "../../../components/ui/primitives/divider";
+import { Input } from "../../../components/ui/primitives/input";
+import { Text } from "../../../components/ui/primitives/text";
 
 function resolveSubmitLabel(pending: boolean): string {
   if (pending) return "Subscribing...";

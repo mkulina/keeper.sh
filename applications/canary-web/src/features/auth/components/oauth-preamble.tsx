@@ -1,13 +1,13 @@
 import type { ReactNode, SubmitEvent } from "react";
 import { ArrowLeftRight, Check } from "lucide-react";
-import KeeperLogo from "../../assets/keeper.svg?react";
-import { authClient } from "../../lib/auth-client";
-import { BackButton } from "../ui/back-button";
-import { Heading2 } from "../ui/heading";
-import { Text } from "../ui/text";
-import { TextLink } from "../ui/text-link";
-import { Divider } from "../ui/divider";
-import { Button, ButtonText } from "../ui/button";
+import KeeperLogo from "../../../assets/keeper.svg?react";
+import { authClient } from "../../../lib/auth-client";
+import { BackButton } from "../../../components/ui/primitives/back-button";
+import { Heading2 } from "../../../components/ui/primitives/heading";
+import { Text } from "../../../components/ui/primitives/text";
+import { TextLink } from "../../../components/ui/primitives/text-link";
+import { Divider } from "../../../components/ui/primitives/divider";
+import { Button, ButtonText } from "../../../components/ui/primitives/button";
 
 type Provider = "google" | "outlook" | "microsoft-365";
 

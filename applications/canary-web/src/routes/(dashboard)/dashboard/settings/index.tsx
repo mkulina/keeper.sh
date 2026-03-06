@@ -2,11 +2,11 @@ import { useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { KeyRound, Lock, Mail, Trash2 } from "lucide-react";
 import { pluralize } from "../../../../lib/pluralize";
-import { Button, ButtonText } from "../../../../components/ui/button";
-import { BackButton } from "../../../../components/ui/back-button";
+import { Button, ButtonText } from "../../../../components/ui/primitives/button";
+import { BackButton } from "../../../../components/ui/primitives/back-button";
 import { useSession } from "../../../../hooks/use-session";
 import { usePasskeys } from "../../../../hooks/use-passkeys";
-import { Input } from "../../../../components/ui/input";
+import { Input } from "../../../../components/ui/primitives/input";
 import { deleteAccount } from "../../../../lib/auth";
 import {
   Modal,
@@ -14,15 +14,15 @@ import {
   ModalDescription,
   ModalFooter,
   ModalTitle,
-} from "../../../../components/ui/modal";
+} from "../../../../components/ui/primitives/modal";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
   NavigationMenuItemTrailing,
-} from "../../../../components/ui/navigation-menu";
-import { Text } from "../../../../components/ui/text";
+} from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
+import { Text } from "../../../../components/ui/primitives/text";
 import { resolveErrorMessage } from "../../../../utils/errors";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/settings/")({

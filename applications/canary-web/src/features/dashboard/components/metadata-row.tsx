@@ -1,7 +1,10 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import type { Link } from "@tanstack/react-router";
-import { NavigationMenuItem, NavigationMenuItemIcon } from "../ui/navigation-menu";
-import { Text } from "../ui/text";
+import {
+  NavigationMenuItem,
+  NavigationMenuItemIcon,
+} from "../../../components/ui/composites/navigation-menu/navigation-menu-items";
+import { Text } from "../../../components/ui/primitives/text";
 
 interface MetadataRowProps {
   label: string;

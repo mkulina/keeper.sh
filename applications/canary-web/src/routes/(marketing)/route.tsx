@@ -1,11 +1,11 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { Layout, LayoutItem } from '../../components/ui/layout'
-import { MarketingHeader, MarketingHeaderActions, MarketingHeaderBranding } from '../../components/marketing/marketing-header'
-import { MarketingFooter, MarketingFooterTagline, MarketingFooterNav, MarketingFooterNavGroup, MarketingFooterNavGroupLabel, MarketingFooterNavItem } from '../../components/marketing/marketing-footer'
+import { Layout, LayoutItem } from '../../components/ui/shells/layout'
+import { MarketingHeader, MarketingHeaderActions, MarketingHeaderBranding } from '../../features/marketing/components/marketing-header'
+import { MarketingFooter, MarketingFooterTagline, MarketingFooterNav, MarketingFooterNavGroup, MarketingFooterNavGroupLabel, MarketingFooterNavItem } from '../../features/marketing/components/marketing-footer'
 import KeeperLogo from "../../assets/keeper.svg?react";
-import { ButtonText, LinkButton } from '../../components/ui/button';
-import { GithubStarButton } from '../../components/ui/github-star-button';
-import { SessionSlot } from '../../components/ui/session-slot';
+import { ButtonText, LinkButton } from '../../components/ui/primitives/button';
+import { GithubStarButton } from '../../components/ui/primitives/github-star-button';
+import { SessionSlot } from '../../components/ui/shells/session-slot';
 import { HeartIcon } from 'lucide-react';
 
 export const Route = createFileRoute('/(marketing)')({

@@ -2,10 +2,10 @@ import { useState, useTransition } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useSWR, { preload, useSWRConfig } from "swr";
 import { Calendar } from "lucide-react";
-import { BackButton } from "../../../../components/ui/back-button";
-import { RouteShell } from "../../../../components/ui/route-shell";
-import { Text } from "../../../../components/ui/text";
-import { MetadataRow } from "../../../../components/dashboard/metadata-row";
+import { BackButton } from "../../../../components/ui/primitives/back-button";
+import { RouteShell } from "../../../../components/ui/shells/route-shell";
+import { Text } from "../../../../components/ui/primitives/text";
+import { MetadataRow } from "../../../../features/dashboard/components/metadata-row";
 import { fetcher, apiFetch } from "../../../../lib/fetcher";
 import { formatDate } from "../../../../lib/time";
 import { invalidateAccountsAndSources } from "../../../../lib/swr";
@@ -18,9 +18,9 @@ import {
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
   NavigationMenuItemTrailing,
-} from "../../../../components/ui/navigation-menu";
-import { DeleteConfirmation } from "../../../../components/ui/delete-confirmation";
-import { DashboardHeading2 } from "../../../../components/ui/dashboard-heading";
+} from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
+import { DeleteConfirmation } from "../../../../components/ui/primitives/delete-confirmation";
+import { DashboardHeading2 } from "../../../../components/ui/primitives/dashboard-heading";
 import { pluralize } from "../../../../lib/pluralize";
 import { resolveErrorMessage } from "../../../../utils/errors";
 

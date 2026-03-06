@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { motion } from "motion/react";
 import { memo, type PropsWithChildren } from "react";
-import { calendarEmphasizedAtom } from "../../state/calendar-emphasized";
+import { calendarEmphasizedAtom } from "../../../state/calendar-emphasized";
 
 export interface Skew {
   rotate: number;

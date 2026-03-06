@@ -2,9 +2,9 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 import { authClient } from "../../lib/auth-client";
-import { Button, ButtonText } from "../../components/ui/button";
-import { Heading2 } from "../../components/ui/heading";
-import { Text } from "../../components/ui/text";
+import { Button, ButtonText } from "../../components/ui/primitives/button";
+import { Heading2 } from "../../components/ui/primitives/heading";
+import { Text } from "../../components/ui/primitives/text";
 
 export const Route = createFileRoute("/(auth)/verify-email")({
   component: VerifyEmailPage,

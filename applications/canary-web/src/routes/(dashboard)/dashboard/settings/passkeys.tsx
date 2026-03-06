@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { KeyRound, Plus } from "lucide-react";
-import { Button, ButtonText } from "../../../../components/ui/button";
-import { BackButton } from "../../../../components/ui/back-button";
+import { Button, ButtonText } from "../../../../components/ui/primitives/button";
+import { BackButton } from "../../../../components/ui/primitives/back-button";
 import { usePasskeys, addPasskey, deletePasskey } from "../../../../hooks/use-passkeys";
 import type { Passkey } from "../../../../hooks/use-passkeys";
 import { formatDateShort } from "../../../../lib/time";
@@ -12,16 +12,16 @@ import {
   ModalDescription,
   ModalFooter,
   ModalTitle,
-} from "../../../../components/ui/modal";
+} from "../../../../components/ui/primitives/modal";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
   NavigationMenuItemTrailing,
-} from "../../../../components/ui/navigation-menu";
-import { ErrorState } from "../../../../components/ui/error-state";
-import { Text } from "../../../../components/ui/text";
+} from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
+import { ErrorState } from "../../../../components/ui/primitives/error-state";
+import { Text } from "../../../../components/ui/primitives/text";
 import { resolveErrorMessage } from "../../../../utils/errors";
 
 export const Route = createFileRoute(

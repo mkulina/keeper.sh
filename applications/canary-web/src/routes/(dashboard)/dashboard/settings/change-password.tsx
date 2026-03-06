@@ -1,11 +1,11 @@
 import { useState, useTransition, type SubmitEvent } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
-import { Button, ButtonText } from "../../../../components/ui/button";
-import { BackButton } from "../../../../components/ui/back-button";
-import { Text } from "../../../../components/ui/text";
-import { Divider } from "../../../../components/ui/divider";
-import { Input } from "../../../../components/ui/input";
+import { Button, ButtonText } from "../../../../components/ui/primitives/button";
+import { BackButton } from "../../../../components/ui/primitives/back-button";
+import { Text } from "../../../../components/ui/primitives/text";
+import { Divider } from "../../../../components/ui/primitives/divider";
+import { Input } from "../../../../components/ui/primitives/input";
 import { changePassword } from "../../../../lib/auth";
 import { resolveErrorMessage } from "../../../../utils/errors";
 

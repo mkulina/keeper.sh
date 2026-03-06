@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CalDAVConnectPage } from "../../../../components/auth/caldav-connect-page";
+import { CalDAVConnectPage } from "../../../../features/auth/components/caldav-connect-page";
 
 export const Route = createFileRoute(
   "/(oauth)/dashboard/connect/fastmail",

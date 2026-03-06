@@ -1,13 +1,13 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { motion } from "motion/react";
 import { tv } from "tailwind-variants/lite";
-import { eventGraphHoverIndexAtom } from "../../state/event-graph-hover";
-import { fetcher } from "../../lib/fetcher";
-import { useAnimatedSWR } from "../../hooks/use-animated-swr";
-import { pluralize } from "../../lib/pluralize";
-import { Text } from "../ui/text";
-import { useStartOfToday } from "../../hooks/use-start-of-today";
-import type { ApiEventSummary } from "../../types/api";
+import { eventGraphHoverIndexAtom } from "../../../state/event-graph-hover";
+import { fetcher } from "../../../lib/fetcher";
+import { useAnimatedSWR } from "../../../hooks/use-animated-swr";
+import { pluralize } from "../../../lib/pluralize";
+import { Text } from "../../../components/ui/primitives/text";
+import { useStartOfToday } from "../../../hooks/use-start-of-today";
+import type { ApiEventSummary } from "../../../types/api";
 
 const DAYS_BEFORE = 7;
 const DAYS_AFTER = 7;

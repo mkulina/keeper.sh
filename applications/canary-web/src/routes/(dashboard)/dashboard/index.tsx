@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import useSWR, { preload } from "swr";
-import { AnimatedReveal } from "../../../components/ui/animated-reveal";
+import { AnimatedReveal } from "../../../components/ui/primitives/animated-reveal";
 import { Calendar, CalendarPlus, CalendarDays, Settings, Sparkles, LogOut, LoaderCircle, User } from "lucide-react";
-import { ErrorState } from "../../../components/ui/error-state";
+import { ErrorState } from "../../../components/ui/primitives/error-state";
 import { signOut } from "../../../lib/auth";
 import { fetcher } from "../../../lib/fetcher";
 import KeeperLogo from "../../../assets/keeper.svg?react";
-import { EventGraph } from "../../../components/dashboard/event-graph";
-import { ProviderIcon } from "../../../components/ui/provider-icon";
+import { EventGraph } from "../../../features/dashboard/components/event-graph";
+import { ProviderIcon } from "../../../components/ui/primitives/provider-icon";
 import type { CalendarAccount, CalendarSource } from "../../../types/api";
 import {
   NavigationMenu,
@@ -15,10 +15,10 @@ import {
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
   NavigationMenuItemTrailing,
-  NavigationMenuPopover,
-} from "../../../components/ui/navigation-menu";
-import { Text } from "../../../components/ui/text";
-import { ProviderIconStack } from "../../../components/ui/provider-icon-stack";
+} from "../../../components/ui/composites/navigation-menu/navigation-menu-items";
+import { NavigationMenuPopover } from "../../../components/ui/composites/navigation-menu/navigation-menu-popover";
+import { Text } from "../../../components/ui/primitives/text";
+import { ProviderIconStack } from "../../../components/ui/primitives/provider-icon-stack";
 import { getAccountLabel } from "../../../utils/accounts";
 import { pluralize } from "../../../lib/pluralize";
 import { useAnimatedSWR } from "../../../hooks/use-animated-swr";

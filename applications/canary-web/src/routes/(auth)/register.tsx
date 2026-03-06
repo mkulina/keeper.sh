@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AuthForm, type AuthScreenCopy } from "../../components/auth/auth-form";
+import { AuthForm, type AuthScreenCopy } from "../../features/auth/components/auth-form";
 
 export const Route = createFileRoute("/(auth)/register")({
   component: RegisterPage,

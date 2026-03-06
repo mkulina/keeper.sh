@@ -1,13 +1,13 @@
-import { ProviderIcon } from "../ui/provider-icon";
+import { ProviderIcon } from "../../../components/ui/primitives/provider-icon";
 import {
   NavigationMenu,
   NavigationMenuCheckboxItem,
   NavigationMenuEmptyItem,
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
-} from "../ui/navigation-menu";
-import { getCalendarProvider } from "../../utils/calendars";
-import type { CalendarEntry } from "../../types/api";
+} from "../../../components/ui/composites/navigation-menu/navigation-menu-items";
+import { getCalendarProvider } from "../../../utils/calendars";
+import type { CalendarEntry } from "../../../types/api";
 
 interface CalendarCheckboxListProps {
   calendars: CalendarEntry[];

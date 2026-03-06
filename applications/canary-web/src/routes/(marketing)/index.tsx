@@ -1,16 +1,16 @@
 import { useSetAtom } from 'jotai'
 import { createFileRoute } from '@tanstack/react-router'
-import { Heading1, Heading2, Heading3 } from '../../components/ui/heading'
-import { Text } from '../../components/ui/text'
-import { ButtonIcon, ButtonText, ExternalLinkButton, LinkButton } from '../../components/ui/button'
-import { MarketingIllustrationCalendar, MarketingIllustrationCalendarCard, type Skew, type SkewTuple } from '../../components/marketing/marketing-illustration-calendar'
+import { Heading1, Heading2, Heading3 } from '../../components/ui/primitives/heading'
+import { Text } from '../../components/ui/primitives/text'
+import { ButtonIcon, ButtonText, ExternalLinkButton, LinkButton } from '../../components/ui/primitives/button'
+import { MarketingIllustrationCalendar, MarketingIllustrationCalendarCard, type Skew, type SkewTuple } from '../../features/marketing/components/marketing-illustration-calendar'
 import {
   MarketingFeatureBentoBody,
   MarketingFeatureBentoCard,
   MarketingFeatureBentoGrid,
   MarketingFeatureBentoIllustration,
   MarketingFeatureBentoSection,
-} from '../../components/marketing/marketing-feature-bento'
+} from '../../features/marketing/components/marketing-feature-bento'
 import {
   MarketingPricingComparisonGrid,
   MarketingPricingComparisonSpacer,
@@ -23,7 +23,7 @@ import {
   MarketingPricingIntro,
   MarketingPricingPlanCard,
   MarketingPricingSection,
-} from '../../components/marketing/marketing-pricing-section'
+} from '../../features/marketing/components/marketing-pricing-section'
 import { calendarEmphasizedAtom } from '../../state/calendar-emphasized'
 import { ArrowRightIcon, ArrowUpRightIcon } from 'lucide-react'
 

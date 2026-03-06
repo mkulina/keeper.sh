@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Calendar, Link, Upload } from "lucide-react";
-import { BackButton } from "../../../../components/ui/back-button";
+import { BackButton } from "../../../../components/ui/primitives/back-button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
   NavigationMenuItemTrailing,
-} from "../../../../components/ui/navigation-menu";
+} from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/connect/")({
   component: ConnectPage,

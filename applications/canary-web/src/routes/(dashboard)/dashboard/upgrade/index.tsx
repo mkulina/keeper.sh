@@ -1,24 +1,24 @@
 import { useState, useTransition } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BackButton } from "../../../../components/ui/back-button";
-import { DashboardHeading1 } from "../../../../components/ui/dashboard-heading";
-import { Heading2, Heading3 } from "../../../../components/ui/heading";
-import { Text } from "../../../../components/ui/text";
-import { Button, ButtonText } from "../../../../components/ui/button";
+import { BackButton } from "../../../../components/ui/primitives/back-button";
+import { DashboardHeading1 } from "../../../../components/ui/primitives/dashboard-heading";
+import { Heading2, Heading3 } from "../../../../components/ui/primitives/heading";
+import { Text } from "../../../../components/ui/primitives/text";
+import { Button, ButtonText } from "../../../../components/ui/primitives/button";
 import {
   NavigationMenu,
   NavigationMenuCheckboxItem,
   NavigationMenuItemIcon,
   NavigationMenuItemLabel,
-} from "../../../../components/ui/navigation-menu";
+} from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
 import {
   MarketingPricingCard,
   MarketingPricingCardAction,
   MarketingPricingCardBody,
   MarketingPricingCardCopy,
-} from "../../../../components/marketing/marketing-pricing-section";
+} from "../../../../features/marketing/components/marketing-pricing-section";
 import { CalendarClock, Check, Infinity } from "lucide-react";
-import { MetadataRow } from "../../../../components/dashboard/metadata-row";
+import { MetadataRow } from "../../../../features/dashboard/components/metadata-row";
 import { useSubscription } from "../../../../hooks/use-subscription";
 import { openCheckout, openCustomerPortal } from "../../../../utils/checkout";
 import { plans } from "../../../../config/plans";

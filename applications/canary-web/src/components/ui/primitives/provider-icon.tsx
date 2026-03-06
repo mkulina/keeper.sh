@@ -1,5 +1,5 @@
 import { Calendar, Link as LinkIcon } from "lucide-react";
-import { providerIcons } from "../../lib/providers";
+import { providerIcons } from "../../../lib/providers";
 
 interface ProviderIconProps {
   provider?: string;

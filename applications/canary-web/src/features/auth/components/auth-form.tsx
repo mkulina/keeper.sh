@@ -8,14 +8,14 @@ import {
   authFormErrorAtom,
   authFormStepAtom,
   type AuthFormStatus,
-} from "../../state/auth-form";
-import { signInWithEmail, signUpWithEmail } from "../../lib/auth";
-import { Button, LinkButton, ButtonText, ButtonIcon } from "../ui/button";
-import { Divider } from "../ui/divider";
-import { Heading2 } from "../ui/heading";
-import { Input } from "../ui/input";
-import { Text } from "../ui/text";
-import { resolveErrorMessage } from "../../utils/errors";
+} from "../../../state/auth-form";
+import { signInWithEmail, signUpWithEmail } from "../../../lib/auth";
+import { Button, LinkButton, ButtonText, ButtonIcon } from "../../../components/ui/primitives/button";
+import { Divider } from "../../../components/ui/primitives/divider";
+import { Heading2 } from "../../../components/ui/primitives/heading";
+import { Input } from "../../../components/ui/primitives/input";
+import { Text } from "../../../components/ui/primitives/text";
+import { resolveErrorMessage } from "../../../utils/errors";
 
 function resolveAuthenticator(action: "signIn" | "signUp") {
   if (action === "signIn") return signInWithEmail;
