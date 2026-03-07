@@ -1,9 +1,11 @@
+import { memo, useCallback, useMemo, useRef } from "react";
+import { atom } from "jotai";
 import { useAtomValue, useSetAtom } from "jotai";
 import * as m from "motion/react-m";
 import { LazyMotion } from "motion/react";
 import { loadMotionFeatures } from "../../../lib/motion-features";
 import { tv } from "tailwind-variants/lite";
-import { eventGraphHoverIndexAtom } from "../../../state/event-graph-hover";
+import { eventGraphHoverIndexAtom, eventGraphDraggingAtom } from "../../../state/event-graph-hover";
 import { fetcher } from "../../../lib/fetcher";
 import { useAnimatedSWR } from "../../../hooks/use-animated-swr";
 import { pluralize } from "../../../lib/pluralize";
@@ -104,25 +106,53 @@ function resolveWeekTotal(days: DayData[]): number {
   return days.reduce((sum, day) => sum + day.count, 0);
 }
 
+function resolveEventCount(hoverIndex: number | null, days: DayData[]): number {
+  if (hoverIndex !== null) return days[hoverIndex].count;
+  return resolveWeekTotal(days);
+}
+
+function resolveLabel(hoverIndex: number | null, days: DayData[]): string {
+  if (hoverIndex !== null) return days[hoverIndex].fullLabel;
+  return "This Week";
+}
+
+function resolveDataAttr(condition: boolean): "" | undefined {
+  if (condition) return "";
+  return undefined;
+}
+
 interface EventGraphSummaryProps {
   days: DayData[];
 }
 
 function EventGraphSummary({ days }: EventGraphSummaryProps) {
-  const hoverIndex = useAtomValue(eventGraphHoverIndexAtom);
-  const isHovering = hoverIndex !== null;
-  const eventCount = isHovering ? days[hoverIndex].count : resolveWeekTotal(days);
-  const label = isHovering ? days[hoverIndex].fullLabel : "This Week";
-
   return (
     <div className="flex items-center justify-between">
-      <Text size="sm" tone="muted" align="right" className="tabular-nums">
-        {pluralize(eventCount, "event")}
-      </Text>
-      <Text size="sm" tone="muted" align="right" className="tabular-nums">
-        {label}
-      </Text>
+      <EventGraphEventCount days={days} />
+      <EventGraphLabel days={days} />
     </div>
+  );
+}
+
+function EventGraphEventCount({ days }: EventGraphSummaryProps) {
+  const hoverIndex = useAtomValue(eventGraphHoverIndexAtom);
+  const count = resolveEventCount(hoverIndex, days);
+
+  return (
+    <Text size="sm" tone="muted" align="right" className="tabular-nums">
+      {pluralize(count, "event")}
+    </Text>
+  );
+}
+
+function EventGraphLabel({ days }: EventGraphSummaryProps) {
+  const hoverIndex = useAtomValue(eventGraphHoverIndexAtom);
+  const label = resolveLabel(hoverIndex, days);
+
+  return (
+    <Text size="sm" tone="muted" align="right" className="tabular-nums">
+      {label}
+    </Text>
   );
 }
 
@@ -134,54 +164,125 @@ function resolveBarTransition(shouldAnimate: boolean, dayIndex: number) {
   return { ...ANIMATED_TRANSITION, delay: dayIndex * 0.015 };
 }
 
+function useIsActiveDragTarget(index: number): boolean {
+  const isActiveAtom = useMemo(
+    () => atom((get) => get(eventGraphDraggingAtom) && get(eventGraphHoverIndexAtom) === index),
+    [index],
+  );
+  return useAtomValue(isActiveAtom);
+}
+
+interface EventGraphBarProps {
+  day: DayData;
+  dayIndex: number;
+  shouldAnimate: boolean;
+}
+
+const EventGraphBar = memo(function EventGraphBar({ day, dayIndex, shouldAnimate }: EventGraphBarProps) {
+  const isActive = useIsActiveDragTarget(dayIndex);
+  const setHoverIndex = useSetAtom(eventGraphHoverIndexAtom);
+
+  return (
+    <div
+      className="flex-1 flex flex-col gap-2"
+      data-active={resolveDataAttr(isActive)}
+      onPointerEnter={() => setHoverIndex(dayIndex)}
+    >
+      <div
+        className="flex items-end"
+        style={{ height: GRAPH_HEIGHT }}
+      >
+        <LazyMotion features={loadMotionFeatures}>
+          <m.div
+            className={graphBar({
+              period: day.period,
+              className: "w-full",
+            })}
+            initial={{ height: MIN_BAR_HEIGHT }}
+            animate={{ height: day.height }}
+            transition={resolveBarTransition(shouldAnimate, dayIndex)}
+          />
+        </LazyMotion>
+      </div>
+      <Text
+        size="xs"
+        tone="default"
+        align="center"
+        className="font-mono leading-none select-none"
+      >
+        {day.dayOffset}
+      </Text>
+    </div>
+  );
+});
+
+interface EventGraphBarsProps {
+  days: DayData[];
+  shouldAnimate: boolean;
+}
+
+function EventGraphBars({ days, shouldAnimate }: EventGraphBarsProps) {
+  const isDragging = useAtomValue(eventGraphDraggingAtom);
+  const setHoverIndex = useSetAtom(eventGraphHoverIndexAtom);
+  const setDragging = useSetAtom(eventGraphDraggingAtom);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const resolveIndexFromTouch = useCallback((touch: Touch) => {
+    const container = containerRef.current;
+    if (!container) return null;
+    const rect = container.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const index = Math.floor((x / rect.width) * TOTAL_DAYS);
+    if (index < 0 || index >= TOTAL_DAYS) return null;
+    return index;
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setDragging(true);
+    setHoverIndex(resolveIndexFromTouch(e.touches[0]));
+  }, [resolveIndexFromTouch, setHoverIndex, setDragging]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    setHoverIndex(resolveIndexFromTouch(e.touches[0]));
+  }, [resolveIndexFromTouch, setHoverIndex]);
+
+  const handleTouchEnd = useCallback(() => {
+    setDragging(false);
+    setHoverIndex(null);
+  }, [setHoverIndex, setDragging]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex gap-0.5 pointer-hover:[&:hover>*]:opacity-50 pointer-hover:[&>*:hover]:opacity-100 data-[dragging]:*:opacity-50 data-[dragging]:*:data-[active]:opacity-100"
+      data-dragging={resolveDataAttr(isDragging)}
+      onPointerLeave={() => setHoverIndex(null)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {days.map((day, dayIndex) => (
+        <EventGraphBar
+          key={day.dayOffset}
+          day={day}
+          dayIndex={dayIndex}
+          shouldAnimate={shouldAnimate}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function EventGraph() {
   const todayStart = useStartOfToday();
   const graphUrl = buildGraphUrl(todayStart);
   const { data: events, shouldAnimate } = useAnimatedSWR<ApiEventSummary[]>(graphUrl, { fetcher });
   const days = buildDays(events ?? [], todayStart);
-  const setHoverIndex = useSetAtom(eventGraphHoverIndexAtom);
 
   return (
     <div className="flex flex-col gap-6 pb-4">
       <EventGraphSummary days={days} />
-
-      <div
-        className="flex gap-0.5 [&:hover>*]:opacity-50 [&>*:hover]:opacity-100"
-        onPointerLeave={() => setHoverIndex(null)}
-      >
-        {days.map((day, dayIndex) => (
-          <div
-            key={day.dayOffset}
-            className="flex-1 flex flex-col gap-2"
-            onPointerEnter={() => setHoverIndex(dayIndex)}
-          >
-            <div
-              className="flex items-end"
-              style={{ height: GRAPH_HEIGHT }}
-            >
-              <LazyMotion features={loadMotionFeatures}>
-                <m.div
-                  className={graphBar({
-                    period: day.period,
-                    className: "w-full",
-                  })}
-                  initial={{ height: MIN_BAR_HEIGHT }}
-                  animate={{ height: day.height }}
-                  transition={resolveBarTransition(shouldAnimate, dayIndex)}
-                />
-              </LazyMotion>
-            </div>
-            <Text
-              size="xs"
-              tone="default"
-              align="center"
-              className="font-mono leading-none select-none"
-            >
-              {day.dayOffset}
-            </Text>
-          </div>
-        ))}
-      </div>
+      <EventGraphBars days={days} shouldAnimate={shouldAnimate} />
     </div>
   );
 }
