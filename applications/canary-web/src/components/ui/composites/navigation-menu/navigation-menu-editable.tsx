@@ -265,24 +265,35 @@ function TemplateInputOverlay({
   label?: string;
 }) {
   const [liveValue, setLiveValue] = useState(defaultValue);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const input = inputRef.current;
     if (!input) return;
-    const handler = () => setLiveValue(input.value);
-    input.addEventListener("input", handler);
-    return () => input.removeEventListener("input", handler);
+
+    const handleInput = () => setLiveValue(input.value);
+    const handleScroll = () => {
+      if (overlayRef.current) overlayRef.current.scrollLeft = input.scrollLeft;
+    };
+
+    input.addEventListener("input", handleInput);
+    input.addEventListener("scroll", handleScroll);
+    return () => {
+      input.removeEventListener("input", handleInput);
+      input.removeEventListener("scroll", handleScroll);
+    };
   }, [inputRef]);
 
   return (
-    <span
+    <div
+      ref={overlayRef}
       className={cn(
-        "col-start-1 row-start-1 pointer-events-none text-sm tracking-tight truncate whitespace-pre",
+        "col-start-1 row-start-1 pointer-events-none text-sm tracking-tight whitespace-pre overflow-hidden",
         label && "text-right",
       )}
     >
       {renderInput(liveValue)}
-    </span>
+    </div>
   );
 }
 
