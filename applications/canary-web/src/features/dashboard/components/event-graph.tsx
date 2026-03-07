@@ -192,17 +192,15 @@ const EventGraphBar = memo(function EventGraphBar({ day, dayIndex, shouldAnimate
         className="flex items-end"
         style={{ height: GRAPH_HEIGHT }}
       >
-        <LazyMotion features={loadMotionFeatures}>
-          <m.div
-            className={graphBar({
-              period: day.period,
-              className: "w-full",
-            })}
-            initial={{ height: MIN_BAR_HEIGHT }}
-            animate={{ height: day.height }}
-            transition={resolveBarTransition(shouldAnimate, dayIndex)}
-          />
-        </LazyMotion>
+        <m.div
+          className={graphBar({
+            period: day.period,
+            className: "w-full",
+          })}
+          initial={{ height: MIN_BAR_HEIGHT }}
+          animate={{ height: day.height }}
+          transition={resolveBarTransition(shouldAnimate, dayIndex)}
+        />
       </div>
       <Text
         size="xs"
@@ -285,9 +283,11 @@ export function EventGraph() {
   const days = buildDays(events ?? [], todayStart);
 
   return (
-    <div className="flex flex-col gap-6 pb-4">
-      <EventGraphSummary days={days} />
-      <EventGraphBars days={days} shouldAnimate={shouldAnimate} />
-    </div>
+    <LazyMotion features={loadMotionFeatures}>
+      <div className="flex flex-col gap-6 pb-4">
+        <EventGraphSummary days={days} />
+        <EventGraphBars days={days} shouldAnimate={shouldAnimate} />
+      </div>
+    </LazyMotion>
   );
 }
