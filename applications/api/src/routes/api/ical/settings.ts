@@ -3,6 +3,10 @@ import { icalFeedSettingsTable } from "@keeper.sh/database/schema";
 import { withAuth, withWideEvent } from "../../../utils/middleware";
 import { ErrorResponse } from "../../../utils/responses";
 import { database } from "../../../context";
+import {
+  icalSettingsPatchBodySchema,
+  type IcalSettingsPatchBody,
+} from "../../../utils/request-body";
 
 const DEFAULT_SETTINGS = {
   includeEventName: false,
@@ -10,6 +14,30 @@ const DEFAULT_SETTINGS = {
   includeEventLocation: false,
   excludeAllDayEvents: false,
   customEventName: "Busy",
+};
+
+const ICAL_BOOLEAN_UPDATE_FIELDS = [
+  "includeEventName",
+  "includeEventDescription",
+  "includeEventLocation",
+  "excludeAllDayEvents",
+] as const;
+
+const buildIcalSettingsUpdates = (
+  body: IcalSettingsPatchBody,
+): Record<string, string | boolean> => {
+  const updates: Record<string, string | boolean> = {};
+
+  for (const field of ICAL_BOOLEAN_UPDATE_FIELDS) {
+    if (typeof body[field] === "boolean") {
+      updates[field] = body[field];
+    }
+  }
+  if (typeof body.customEventName === "string") {
+    updates.customEventName = body.customEventName;
+  }
+
+  return updates;
 };
 
 const GET = withWideEvent(
@@ -26,26 +54,9 @@ const GET = withWideEvent(
 
 const PATCH = withWideEvent(
   withAuth(async ({ request, userId }) => {
-    const body = (await request.json()) as {
-      includeEventName?: boolean;
-      includeEventDescription?: boolean;
-      includeEventLocation?: boolean;
-      excludeAllDayEvents?: boolean;
-      customEventName?: string;
-    };
-
-    const booleanFields = [
-      "includeEventName",
-      "includeEventDescription",
-      "includeEventLocation",
-      "excludeAllDayEvents",
-    ] as const;
-
-    const updates: Record<string, string | boolean> = {};
-    for (const field of booleanFields) {
-      if (typeof body[field] === "boolean") updates[field] = body[field];
-    }
-    if (typeof body.customEventName === "string") updates.customEventName = body.customEventName;
+    const payload = await request.json();
+    const body = icalSettingsPatchBodySchema.allows(payload) ? payload : {};
+    const updates = buildIcalSettingsUpdates(body);
 
     if (Object.keys(updates).length === 0) {
       return ErrorResponse.badRequest("No valid fields to update").toResponse();

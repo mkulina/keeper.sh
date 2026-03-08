@@ -69,19 +69,10 @@ const verifySourceOwnership = async (userId: string, calendarId: string): Promis
   return Boolean(source);
 };
 
-/**
- * Validates that a URL returns a valid iCal file.
- * Throws an error if invalid.
- */
 const validateSourceUrl = async (url: string): Promise<void> => {
   await pullRemoteCalendar("json", url);
 };
 
-/**
- * Creates a new source for a user.
- * Validates the URL, checks limits, and triggers initial sync.
- * Throws if limit reached or URL invalid.
- */
 const createSource = async (userId: string, name: string, url: string): Promise<Source> => {
   const existingSources = await database
     .select({ id: calendarsTable.id })
@@ -144,11 +135,6 @@ const createSource = async (userId: string, name: string, url: string): Promise<
   return source;
 };
 
-/**
- * Deletes a source owned by a user.
- * Returns true if deleted, false if not found.
- * Triggers destination sync after deletion.
- */
 const deleteSource = async (userId: string, calendarId: string): Promise<boolean> => {
   const [deleted] = await database
     .delete(calendarsTable)

@@ -2,6 +2,7 @@ import { createCalDAVSourceSchema } from "@keeper.sh/data-schemas";
 import { HTTP_STATUS } from "@keeper.sh/constants";
 import { withAuth, withWideEvent } from "../../../../utils/middleware";
 import { ErrorResponse } from "../../../../utils/responses";
+import { caldavSourcesQuerySchema } from "../../../../utils/request-query";
 import {
   CalDAVSourceLimitError,
   DuplicateCalDAVSourceError,
@@ -12,7 +13,12 @@ import {
 const GET = withWideEvent(
   withAuth(async ({ request, userId }) => {
     const url = new URL(request.url);
+    const query = Object.fromEntries(url.searchParams.entries());
     const provider = url.searchParams.get("provider");
+
+    if (!caldavSourcesQuerySchema.allows(query)) {
+      return ErrorResponse.badRequest("Invalid query params").toResponse();
+    }
 
     if (provider) {
       const sources = await getUserCalDAVSources(userId, provider);

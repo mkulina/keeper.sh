@@ -7,18 +7,51 @@ import { deleteSource as deleteIcsSource } from "../../../utils/sources";
 import { deleteOAuthSource } from "../../../utils/oauth-sources";
 import { deleteCalDAVSource } from "../../../utils/caldav-sources";
 import { triggerDestinationSync } from "../../../utils/sync";
+import { sourcePatchBodySchema, type SourcePatchBody } from "../../../utils/request-body";
+import { idParamSchema } from "../../../utils/request-query";
 import {
   getDestinationsForSource,
   getSourcesForDestination,
 } from "../../../utils/source-destination-mappings";
 
+const SOURCE_BOOLEAN_UPDATE_FIELDS = [
+  "excludeAllDayEvents",
+  "excludeEventDescription",
+  "excludeEventLocation",
+  "excludeEventName",
+  "excludeFocusTime",
+  "excludeOutOfOffice",
+  "excludeWorkingLocation",
+  "includeInIcalFeed",
+] as const;
+
+const buildSourceUpdates = (
+  body: SourcePatchBody,
+): Record<string, string | boolean> => {
+  const updates: Record<string, string | boolean> = {};
+
+  if (body.name) {
+    updates.name = body.name;
+  }
+  if (typeof body.customEventName === "string") {
+    updates.customEventName = body.customEventName;
+  }
+
+  for (const field of SOURCE_BOOLEAN_UPDATE_FIELDS) {
+    if (typeof body[field] === "boolean") {
+      updates[field] = body[field];
+    }
+  }
+
+  return updates;
+};
+
 export const GET = withWideEvent(
   withAuth(async ({ params, userId }) => {
-    const { id } = params;
-
-    if (!id) {
+    if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("ID is required").toResponse();
     }
+    const { id } = params;
 
     const [source] = await database
       .select({
@@ -65,42 +98,14 @@ export const GET = withWideEvent(
 
 export const PATCH = withWideEvent(
   withAuth(async ({ request, params, userId }) => {
-    const { id } = params;
-
-    if (!id) {
+    if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("ID is required").toResponse();
     }
+    const { id } = params;
 
-    const body = (await request.json()) as {
-      name?: string;
-      customEventName?: string;
-      excludeAllDayEvents?: boolean;
-      excludeEventDescription?: boolean;
-      excludeEventLocation?: boolean;
-      excludeEventName?: boolean;
-      excludeFocusTime?: boolean;
-      excludeOutOfOffice?: boolean;
-      excludeWorkingLocation?: boolean;
-      includeInIcalFeed?: boolean;
-    };
-
-    const booleanFields = [
-      "excludeAllDayEvents",
-      "excludeEventDescription",
-      "excludeEventLocation",
-      "excludeEventName",
-      "excludeFocusTime",
-      "excludeOutOfOffice",
-      "excludeWorkingLocation",
-      "includeInIcalFeed",
-    ] as const;
-
-    const updates: Record<string, string | boolean> = {};
-    if (body.name && typeof body.name === "string") updates.name = body.name;
-    if (typeof body.customEventName === "string") updates.customEventName = body.customEventName;
-    for (const field of booleanFields) {
-      if (typeof body[field] === "boolean") updates[field] = body[field];
-    }
+    const payload = await request.json();
+    const body = sourcePatchBodySchema.allows(payload) ? payload : {};
+    const updates = buildSourceUpdates(body);
 
     if (Object.keys(updates).length === 0) {
       return ErrorResponse.badRequest("No valid fields to update").toResponse();
@@ -135,11 +140,10 @@ const calendarTypeDeleters: Record<string, (userId: string, calendarId: string) 
 
 export const DELETE = withWideEvent(
   withAuth(async ({ params, userId }) => {
-    const { id } = params;
-
-    if (!id) {
+    if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("ID is required").toResponse();
     }
+    const { id } = params;
 
     const [source] = await database
       .select({ calendarType: calendarsTable.calendarType })

@@ -358,11 +358,11 @@ interface ExternalCalendar {
 const listProviderCalendars: Record<string, (accessToken: string) => Promise<ExternalCalendar[]>> = {
   google: async (accessToken) => {
     const calendars = await listGoogleCalendars(accessToken);
-    return calendars.map((c) => ({ externalId: c.id, name: c.summary }));
+    return calendars.map((calendar) => ({ externalId: calendar.id, name: calendar.summary }));
   },
   outlook: async (accessToken) => {
     const calendars = await listOutlookCalendars(accessToken);
-    return calendars.map((c) => ({ externalId: c.id, name: c.name }));
+    return calendars.map((calendar) => ({ externalId: calendar.id, name: calendar.name }));
   },
 };
 
@@ -374,15 +374,11 @@ interface ImportOAuthAccountOptions {
   email: string | null;
 }
 
-const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): Promise<string> => {
-  const { userId, provider, oauthCredentialId, accessToken, email } = options;
+const findOrCreateOAuthAccountId = async (
+  options: Pick<ImportOAuthAccountOptions, "userId" | "provider" | "oauthCredentialId" | "email">,
+): Promise<string> => {
+  const { userId, provider, oauthCredentialId, email } = options;
 
-  const listCalendars = listProviderCalendars[provider];
-  if (!listCalendars) {
-    throw new Error(`No calendar listing support for provider: ${provider}`);
-  }
-
-  // Find or create calendar_account
   const [existingAccount] = await database
     .select({ id: calendarAccountsTable.id })
     .from(calendarAccountsTable)
@@ -395,28 +391,34 @@ const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): 
     )
     .limit(FIRST_RESULT_LIMIT);
 
-  const accountId = existingAccount?.id ?? (
-    await database
-      .insert(calendarAccountsTable)
-      .values({
-        authType: "oauth",
-        displayName: email,
-        email,
-        oauthCredentialId,
-        provider,
-        userId,
-      })
-      .returning({ id: calendarAccountsTable.id })
-  )[0]?.id;
+  if (existingAccount?.id) {
+    return existingAccount.id;
+  }
 
-  if (!accountId) {
+  const [insertedAccount] = await database
+    .insert(calendarAccountsTable)
+    .values({
+      authType: "oauth",
+      displayName: email,
+      email,
+      oauthCredentialId,
+      provider,
+      userId,
+    })
+    .returning({ id: calendarAccountsTable.id });
+
+  if (!insertedAccount?.id) {
     throw new Error("Failed to find or create calendar account");
   }
 
-  // Fetch all calendars from provider
-  const externalCalendars = await listCalendars(accessToken);
+  return insertedAccount.id;
+};
 
-  // Find which external IDs already exist under this account
+const getUnimportedExternalCalendars = async (
+  userId: string,
+  accountId: string,
+  externalCalendars: ExternalCalendar[],
+): Promise<ExternalCalendar[]> => {
   const existingCalendars = await database
     .select({ externalCalendarId: calendarsTable.externalCalendarId })
     .from(calendarsTable)
@@ -427,31 +429,67 @@ const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): 
       ),
     );
 
-  const existingIds = new Set(existingCalendars.map((c) => c.externalCalendarId));
-  const newCalendars = externalCalendars.filter((c) => !existingIds.has(c.externalId));
+  const existingExternalIds = new Set(
+    existingCalendars.map((calendar) => calendar.externalCalendarId),
+  );
 
-  if (newCalendars.length === 0) return accountId;
+  return externalCalendars.filter(
+    (externalCalendar) => !existingExternalIds.has(externalCalendar.externalId),
+  );
+};
 
-  // Insert all new calendars
-  const inserted = await database
+const insertOAuthCalendars = async (
+  userId: string,
+  accountId: string,
+  calendars: ExternalCalendar[],
+): Promise<void> => {
+  if (calendars.length === 0) {
+    return;
+  }
+
+  await database
     .insert(calendarsTable)
     .values(
-      newCalendars.map((c) => ({
+      calendars.map((calendar) => ({
         accountId,
         calendarType: OAUTH_CALENDAR_TYPE,
         capabilities: ["pull", "push"],
-        externalCalendarId: c.externalId,
-        name: c.name,
+        externalCalendarId: calendar.externalId,
+        name: calendar.name,
         userId,
       })),
-    )
-    .returning({ id: calendarsTable.id });
+    );
+};
 
-  // Trigger sync
+const triggerOAuthImportSync = (userId: string, provider: string): void => {
   spawnBackgroundJob("oauth-account-import", { userId, provider }, async () => {
     await syncOAuthSourcesByProvider(provider);
     triggerDestinationSync(userId);
   });
+};
+
+const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): Promise<string> => {
+  const { userId, provider, oauthCredentialId, accessToken, email } = options;
+
+  const listCalendars = listProviderCalendars[provider];
+  if (!listCalendars) {
+    throw new Error(`No calendar listing support for provider: ${provider}`);
+  }
+
+  const accountId = await findOrCreateOAuthAccountId({
+    email,
+    oauthCredentialId,
+    provider,
+    userId,
+  });
+
+  const externalCalendars = await listCalendars(accessToken);
+  const newCalendars = await getUnimportedExternalCalendars(userId, accountId, externalCalendars);
+
+  if (newCalendars.length === 0) return accountId;
+
+  await insertOAuthCalendars(userId, accountId, newCalendars);
+  triggerOAuthImportSync(userId, provider);
 
   return accountId;
 };

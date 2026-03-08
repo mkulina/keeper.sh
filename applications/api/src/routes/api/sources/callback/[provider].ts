@@ -1,6 +1,7 @@
 import { withWideEvent } from "../../../../utils/middleware";
 import { ErrorResponse } from "../../../../utils/responses";
 import { buildRedirectUrl, OAuthError } from "../../../../utils/oauth";
+import { oauthCallbackQuerySchema, providerParamSchema } from "../../../../utils/request-query";
 import {
   exchangeCodeForTokens,
   fetchUserInfo,
@@ -13,11 +14,11 @@ import { baseUrl } from "../../../../context";
 const MS_PER_SECOND = 1000;
 
 const GET = withWideEvent(async ({ request, params }) => {
-  const { provider } = params;
-
-  if (!provider) {
+  if (!params.provider || !providerParamSchema.allows(params)) {
     return ErrorResponse.notFound().toResponse();
   }
+
+  const provider = params.provider;
 
   const errorUrl = buildRedirectUrl("/dashboard/integrations", {
     error: "Failed to connect source",
@@ -26,9 +27,14 @@ const GET = withWideEvent(async ({ request, params }) => {
 
   try {
     const url = new URL(request.url);
+    const callbackQuery = Object.fromEntries(url.searchParams.entries());
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
     const error = url.searchParams.get("error");
+
+    if (!oauthCallbackQuerySchema.allows(callbackQuery)) {
+      throw new OAuthError("Invalid callback query parameters", errorUrl);
+    }
 
     if (error) {
       throw new OAuthError("OAuth error from provider", errorUrl);

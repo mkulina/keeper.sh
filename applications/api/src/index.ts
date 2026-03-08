@@ -7,6 +7,7 @@ import { handleAuthRequest } from "./handlers/auth";
 import { websocketHandler } from "./handlers/websocket";
 import { validateSocketToken } from "./utils/state";
 import { isHttpMethod, isRouteModule } from "./utils/route-handler";
+import { socketQuerySchema } from "./utils/request-query";
 import { broadcastService } from "./context";
 
 const HTTP_UNAUTHORIZED = 401;
@@ -34,7 +35,12 @@ entry()
 
         if (url.pathname === "/api/socket") {
           const token = url.searchParams.get("token");
-          const userId = token && (await validateSocketToken(token));
+          const query = Object.fromEntries(url.searchParams.entries());
+          if (!token || !socketQuerySchema.allows(query)) {
+            return new Response("Unauthorized", { status: HTTP_UNAUTHORIZED });
+          }
+
+          const userId = await validateSocketToken(token);
 
           if (!userId) {
             return new Response("Unauthorized", { status: HTTP_UNAUTHORIZED });

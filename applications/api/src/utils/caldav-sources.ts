@@ -51,6 +51,73 @@ interface CreateCalDAVSourceData {
   username: string;
 }
 
+const findReusableCalDAVAccount = async (
+  userId: string,
+  provider: string,
+  serverUrl: string,
+  username: string,
+): Promise<{ id: string; caldavCredentialId: string | null } | undefined> => {
+  const [account] = await database
+    .select({
+      id: calendarAccountsTable.id,
+      caldavCredentialId: calendarAccountsTable.caldavCredentialId,
+    })
+    .from(calendarAccountsTable)
+    .innerJoin(
+      caldavCredentialsTable,
+      eq(calendarAccountsTable.caldavCredentialId, caldavCredentialsTable.id),
+    )
+    .where(
+      and(
+        eq(calendarAccountsTable.userId, userId),
+        eq(calendarAccountsTable.provider, provider),
+        eq(caldavCredentialsTable.serverUrl, serverUrl),
+        eq(caldavCredentialsTable.username, username),
+      ),
+    )
+    .limit(FIRST_RESULT_LIMIT);
+
+  return account;
+};
+
+const createCalDAVAccount = async (
+  userId: string,
+  data: CreateCalDAVSourceData,
+  resolvedEncryptionKey: string,
+): Promise<string> => {
+  const encryptedPassword = encryptPassword(data.password, resolvedEncryptionKey);
+
+  const [credential] = await database
+    .insert(caldavCredentialsTable)
+    .values({
+      encryptedPassword,
+      serverUrl: data.serverUrl,
+      username: data.username,
+    })
+    .returning({ id: caldavCredentialsTable.id });
+
+  if (!credential) {
+    throw new Error("Failed to create CalDAV source credential");
+  }
+
+  const [account] = await database
+    .insert(calendarAccountsTable)
+    .values({
+      authType: "caldav",
+      caldavCredentialId: credential.id,
+      displayName: data.username,
+      provider: data.provider,
+      userId,
+    })
+    .returning({ id: calendarAccountsTable.id });
+
+  if (!account) {
+    throw new Error("Failed to create calendar account");
+  }
+
+  return account.id;
+};
+
 const getUserCalDAVSources = async (userId: string, provider?: string): Promise<CalDAVSource[]> => {
   const conditions = [
     eq(calendarsTable.userId, userId),
@@ -145,64 +212,14 @@ const createCalDAVSource = async (
     throw new Error("Encryption key not configured");
   }
 
-  // Reuse existing account for same user/provider/server, or create new one
-  const [existingAccount] = await database
-    .select({
-      id: calendarAccountsTable.id,
-      caldavCredentialId: calendarAccountsTable.caldavCredentialId,
-    })
-    .from(calendarAccountsTable)
-    .innerJoin(
-      caldavCredentialsTable,
-      eq(calendarAccountsTable.caldavCredentialId, caldavCredentialsTable.id),
-    )
-    .where(
-      and(
-        eq(calendarAccountsTable.userId, userId),
-        eq(calendarAccountsTable.provider, data.provider),
-        eq(caldavCredentialsTable.serverUrl, data.serverUrl),
-        eq(caldavCredentialsTable.username, data.username),
-      ),
-    )
-    .limit(1);
+  const existingAccount = await findReusableCalDAVAccount(
+    userId,
+    data.provider,
+    data.serverUrl,
+    data.username,
+  );
 
-  let accountId: string;
-
-  if (existingAccount) {
-    accountId = existingAccount.id;
-  } else {
-    const encryptedPassword = encryptPassword(data.password, encryptionKey);
-
-    const [credential] = await database
-      .insert(caldavCredentialsTable)
-      .values({
-        encryptedPassword,
-        serverUrl: data.serverUrl,
-        username: data.username,
-      })
-      .returning({ id: caldavCredentialsTable.id });
-
-    if (!credential) {
-      throw new Error("Failed to create CalDAV source credential");
-    }
-
-    const [account] = await database
-      .insert(calendarAccountsTable)
-      .values({
-        authType: "caldav",
-        caldavCredentialId: credential.id,
-        displayName: data.username,
-        provider: data.provider,
-        userId,
-      })
-      .returning({ id: calendarAccountsTable.id });
-
-    if (!account) {
-      throw new Error("Failed to create calendar account");
-    }
-
-    accountId = account.id;
-  }
+  const accountId = existingAccount?.id ?? await createCalDAVAccount(userId, data, encryptionKey);
 
   const [source] = await database
     .insert(calendarsTable)
@@ -237,9 +254,7 @@ const createCalDAVSource = async (
 
 const deleteCalDAVSource = async (userId: string, calendarId: string): Promise<boolean> => {
   const [calendar] = await database
-    .select({
-      accountId: calendarsTable.accountId,
-    })
+    .select({ id: calendarsTable.id })
     .from(calendarsTable)
     .where(
       and(
@@ -255,8 +270,6 @@ const deleteCalDAVSource = async (userId: string, calendarId: string): Promise<b
   }
 
   await database.delete(calendarsTable).where(eq(calendarsTable.id, calendarId));
-
-  // Cascade will handle credential cleanup through calendar_accounts
 
   return true;
 };

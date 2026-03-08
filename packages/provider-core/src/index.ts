@@ -57,6 +57,11 @@ export {
   type SyncAggregateTrackerConfig,
 } from "./sync/aggregate-tracker";
 export {
+  createSyncAggregateRuntime,
+  type SyncAggregateRuntimeConfig,
+  type SyncAggregateRuntime,
+} from "./sync/aggregate-runtime";
+export {
   getEventMappingsForDestination,
   createEventMapping,
   deleteEventMapping,

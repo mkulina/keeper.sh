@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { withAuth, withWideEvent } from "../../../utils/middleware";
 import { ErrorResponse } from "../../../utils/responses";
 import { getAuthorizationUrl, isOAuthProvider } from "../../../utils/destinations";
+import { sourceAuthorizeQuerySchema } from "../../../utils/request-query";
 import { baseUrl, database } from "../../../context";
 
 const FIRST_RESULT_LIMIT = 1;
@@ -25,16 +26,19 @@ const userOwnsSourceCredential = async (userId: string, credentialId: string): P
 const GET = withWideEvent(
   withAuth(async ({ request, userId }) => {
     const url = new URL(request.url);
+    const query = Object.fromEntries(url.searchParams.entries());
     const provider = url.searchParams.get("provider");
-    const credentialId = url.searchParams.get("credentialId");
+    const credentialId = url.searchParams.get("credentialId") ?? undefined;
 
-    if (!provider || !isOAuthProvider(provider)) {
+    if (
+      !sourceAuthorizeQuerySchema.allows(query)
+      || !provider
+      || !isOAuthProvider(provider)
+    ) {
       return ErrorResponse.badRequest("Unsupported provider").toResponse();
     }
 
-    const isReauthentication = credentialId !== null;
-
-    if (isReauthentication) {
+    if (credentialId) {
       const ownsCredential = await userOwnsSourceCredential(userId, credentialId);
       if (!ownsCredential) {
         return ErrorResponse.notFound("Source credential not found").toResponse();

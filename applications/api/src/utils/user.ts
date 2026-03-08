@@ -4,11 +4,6 @@ import { database } from "../context";
 
 const FIRST_RESULT_LIMIT = 1;
 
-/**
- * Resolves a user identifier (username or userId) to a userId.
- * Tries username first, then falls back to userId.
- * Returns null if no user is found.
- */
 const resolveUserIdentifier = async (identifier: string): Promise<string | null> => {
   const [userByUsername] = await database
     .select({ id: userTable.id })
@@ -29,10 +24,6 @@ const resolveUserIdentifier = async (identifier: string): Promise<string | null>
   return userById?.id ?? null;
 };
 
-/**
- * Gets the public identifier token for a user.
- * Returns username if set, otherwise returns userId.
- */
 const getUserIdentifierToken = async (userId: string): Promise<string> => {
   const [userData] = await database
     .select({ username: userTable.username })

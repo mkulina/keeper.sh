@@ -14,12 +14,14 @@ const feedbackRequestSchema = type({
   message: "string",
   type: "'feedback' | 'report'",
   "wantsFollowUp?": "boolean",
+  "+": "reject",
 });
 type FeedbackRequest = typeof feedbackRequestSchema.infer;
 
 const createSourceSchema = type({
   name: "string",
   url: "string",
+  "+": "reject",
 });
 
 type CreateSource = typeof createSourceSchema.infer;
@@ -166,6 +168,7 @@ const signUpBodySchema = type({
   email: "string",
   "name?": "string",
   "password?": "string",
+  "+": "reject",
 });
 type SignUpBody = typeof signUpBodySchema.infer;
 
@@ -173,6 +176,7 @@ const caldavDiscoverRequestSchema = type({
   password: "string",
   serverUrl: "string",
   username: "string",
+  "+": "reject",
 });
 type CalDAVDiscoverRequest = typeof caldavDiscoverRequestSchema.infer;
 
@@ -182,11 +186,13 @@ const caldavConnectRequestSchema = type({
   "provider?": "string",
   serverUrl: "string",
   username: "string",
+  "+": "reject",
 });
 type CalDAVConnectRequest = typeof caldavConnectRequestSchema.infer;
 
 const updateSourceDestinationsSchema = type({
   destinationIds: "string[]",
+  "+": "reject",
 });
 type UpdateSourceDestinations = typeof updateSourceDestinationsSchema.infer;
 
@@ -223,6 +229,7 @@ const createOAuthSourceSchema = type({
   "syncFocusTime?": "boolean",
   "syncOutOfOffice?": "boolean",
   "syncWorkingLocation?": "boolean",
+  "+": "reject",
 });
 type CreateOAuthSource = typeof createOAuthSourceSchema.infer;
 
@@ -233,6 +240,7 @@ const createCalDAVSourceSchema = type({
   provider: "'caldav' | 'fastmail' | 'icloud'",
   serverUrl: "string",
   username: "string",
+  "+": "reject",
 });
 type CreateCalDAVSource = typeof createCalDAVSourceSchema.infer;
 
@@ -240,6 +248,7 @@ const caldavDiscoverSourceSchema = type({
   password: "string",
   serverUrl: "string",
   username: "string",
+  "+": "reject",
 });
 type CalDAVDiscoverSource = typeof caldavDiscoverSourceSchema.infer;
 
@@ -256,6 +265,7 @@ type OAuthCalendarSource = typeof oauthCalendarSourceSchema.infer;
 
 const updateOAuthSourceDestinationsSchema = type({
   destinationIds: "string[]",
+  "+": "reject",
 });
 type UpdateOAuthSourceDestinations = typeof updateOAuthSourceDestinationsSchema.infer;
 

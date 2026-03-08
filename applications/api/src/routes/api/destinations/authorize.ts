@@ -3,6 +3,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { withAuth, withWideEvent } from "../../../utils/middleware";
 import { ErrorResponse } from "../../../utils/responses";
 import { getAuthorizationUrl, isOAuthProvider } from "../../../utils/destinations";
+import { destinationAuthorizeQuerySchema } from "../../../utils/request-query";
 import { baseUrl, database, premiumService } from "../../../context";
 
 const FIRST_RESULT_LIMIT = 1;
@@ -42,16 +43,19 @@ const countUserDestinations = async (userId: string): Promise<number> => {
 const GET = withWideEvent(
   withAuth(async ({ request, userId }) => {
     const url = new URL(request.url);
+    const query = Object.fromEntries(url.searchParams.entries());
     const provider = url.searchParams.get("provider");
-    const destinationId = url.searchParams.get("destinationId");
+    const destinationId = url.searchParams.get("destinationId") ?? undefined;
 
-    if (!provider || !isOAuthProvider(provider)) {
+    if (
+      !destinationAuthorizeQuerySchema.allows(query)
+      || !provider
+      || !isOAuthProvider(provider)
+    ) {
       return ErrorResponse.badRequest("Unsupported provider").toResponse();
     }
 
-    const isReauthentication = destinationId !== null;
-
-    if (isReauthentication) {
+    if (destinationId) {
       const ownsDestination = await userOwnsDestination(userId, destinationId);
       if (!ownsDestination) {
         return ErrorResponse.notFound("Destination not found").toResponse();

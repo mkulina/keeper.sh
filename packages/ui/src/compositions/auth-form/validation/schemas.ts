@@ -1,6 +1,5 @@
 import { type } from "arktype";
 
-// Hoisted RegExp patterns
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
 const UPPERCASE_REGEX = /[A-Z]/;
@@ -47,37 +46,24 @@ export const passwordSchema = type("string").narrow((value, context) => {
   return true;
 });
 
-/**
- * Login form schema for commercial strategy (email-based)
- */
 export const loginCommercialSchema = type({
   email: emailSchema,
 });
 
-/**
- * Login form schema for non-commercial strategy (username-based)
- */
 export const loginNonCommercialSchema = type({
   username: usernameSchema,
   password: passwordSchema,
 });
 
-/**
- * Register form schema for commercial strategy (email-based)
- */
 export const registerCommercialSchema = type({
   email: emailSchema,
 });
 
-/**
- * Register form schema for non-commercial strategy (username-based)
- */
 export const registerNonCommercialSchema = type({
   username: usernameSchema,
   password: passwordSchema,
 });
 
-// Export inferred types
 export type EmailData = typeof emailSchema.infer;
 export type UsernameData = typeof usernameSchema.infer;
 export type PasswordData = typeof passwordSchema.infer;

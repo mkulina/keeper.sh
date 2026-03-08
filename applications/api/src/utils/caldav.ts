@@ -31,16 +31,9 @@ interface DiscoveredCalendar {
   displayName: string | undefined;
 }
 
-/**
- * Validates that a provider name is a valid CalDAV provider.
- */
 const isValidProvider = (provider: string): provider is CalDAVProviderId =>
   isCalDAVProvider(provider);
 
-/**
- * Discovers calendars available at a CalDAV server.
- * Throws CalDAVConnectionError if connection fails.
- */
 const discoverCalendars = async (
   serverUrl: string,
   credentials: CalDAVCredentials,
@@ -62,10 +55,6 @@ const discoverCalendars = async (
   }
 };
 
-/**
- * Validates CalDAV credentials by attempting to discover calendars.
- * Throws an error if credentials are invalid.
- */
 const validateCredentials = async (
   serverUrl: string,
   credentials: CalDAVCredentials,
@@ -78,11 +67,6 @@ const validateCredentials = async (
   await client.discoverCalendars();
 };
 
-/**
- * Creates a CalDAV destination for a user.
- * Validates credentials, checks limits, encrypts password, and triggers sync.
- * Throws if limit reached or credentials invalid.
- */
 const createCalDAVDestination = async (
   userId: string,
   provider: CalDAVProviderId,

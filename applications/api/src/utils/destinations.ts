@@ -24,37 +24,28 @@ const isOAuthProvider = (provider: string): boolean => oauthProviders.isOAuthPro
 const hasRequiredScopes = (provider: string, grantedScopes: string): boolean =>
   oauthProviders.hasRequiredScopes(provider, grantedScopes);
 
-const getAuthorizationUrl = (
-  provider: string,
-  userId: string,
-  options: AuthorizationUrlOptions,
-): string => {
+const getOAuthProviderOrThrow = (provider: string) => {
   const oauthProvider = oauthProviders.getProvider(provider);
   if (!oauthProvider) {
     throw new Error(`OAuth provider not found: ${provider}`);
   }
-  return oauthProvider.getAuthorizationUrl(userId, options);
+  return oauthProvider;
 };
+
+const getAuthorizationUrl = (
+  provider: string,
+  userId: string,
+  options: AuthorizationUrlOptions,
+): string => getOAuthProviderOrThrow(provider).getAuthorizationUrl(userId, options);
 
 const exchangeCodeForTokens = (
   provider: string,
   code: string,
   callbackUrl: string,
-): Promise<OAuthTokens> => {
-  const oauthProvider = oauthProviders.getProvider(provider);
-  if (!oauthProvider) {
-    throw new Error(`OAuth provider not found: ${provider}`);
-  }
-  return oauthProvider.exchangeCodeForTokens(code, callbackUrl);
-};
+): Promise<OAuthTokens> => getOAuthProviderOrThrow(provider).exchangeCodeForTokens(code, callbackUrl);
 
-const fetchUserInfo = (provider: string, accessToken: string): Promise<OAuthUserInfo> => {
-  const oauthProvider = oauthProviders.getProvider(provider);
-  if (!oauthProvider) {
-    throw new Error(`OAuth provider not found: ${provider}`);
-  }
-  return oauthProvider.fetchUserInfo(accessToken);
-};
+const fetchUserInfo = (provider: string, accessToken: string): Promise<OAuthUserInfo> =>
+  getOAuthProviderOrThrow(provider).fetchUserInfo(accessToken);
 
 const validateState = (state: string): ValidatedState | null => oauthProviders.validateState(state);
 

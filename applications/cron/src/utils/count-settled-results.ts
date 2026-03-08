@@ -1,6 +1,3 @@
-/**
- * Counts the number of fulfilled and rejected promises from Promise.allSettled results.
- */
 const countSettledResults = <TResult>(
   results: PromiseSettledResult<TResult>[],
 ): { succeeded: number; failed: number } => {

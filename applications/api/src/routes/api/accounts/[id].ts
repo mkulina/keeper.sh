@@ -2,15 +2,15 @@ import { calendarAccountsTable, calendarsTable } from "@keeper.sh/database/schem
 import { and, count, eq } from "drizzle-orm";
 import { withAuth, withWideEvent } from "../../../utils/middleware";
 import { ErrorResponse } from "../../../utils/responses";
+import { idParamSchema } from "../../../utils/request-query";
 import { database } from "../../../context";
 
 const GET = withWideEvent(
   withAuth(async ({ params, userId }) => {
-    const { id } = params;
-
-    if (!id) {
+    if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("Account ID is required").toResponse();
     }
+    const { id } = params;
 
     const [account] = await database
       .select({
@@ -44,11 +44,10 @@ const GET = withWideEvent(
 
 const DELETE = withWideEvent(
   withAuth(async ({ params, userId }) => {
-    const { id } = params;
-
-    if (!id) {
+    if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("Account ID is required").toResponse();
     }
+    const { id } = params;
 
     const [deleted] = await database
       .delete(calendarAccountsTable)

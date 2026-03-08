@@ -7,14 +7,15 @@ import {
   getSourcesForDestination,
   setSourcesForDestination,
 } from "../../../../utils/source-destination-mappings";
+import { calendarIdsBodySchema } from "../../../../utils/request-body";
+import { idParamSchema } from "../../../../utils/request-query";
 
 export const GET = withWideEvent(
   withAuth(async ({ params, userId }) => {
-    const { id } = params;
-
-    if (!id) {
+    if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("Destination ID is required").toResponse();
     }
+    const { id } = params;
 
     const [calendar] = await database
       .select({ id: calendarsTable.id })
@@ -33,18 +34,17 @@ export const GET = withWideEvent(
 
 export const PUT = withWideEvent(
   withAuth(async ({ request, params, userId }) => {
-    const { id } = params;
-
-    if (!id) {
+    if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("Destination ID is required").toResponse();
     }
+    const { id } = params;
 
-    const body = (await request.json()) as { calendarIds?: string[] };
-    if (!Array.isArray(body.calendarIds)) {
+    const payload = await request.json();
+    if (!calendarIdsBodySchema.allows(payload)) {
       return ErrorResponse.badRequest("calendarIds array is required").toResponse();
     }
 
-    await setSourcesForDestination(userId, id, body.calendarIds);
+    await setSourcesForDestination(userId, id, payload.calendarIds);
     return Response.json({ success: true });
   }),
 );

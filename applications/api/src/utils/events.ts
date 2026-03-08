@@ -24,9 +24,6 @@ interface EnrichedEvent {
   calendarUrl: string | null | undefined;
 }
 
-/**
- * Gets events for a user within a date range, enriched with source metadata.
- */
 const getEventsInRange = async (userId: string, url: URL): Promise<EnrichedEvent[]> => {
   const { from, to } = parseDateRangeParams(url);
   const { start, end } = normalizeDateRange(from, to);
@@ -79,9 +76,6 @@ const getEventsInRange = async (userId: string, url: URL): Promise<EnrichedEvent
   return enrichEventsWithSources(events, sourceMap);
 };
 
-/**
- * Enriches raw events with source metadata.
- */
 const enrichEventsWithSources = (
   events: {
     id: string;

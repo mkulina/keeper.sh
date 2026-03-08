@@ -6,13 +6,13 @@ import {
   handleOAuthCallback,
   parseOAuthCallback,
 } from "../../../../utils/oauth";
+import { providerParamSchema } from "../../../../utils/request-query";
 
 const GET = withWideEvent(async ({ request, params }) => {
-  const { provider } = params;
-
-  if (!provider) {
+  if (!params.provider || !providerParamSchema.allows(params)) {
     return ErrorResponse.notFound().toResponse();
   }
+  const { provider } = params;
 
   try {
     const callbackParams = parseOAuthCallback(request, provider);

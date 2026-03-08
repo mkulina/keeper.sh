@@ -7,6 +7,7 @@ import {
   validateState,
 } from "./destinations";
 import { triggerDestinationSync } from "./sync";
+import { oauthCallbackQuerySchema } from "./request-query";
 import { baseUrl } from "../context";
 
 const MS_PER_SECOND = 1000;
@@ -18,22 +19,24 @@ interface OAuthCallbackParams {
   provider: string;
 }
 
-/**
- * Parses OAuth callback parameters from a request.
- */
 const parseOAuthCallback = (request: Request, provider: string): OAuthCallbackParams => {
   const url = new URL(request.url);
+  const query = Object.fromEntries(url.searchParams.entries());
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
+  const parsedQuery = oauthCallbackQuerySchema.allows(query)
+    ? query
+    : {};
+
   return {
-    code: url.searchParams.get("code"),
-    error: url.searchParams.get("error"),
+    code: parsedQuery?.code ?? null,
+    error: parsedQuery?.error ?? null,
     provider,
-    state: url.searchParams.get("state"),
+    state: parsedQuery?.state ?? null,
   };
 };
 
-/**
- * Builds a redirect URL with optional parameters.
- */
 const buildRedirectUrl = (path: string, params?: Record<string, string>): URL => {
   const url = new URL(path, baseUrl);
   if (params) {
@@ -44,9 +47,6 @@ const buildRedirectUrl = (path: string, params?: Record<string, string>): URL =>
   return url;
 };
 
-/**
- * Error class for OAuth failures that includes a redirect URL.
- */
 class OAuthError extends Error {
   constructor(
     message: string,
@@ -57,11 +57,6 @@ class OAuthError extends Error {
   }
 }
 
-/**
- * Handles a successful OAuth callback - exchanges code for tokens and saves destination.
- * Returns the userId if successful.
- * Throws if validation fails or tokens are missing.
- */
 const handleOAuthCallback = async (
   params: OAuthCallbackParams,
 ): Promise<{ userId: string; redirectUrl: URL }> => {
