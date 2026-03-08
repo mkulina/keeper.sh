@@ -1,8 +1,47 @@
 import { generateIcsCalendar } from "ts-ics";
 import { parseIcsCalendar } from "@keeper.sh/calendar";
-import type { IcsCalendar, IcsEvent } from "ts-ics";
+import type { IcsCalendar, IcsDuration, IcsEvent } from "ts-ics";
 import type { RemoteEvent, SyncableEvent } from "@keeper.sh/provider-core";
 import { isKeeperEvent } from "@keeper.sh/provider-core";
+import {
+  MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
+  MS_PER_SECOND,
+  MS_PER_WEEK,
+} from "@keeper.sh/constants";
+
+const DEFAULT_DURATION_VALUE = 0;
+
+const durationToMs = (duration: IcsDuration): number => {
+  const {
+    weeks = DEFAULT_DURATION_VALUE,
+    days = DEFAULT_DURATION_VALUE,
+    hours = DEFAULT_DURATION_VALUE,
+    minutes = DEFAULT_DURATION_VALUE,
+    seconds = DEFAULT_DURATION_VALUE,
+  } = duration;
+
+  return (
+    weeks * MS_PER_WEEK
+    + days * MS_PER_DAY
+    + hours * MS_PER_HOUR
+    + minutes * MS_PER_MINUTE
+    + seconds * MS_PER_SECOND
+  );
+};
+
+const getEventEndTime = (event: IcsEvent, startTime: Date): Date => {
+  if ("end" in event && event.end) {
+    return event.end.date;
+  }
+
+  if ("duration" in event && event.duration) {
+    return new Date(startTime.getTime() + durationToMs(event.duration));
+  }
+
+  return startTime;
+};
 
 const eventToICalString = (event: SyncableEvent, uid: string): string => {
   const icsEvent: IcsEvent = {
@@ -42,19 +81,22 @@ const parseICalToRemoteEvent = (icsString: string): ParsedCalendarEvent | null =
   const calendar = parseIcsCalendar({ icsString });
   const [event] = calendar.events ?? [];
 
-  if (!event?.uid || !event.start?.date || !event.end?.date) {
+  if (!event?.uid || !event.start?.date) {
     return null;
   }
+
+  const startTime = event.start.date;
+  const endTime = getEventEndTime(event, startTime);
 
   return {
     deleteId: event.uid,
     description: event.description,
-    endTime: new Date(event.end.date),
+    endTime,
     exceptionDates: event.exceptionDates,
     isKeeperEvent: isKeeperEvent(event.uid),
     location: event.location,
     recurrenceRule: event.recurrenceRule,
-    startTime: new Date(event.start.date),
+    startTime,
     startTimeZone: event.start.local?.timezone,
     title: event.summary,
     uid: event.uid,

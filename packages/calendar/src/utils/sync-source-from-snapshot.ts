@@ -7,7 +7,7 @@ import {
 import { parseIcsCalendar } from "./parse-ics-calendar";
 import { desc, eq, inArray } from "drizzle-orm";
 import { parseIcsEvents } from "./parse-ics-events";
-import { diffEvents } from "./diff-events";
+import { buildSnapshotSyncPlan } from "./snapshot-sync-plan";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 
 const FIRST_SNAPSHOT_INDEX = 1;
@@ -31,7 +31,6 @@ type StoredEvent = Omit<
   recurrenceRule?: object;
   startTimeZone?: string;
 };
-type StoredEventWithUid = StoredEvent & { uid: string };
 
 const getLatestSnapshot = async (
   database: BunSQLDatabase,
@@ -167,25 +166,6 @@ const addEvents = async (
   await database.insert(eventStatesTable).values(rows);
 };
 
-const hasUid = (event: StoredEvent): event is StoredEventWithUid => event.uid !== null;
-
-const partitionStoredEvents = (
-  events: StoredEvent[],
-): { eventsWithUid: StoredEventWithUid[]; legacyEvents: StoredEvent[] } => {
-  const legacyEvents: StoredEvent[] = [];
-  const eventsWithUid: StoredEventWithUid[] = [];
-
-  for (const event of events) {
-    if (hasUid(event)) {
-      eventsWithUid.push(event);
-    } else {
-      legacyEvents.push(event);
-    }
-  }
-
-  return { eventsWithUid, legacyEvents };
-};
-
 const syncSourceFromSnapshot = async (database: BunSQLDatabase, source: Source): Promise<void> => {
   const icsCalendar = await getLatestSnapshot(database, source.id);
   if (!icsCalendar) {
@@ -198,12 +178,11 @@ const syncSourceFromSnapshot = async (database: BunSQLDatabase, source: Source):
     getStoredEvents(database, source.id),
   ]);
 
-  const remoteEvents = parsedEvents.filter((event) => !mappedUids.has(event.uid));
-
-  const { legacyEvents, eventsWithUid } = partitionStoredEvents(storedEvents);
-  const { toAdd, toRemove } = diffEvents(remoteEvents, eventsWithUid);
-
-  const eventsToRemove = [...legacyEvents, ...toRemove];
+  const { toAdd, toRemove: eventsToRemove } = buildSnapshotSyncPlan({
+    mappedDestinationUids: mappedUids,
+    parsedEvents,
+    storedEvents,
+  });
 
   if (eventsToRemove.length > MINIMUM_EVENTS_TO_PROCESS) {
     await removeEvents(database, eventsToRemove);

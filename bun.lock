@@ -277,6 +277,7 @@
         "ts-ics": "2.4.0",
       },
       "devDependencies": {
+        "@keeper.sh/fixtures": "workspace:*",
         "@keeper.sh/typescript-config": "workspace:*",
         "@types/bun": "latest",
         "typescript": "5.9.3",
@@ -361,6 +362,17 @@
         "typescript": "5.9.3",
       },
     },
+    "packages/fixtures": {
+      "name": "@keeper.sh/fixtures",
+      "dependencies": {
+        "arktype": "^2.1.29",
+      },
+      "devDependencies": {
+        "@keeper.sh/typescript-config": "workspace:*",
+        "@types/bun": "latest",
+        "typescript": "5.9.3",
+      },
+    },
     "packages/log": {
       "name": "@keeper.sh/log",
       "dependencies": {
@@ -428,6 +440,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@keeper.sh/calendar": "workspace:*",
+        "@keeper.sh/constants": "workspace:*",
         "@keeper.sh/database": "workspace:*",
         "@keeper.sh/date-utils": "workspace:*",
         "@keeper.sh/encryption": "workspace:*",
@@ -438,6 +451,7 @@
         "tsdav": "2.1.6",
       },
       "devDependencies": {
+        "@keeper.sh/fixtures": "workspace:*",
         "@keeper.sh/typescript-config": "workspace:*",
         "@types/bun": "latest",
         "typescript": "5.9.3",
@@ -1066,6 +1080,8 @@
     "@keeper.sh/entry-point": ["@keeper.sh/entry-point@workspace:packages/entry-point"],
 
     "@keeper.sh/env": ["@keeper.sh/env@workspace:packages/env"],
+
+    "@keeper.sh/fixtures": ["@keeper.sh/fixtures@workspace:packages/fixtures"],
 
     "@keeper.sh/log": ["@keeper.sh/log@workspace:packages/log"],
 

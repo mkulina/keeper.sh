@@ -19,7 +19,7 @@ import type { EventMapping } from "../events/mappings";
 import { createSyncEventContentHash } from "../events/content-hash";
 import type { SyncContext, SyncStage } from "./coordinator";
 import { WideEvent } from "@keeper.sh/log";
-import { getStartOfToday } from "@keeper.sh/date-utils";
+import { buildRemoveOperations } from "./operations";
 
 const INITIAL_REMOTE_EVENT_COUNT = 0;
 const EMPTY_STALE_MAPPINGS_COUNT = 0;
@@ -178,7 +178,7 @@ abstract class CalendarProvider<TConfig extends ProviderConfig = ProviderConfig>
       staleMappedEventIds,
     );
 
-    const removeOperations = CalendarProvider.buildRemoveOperations(
+    const removeOperations = buildRemoveOperations(
       existingMappings,
       remoteEvents,
       localEventIds,
@@ -254,54 +254,6 @@ abstract class CalendarProvider<TConfig extends ProviderConfig = ProviderConfig>
       if (!hasMapping || hasStaleMapping) {
         operations.push({ event, type: "add" });
       }
-    }
-
-    return operations;
-  }
-
-  private static buildRemoveOperations(
-    existingMappings: EventMapping[],
-    remoteEvents: RemoteEvent[],
-    localEventIds: Set<string>,
-    mappedDestinationUids: Set<string>,
-  ): SyncOperation[] {
-    const operations: SyncOperation[] = [];
-    const now = new Date();
-    const startOfToday = getStartOfToday();
-
-    for (const mapping of existingMappings) {
-      if (mapping.startTime < startOfToday) {
-        continue;
-      }
-
-      if (!localEventIds.has(mapping.eventStateId)) {
-        operations.push({
-          deleteId: mapping.deleteIdentifier,
-          startTime: mapping.startTime,
-          type: "remove",
-          uid: mapping.destinationEventUid,
-        });
-      }
-    }
-
-    for (const remoteEvent of remoteEvents) {
-      if (mappedDestinationUids.has(remoteEvent.uid)) {
-        continue;
-      }
-
-      const isOrphanedKeeperEvent = remoteEvent.isKeeperEvent;
-      const isPastEvent = remoteEvent.startTime <= now;
-
-      if (!isOrphanedKeeperEvent && !isPastEvent) {
-        continue;
-      }
-
-      operations.push({
-        deleteId: remoteEvent.deleteId,
-        startTime: remoteEvent.startTime,
-        type: "remove",
-        uid: remoteEvent.uid,
-      });
     }
 
     return operations;
