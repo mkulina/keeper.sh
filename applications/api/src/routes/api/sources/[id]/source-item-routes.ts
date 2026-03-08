@@ -80,7 +80,10 @@ const handlePatchSourceRoute = async (
     return resolvedId;
   }
 
-  const parsedBody = sourcePatchBodySchema.allows(context.body) ? context.body : {};
+  let parsedBody: SourcePatchBody = {};
+  if (sourcePatchBodySchema.allows(context.body)) {
+    parsedBody = context.body;
+  }
   const updates = buildSourceUpdates(parsedBody);
 
   if (Object.keys(updates).length === 0) {

@@ -33,9 +33,9 @@ describe("parseIcsEvents", () => {
 
     expect(parsedEvents).toHaveLength(1);
 
-    const parsedEvent = parsedEvents[0];
+    const [parsedEvent] = parsedEvents;
     if (!parsedEvent) {
-      throw new Error("Expected parsed event");
+      throw new TypeError("Expected parsed event");
     }
 
     expect(parsedEvent.uid).toBe("external-event-1");
@@ -45,19 +45,51 @@ describe("parseIcsEvents", () => {
     expect(parsedEvent.startTimeZone).toBe("America/Toronto");
     expect(parsedEvent.endTime.getTime() - parsedEvent.startTime.getTime()).toBe(30 * 60 * 1000);
 
-    const recurrenceRule = parsedEvent.recurrenceRule;
+    const { recurrenceRule } = parsedEvent;
     expect(recurrenceRule).toBeDefined();
     if (!recurrenceRule || typeof recurrenceRule !== "object") {
-      throw new Error("Expected recurrence rule object");
+      throw new TypeError("Expected recurrence rule object");
     }
     expect("frequency" in recurrenceRule && recurrenceRule.frequency).toBe("WEEKLY");
 
-    const exceptionDates = parsedEvent.exceptionDates;
+    const { exceptionDates } = parsedEvent;
     expect(exceptionDates).toBeDefined();
     expect(Array.isArray(exceptionDates)).toBe(true);
     if (!Array.isArray(exceptionDates)) {
-      throw new Error("Expected exception dates array");
+      throw new TypeError("Expected exception dates array");
     }
     expect(exceptionDates).toHaveLength(1);
+  });
+
+  it("keeps duplicate UIDs and preserves adversarial time ranges", () => {
+    const calendar = parseIcsCalendar({
+      icsString: [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Keeper Test//EN",
+        "BEGIN:VEVENT",
+        "UID:duplicate-uid",
+        "DTSTART:20260310T090000Z",
+        "DTEND:20260310T100000Z",
+        "SUMMARY:First",
+        "END:VEVENT",
+        "BEGIN:VEVENT",
+        "UID:duplicate-uid",
+        "DTSTART:20991231T235900Z",
+        "DTEND:19000101T000000Z",
+        "SUMMARY:Second",
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ].join("\r\n"),
+    });
+
+    const parsedEvents = parseIcsEvents(calendar);
+
+    expect(parsedEvents).toHaveLength(2);
+    expect(parsedEvents[0]?.uid).toBe("duplicate-uid");
+    expect(parsedEvents[1]?.uid).toBe("duplicate-uid");
+    expect(parsedEvents[1]?.endTime.getTime()).toBeLessThan(
+      parsedEvents[1]?.startTime.getTime() ?? Number.POSITIVE_INFINITY,
+    );
   });
 });

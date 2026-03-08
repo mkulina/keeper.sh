@@ -41,7 +41,7 @@ const resolveSyncAggregatePayload = async (
 
   return {
     ...cached,
-    ...(cached.lastSyncedAt === undefined && { lastSyncedAt: fallback.lastSyncedAt }),
+    ...(!("lastSyncedAt" in cached) && { lastSyncedAt: fallback.lastSyncedAt }),
   };
 };
 

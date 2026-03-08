@@ -1,7 +1,7 @@
 import { use, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import useSWR, { useSWRConfig } from "swr";
-import { atom, useAtomValue, useStore } from "jotai";
+import { atom, useAtomValue, useStore, type Atom } from "jotai";
 import Copy from "lucide-react/dist/esm/icons/copy";
 import CheckIcon from "lucide-react/dist/esm/icons/check";
 import { fetcher, apiFetch } from "../../../lib/fetcher";
@@ -310,8 +310,8 @@ function FeedSettingToggle({ field, label }: { field: FeedSettingToggleKey; labe
   );
 }
 
-function ToggleIndicator({ atom }: { atom: Parameters<typeof useAtomValue>[0] }) {
-  const checked = useAtomValue(atom) as boolean;
+function ToggleIndicator({ atom }: { atom: Atom<boolean> }) {
+  const checked = useAtomValue(atom);
   const variant = use(MenuVariantContext);
 
   return (

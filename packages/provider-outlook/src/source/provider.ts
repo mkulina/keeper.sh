@@ -22,6 +22,13 @@ import { fetchCalendarEvents, parseOutlookEvents } from "./utils/fetch-events";
 
 const OUTLOOK_PROVIDER_ID = "outlook";
 const EMPTY_COUNT = 0;
+
+const stringifyIfPresent = (value: unknown) => {
+  if (!value) {
+    return;
+  }
+  return JSON.stringify(value);
+};
 const YEARS_UNTIL_FUTURE = 2;
 
 interface OutlookSourceConfig extends OAuthSourceConfig {
@@ -131,9 +138,9 @@ class OutlookSourceProvider extends OAuthSourceProvider<OutlookSourceConfig> {
           calendarId,
           description: event.description,
           endTime: event.endTime,
-          exceptionDates: event.exceptionDates ? JSON.stringify(event.exceptionDates) : undefined,
+          exceptionDates: stringifyIfPresent(event.exceptionDates),
           location: event.location,
-          recurrenceRule: event.recurrenceRule ? JSON.stringify(event.recurrenceRule) : undefined,
+          recurrenceRule: stringifyIfPresent(event.recurrenceRule),
           sourceEventUid: event.uid,
           startTime: event.startTime,
           startTimeZone: event.startTimeZone,

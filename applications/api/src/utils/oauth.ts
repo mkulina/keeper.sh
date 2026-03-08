@@ -22,18 +22,16 @@ interface OAuthCallbackParams {
 const parseOAuthCallback = (request: Request, provider: string): OAuthCallbackParams => {
   const url = new URL(request.url);
   const query = Object.fromEntries(url.searchParams.entries());
-  const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
-  const error = url.searchParams.get("error");
-  const parsedQuery = oauthCallbackQuerySchema.allows(query)
-    ? query
-    : {};
+  let parsedQuery: Record<string, string> = {};
+  if (oauthCallbackQuerySchema.allows(query)) {
+    parsedQuery = query;
+  }
 
   return {
-    code: parsedQuery?.code ?? null,
-    error: parsedQuery?.error ?? null,
+    code: parsedQuery.code ?? null,
+    error: parsedQuery.error ?? null,
     provider,
-    state: parsedQuery?.state ?? null,
+    state: parsedQuery.state ?? null,
   };
 };
 

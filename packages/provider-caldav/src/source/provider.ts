@@ -14,6 +14,13 @@ import type {
   CalDAVSourceSyncResult,
 } from "../types";
 
+const stringifyIfPresent = (value: unknown) => {
+  if (!value) {
+    return;
+  }
+  return JSON.stringify(value);
+};
+
 const EMPTY_COUNT = 0;
 const YEARS_UNTIL_FUTURE = 2;
 
@@ -134,9 +141,9 @@ const createCalDAVSourceProvider = (
           calendarId,
           description: event.description,
           endTime: event.endTime,
-          exceptionDates: event.exceptionDates ? JSON.stringify(event.exceptionDates) : undefined,
+          exceptionDates: stringifyIfPresent(event.exceptionDates),
           location: event.location,
-          recurrenceRule: event.recurrenceRule ? JSON.stringify(event.recurrenceRule) : undefined,
+          recurrenceRule: stringifyIfPresent(event.recurrenceRule),
           sourceEventUid: event.uid,
           startTime: event.startTime,
           startTimeZone: event.startTimeZone,

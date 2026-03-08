@@ -47,6 +47,10 @@ const isForwardProgress = (
     return true;
   }
 
+  if (current.state === "idle" && next.syncing) {
+    return true;
+  }
+
   if (current.state === "syncing" && !next.syncing && next.syncEventsRemaining === 0) {
     return true;
   }

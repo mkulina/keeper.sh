@@ -28,7 +28,7 @@ const GET = withWideEvent(
     const url = new URL(request.url);
     const query = Object.fromEntries(url.searchParams.entries());
     const provider = url.searchParams.get("provider");
-    const credentialId = url.searchParams.get("credentialId") ?? undefined;
+    const credentialId = url.searchParams.get("credentialId");
 
     if (
       !sourceAuthorizeQuerySchema.allows(query)
@@ -46,10 +46,15 @@ const GET = withWideEvent(
     }
 
     const callbackUrl = new URL(`/api/sources/callback/${provider}`, baseUrl);
-    const authorizationOptions = {
+    const authorizationOptions: {
+      callbackUrl: string;
+      sourceCredentialId?: string;
+    } = {
       callbackUrl: callbackUrl.toString(),
-      ...(credentialId && { sourceCredentialId: credentialId }),
     };
+    if (credentialId) {
+      authorizationOptions.sourceCredentialId = credentialId;
+    }
     const authUrl = getAuthorizationUrl(provider, userId, authorizationOptions);
 
     return Response.redirect(authUrl);

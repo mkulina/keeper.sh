@@ -129,7 +129,15 @@ const syncCoordinator = createSyncCoordinator({
   redis,
 });
 
-const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
+const createResendClient = (): Resend | null => {
+  if (!env.RESEND_API_KEY) {
+    return null;
+  }
+
+  return new Resend(env.RESEND_API_KEY);
+};
+
+const resend = createResendClient();
 const feedbackEmail = env.FEEDBACK_EMAIL ?? null;
 
 const baseUrl = env.BETTER_AUTH_URL;

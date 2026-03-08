@@ -1,7 +1,7 @@
 import { useEffect, useRef, type Ref, type SubmitEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { AnimatePresence, LazyMotion, type Variants } from "motion/react";
+import { AnimatePresence, LazyMotion, type TargetAndTransition, type Variants } from "motion/react";
 import { loadMotionFeatures } from "../../../lib/motion-features";
 import * as m from "motion/react-m";
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
@@ -146,6 +146,12 @@ function resolveAutoComplete(action: "signIn" | "signUp", base: string): string 
   return base;
 }
 
+function readFormFieldValue(formData: FormData, fieldName: string): string {
+  const value = formData.get(fieldName);
+  if (typeof value === "string") return value;
+  return "";
+}
+
 function EmailForm({ submitLabel, action }: { submitLabel: string; action: "signIn" | "signUp" }) {
   const navigate = useNavigate();
   const step = useAtomValue(authFormStepAtom);
@@ -157,7 +163,7 @@ function EmailForm({ submitLabel, action }: { submitLabel: string; action: "sign
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
+    const email = readFormFieldValue(formData, "email");
 
     if (step === "email") {
       if (!email) return;
@@ -166,7 +172,7 @@ function EmailForm({ submitLabel, action }: { submitLabel: string; action: "sign
       return;
     }
 
-    const password = formData.get("password") as string;
+    const password = readFormFieldValue(formData, "password");
     if (!password) return;
 
     setStatus("loading");
@@ -228,9 +234,9 @@ function EmailForm({ submitLabel, action }: { submitLabel: string; action: "sign
   );
 }
 
-function resolveAuthErrorAnimation(active: boolean | undefined) {
-  if (active) return { height: "auto" as const, opacity: 1, filter: "blur(0px)" };
-  return { height: 0 as const, opacity: 0, filter: "blur(4px)" };
+function resolveAuthErrorAnimation(active: boolean | undefined): TargetAndTransition {
+  if (active) return { height: "auto", opacity: 1, filter: "blur(0px)" };
+  return { height: 0, opacity: 0, filter: "blur(4px)" };
 }
 
 function AuthError() {

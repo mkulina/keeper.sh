@@ -5,12 +5,13 @@ import {
 } from "@keeper.sh/database/schema";
 import { WideEvent } from "@keeper.sh/log";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import type { database as databaseInstance } from "../context";
 import { triggerDestinationSync } from "./sync";
 
 const EMPTY_LIST_COUNT = 0;
 const USER_MAPPING_LOCK_NAMESPACE = 9001;
 
-type DatabaseClient = (typeof import("../context"))["database"];
+type DatabaseClient = typeof databaseInstance;
 type DatabaseTransactionCallback = Parameters<DatabaseClient["transaction"]>[0];
 type DatabaseTransactionClient = Parameters<DatabaseTransactionCallback>[0];
 

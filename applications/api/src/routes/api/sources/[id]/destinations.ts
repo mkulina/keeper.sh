@@ -11,9 +11,8 @@ import {
   handlePutSourceDestinationsRoute,
 } from "./mapping-routes";
 
-export const GET = withWideEvent(
-  withAuth(async ({ params, userId }) => {
-    return handleGetSourceDestinationsRoute(
+const GET = withWideEvent(
+  withAuth(({ params, userId }) => handleGetSourceDestinationsRoute(
       { params, userId },
       {
         getDestinationsForSource,
@@ -32,11 +31,10 @@ export const GET = withWideEvent(
           return Boolean(source);
         },
       },
-    );
-  }),
+    )),
 );
 
-export const PUT = withWideEvent(
+const PUT = withWideEvent(
   withAuth(async ({ request, params, userId }) => {
     const payload = await request.json();
     return handlePutSourceDestinationsRoute(
@@ -45,3 +43,5 @@ export const PUT = withWideEvent(
     );
   }),
 );
+
+export { GET, PUT };

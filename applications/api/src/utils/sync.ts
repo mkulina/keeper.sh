@@ -40,13 +40,14 @@ const triggerDestinationSync = (userId: string): void => {
     };
   };
 
-  void resolveDependencies()
-    .then((dependencies) => {
-      runDestinationSyncTrigger(userId, dependencies);
-    })
-    .catch((error) => {
-      WideEvent.error(error);
-    });
+  const startSync = async (): Promise<void> => {
+    const dependencies = await resolveDependencies();
+    runDestinationSyncTrigger(userId, dependencies);
+  };
+
+  startSync().catch((error) => {
+    WideEvent.error(error);
+  });
 };
 
 export { triggerDestinationSync, runDestinationSyncTrigger };

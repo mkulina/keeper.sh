@@ -1,4 +1,4 @@
-import { calendarAccountsTable, calendarsTable, sourceDestinationMappingsTable } from "@keeper.sh/database/schema";
+import { calendarsTable, sourceDestinationMappingsTable } from "@keeper.sh/database/schema";
 import { createCalDAVClient } from "@keeper.sh/provider-caldav";
 import { encryptPassword } from "@keeper.sh/encryption";
 import { isCalDAVProvider } from "@keeper.sh/provider-registry";

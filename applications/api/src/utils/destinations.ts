@@ -126,7 +126,10 @@ const upsertAccountAndCalendar = async (data: AccountInsertData): Promise<string
     setClause.caldavCredentialId = caldavCredentialId;
   }
 
-  const authType = oauthCredentialId ? "oauth" : "caldav";
+  let authType = "caldav";
+  if (oauthCredentialId) {
+    authType = "oauth";
+  }
 
   const [account] = await database
     .insert(calendarAccountsTable)
@@ -147,7 +150,7 @@ const upsertAccountAndCalendar = async (data: AccountInsertData): Promise<string
     .returning({ id: calendarAccountsTable.id });
 
   if (!account) {
-    return undefined;
+    return;
   }
 
   const [existingCalendar] = await database

@@ -1,5 +1,5 @@
 import { calendarAccountsTable, calendarsTable } from "@keeper.sh/database/schema";
-import { asc, eq, sql, count } from "drizzle-orm";
+import { asc, eq, count } from "drizzle-orm";
 import { withAuth, withWideEvent } from "../../../utils/middleware";
 import { database } from "../../../context";
 

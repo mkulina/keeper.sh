@@ -47,8 +47,9 @@ const runSendInitialSyncStatus = async (
   socket: SocketSender,
   dependencies: SendInitialSyncStatusDependencies,
 ): Promise<void> => {
-  const latestDestinationSyncedAt =
-    (await dependencies.selectLatestDestinationSyncedAt(userId))?.toISOString() ?? null;
+  const latestDestinationSyncedAtDate =
+    await dependencies.selectLatestDestinationSyncedAt(userId);
+  const latestDestinationSyncedAt = latestDestinationSyncedAtDate?.toISOString() ?? null;
 
   const resolvedPayload = await dependencies.resolveSyncAggregatePayload(
     userId,

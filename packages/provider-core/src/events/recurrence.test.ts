@@ -64,7 +64,7 @@ describe("hasActiveFutureOccurrence", () => {
     const hasFutureOccurrence = hasActiveFutureOccurrence(
       new Date("2026-03-01T10:00:00.000Z"),
       recurrenceRule,
-      undefined,
+      [],
       new Date("2026-03-05T00:00:00.000Z"),
     );
 
@@ -82,7 +82,7 @@ describe("hasActiveFutureOccurrence", () => {
     const hasFutureOccurrence = hasActiveFutureOccurrence(
       new Date("2026-03-01T10:00:00.000Z"),
       recurrenceRule,
-      undefined,
+      [],
       new Date("2026-03-02T00:00:00.000Z"),
     );
 

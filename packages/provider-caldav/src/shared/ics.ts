@@ -1,7 +1,7 @@
 import { generateIcsCalendar } from "ts-ics";
 import { parseIcsCalendar } from "@keeper.sh/calendar";
 import type { IcsCalendar, IcsDuration, IcsEvent } from "ts-ics";
-import type { RemoteEvent, SyncableEvent } from "@keeper.sh/provider-core";
+import type { SyncableEvent } from "@keeper.sh/provider-core";
 import { isKeeperEvent } from "@keeper.sh/provider-core";
 import {
   MS_PER_DAY,

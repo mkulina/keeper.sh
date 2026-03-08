@@ -4,7 +4,7 @@ import {
   oauthCredentialsTable,
   sourceDestinationMappingsTable,
 } from "@keeper.sh/database/schema";
-import { and, eq, inArray, notInArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { listUserCalendars as listGoogleCalendars } from "@keeper.sh/provider-google-calendar";
 import { listUserCalendars as listOutlookCalendars } from "@keeper.sh/provider-outlook";
 import { spawnBackgroundJob } from "./background-task";
@@ -486,7 +486,7 @@ const importOAuthAccountCalendars = async (options: ImportOAuthAccountOptions): 
   const externalCalendars = await listCalendars(accessToken);
   const newCalendars = await getUnimportedExternalCalendars(userId, accountId, externalCalendars);
 
-  if (newCalendars.length === 0) return accountId;
+  if (newCalendars.length === 0) {return accountId;}
 
   await insertOAuthCalendars(userId, accountId, newCalendars);
   triggerOAuthImportSync(userId, provider);

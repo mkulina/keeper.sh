@@ -7,8 +7,8 @@ describe("runReconcileSubscriptionsJob", () => {
 
     await runReconcileSubscriptionsJob({
       hasBillingClient: false,
-      reconcileUserSubscription: async () => {},
-      selectUserIds: async () => ["user-1", "user-2"],
+      reconcileUserSubscription: (_userId) => Promise.resolve(),
+      selectUserIds: () => Promise.resolve(["user-1", "user-2"]),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
@@ -23,13 +23,14 @@ describe("runReconcileSubscriptionsJob", () => {
 
     await runReconcileSubscriptionsJob({
       hasBillingClient: true,
-      reconcileUserSubscription: async (userId) => {
+      reconcileUserSubscription: (userId) => {
         reconciledUserIds.push(userId);
         if (userId === "user-2") {
-          throw new Error("reconciliation failed");
+          return Promise.reject(new Error("reconciliation failed"));
         }
+        return Promise.resolve();
       },
-      selectUserIds: async () => ["user-1", "user-2", "user-3"],
+      selectUserIds: () => Promise.resolve(["user-1", "user-2", "user-3"]),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
@@ -48,13 +49,11 @@ describe("runReconcileSubscriptionsJob", () => {
 
     await runReconcileSubscriptionsJob({
       hasBillingClient: true,
-      reconcileUserSubscription: async () => {
-        throw new Error("reconcile failed");
-      },
+      reconcileUserSubscription: () => Promise.reject(new Error("reconcile failed")),
       reportError: (error) => {
         errors.push(error);
       },
-      selectUserIds: async () => ["user-1", "user-2"],
+      selectUserIds: () => Promise.resolve(["user-1", "user-2"]),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
@@ -72,8 +71,8 @@ describe("runReconcileSubscriptionsJob", () => {
 
     await runReconcileSubscriptionsJob({
       hasBillingClient: true,
-      reconcileUserSubscription: async () => {},
-      selectUserIds: async () => [],
+      reconcileUserSubscription: (_userId) => Promise.resolve(),
+      selectUserIds: () => Promise.resolve([]),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },

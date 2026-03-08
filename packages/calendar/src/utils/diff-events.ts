@@ -17,7 +17,7 @@ const toStableComparableValue = (value: unknown): unknown => {
 
   if (isRecord(value)) {
     const entries = Object.entries(value)
-      .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+      .toSorted(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
       .map(([key, nestedValue]) => [key, toStableComparableValue(nestedValue)]);
 
     return Object.fromEntries(entries);
@@ -27,7 +27,7 @@ const toStableComparableValue = (value: unknown): unknown => {
 };
 
 const serializeOptionalValue = (value: unknown): string => {
-  if (value === null || value === undefined) {
+  if (value === null || value === globalThis.undefined) {
     return EMPTY_SERIALIZED_VALUE;
   }
 

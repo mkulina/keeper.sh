@@ -45,7 +45,7 @@ const GET = withWideEvent(
     const url = new URL(request.url);
     const query = Object.fromEntries(url.searchParams.entries());
     const provider = url.searchParams.get("provider");
-    const destinationId = url.searchParams.get("destinationId") ?? undefined;
+    const destinationId = url.searchParams.get("destinationId");
 
     if (
       !destinationAuthorizeQuerySchema.allows(query)
@@ -75,10 +75,15 @@ const GET = withWideEvent(
     }
 
     const callbackUrl = new URL(`/api/destinations/callback/${provider}`, baseUrl);
-    const authorizationOptions = {
+    const authorizationOptions: {
+      callbackUrl: string;
+      destinationId?: string;
+    } = {
       callbackUrl: callbackUrl.toString(),
-      ...(destinationId && { destinationId }),
     };
+    if (destinationId) {
+      authorizationOptions.destinationId = destinationId;
+    }
     const authUrl = getAuthorizationUrl(provider, userId, authorizationOptions);
 
     return Response.redirect(authUrl);

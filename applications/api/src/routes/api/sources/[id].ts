@@ -15,7 +15,7 @@ import {
 import { WideEvent } from "@keeper.sh/log";
 import { handleDeleteSourceRoute, handlePatchSourceRoute } from "./[id]/source-item-routes";
 
-export const GET = withWideEvent(
+const GET = withWideEvent(
   withAuth(async ({ params, userId }) => {
     if (!params.id || !idParamSchema.allows(params)) {
       return ErrorResponse.badRequest("ID is required").toResponse();
@@ -65,7 +65,7 @@ export const GET = withWideEvent(
   }),
 );
 
-export const PATCH = withWideEvent(
+const PATCH = withWideEvent(
   withAuth(async ({ request, params, userId }) => {
     const payload = await request.json();
     return handlePatchSourceRoute(
@@ -100,9 +100,8 @@ const calendarTypeDeleters: Record<string, (userId: string, calendarId: string) 
   caldav: deleteCalDAVSource,
 };
 
-export const DELETE = withWideEvent(
-  withAuth(async ({ params, userId }) => {
-    return handleDeleteSourceRoute(
+const DELETE = withWideEvent(
+  withAuth(({ params, userId }) => handleDeleteSourceRoute(
       { params, userId },
       {
         deleteSourceByType: calendarTypeDeleters,
@@ -121,6 +120,7 @@ export const DELETE = withWideEvent(
           return source?.calendarType ?? null;
         },
       },
-    );
-  }),
+    )),
 );
+
+export { GET, PATCH, DELETE };

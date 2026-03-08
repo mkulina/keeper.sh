@@ -46,8 +46,11 @@ const POST = withWideEvent(
         return Response.json({ error: error.message }, { status: HTTP_STATUS.CONFLICT });
       }
 
-      console.error("CalDAV source creation failed:", error);
-      const message = error instanceof Error ? error.message : "Invalid request body";
+      let message = "Invalid request body";
+      if (error instanceof Error) {
+        const { message: errorMessage } = error;
+        message = errorMessage;
+      }
       return ErrorResponse.badRequest(message).toResponse();
     }
   }),

@@ -39,7 +39,7 @@ describe("getAllJobs", () => {
     );
 
     const jobs = await getAllJobs(workspaceRoot);
-    const names = jobs.map((job) => job.name).sort();
+    const names = jobs.map((job) => job.name).toSorted();
 
     expect(names).toEqual(["array-job-1", "array-job-2", "single-job"]);
   });

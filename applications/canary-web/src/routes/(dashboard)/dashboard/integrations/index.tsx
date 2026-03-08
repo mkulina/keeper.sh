@@ -7,10 +7,15 @@ interface SearchParams {
   error?: string;
 }
 
+function parseSearchError(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  return undefined;
+}
+
 export const Route = createFileRoute("/(dashboard)/dashboard/integrations/")({
   component: OAuthCallbackErrorPage,
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
-    error: search.error as string | undefined,
+    error: parseSearchError(search.error),
   }),
   beforeLoad: ({ search }) => {
     if (!search.error) {

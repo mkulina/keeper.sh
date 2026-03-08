@@ -68,11 +68,11 @@ const parseRecurrenceFrequency = (value: unknown): IcsRecurrenceRule["frequency"
 
 const parseNumberArray = (value: unknown): number[] | undefined => {
   if (!Array.isArray(value)) {
-    return undefined;
+    return;
   }
 
   if (value.some((entry) => typeof entry !== "number")) {
-    return undefined;
+    return;
   }
 
   return value;
@@ -80,7 +80,7 @@ const parseNumberArray = (value: unknown): number[] | undefined => {
 
 const parseRecurrenceByDay = (value: unknown): IcsRecurrenceRule["byDay"] | undefined => {
   if (!Array.isArray(value)) {
-    return undefined;
+    return;
   }
 
   const byDay: NonNullable<IcsRecurrenceRule["byDay"]> = [];
@@ -95,7 +95,7 @@ const parseRecurrenceByDay = (value: unknown): IcsRecurrenceRule["byDay"] | unde
       continue;
     }
 
-    if (entry.occurrence !== undefined && typeof entry.occurrence !== "number") {
+    if ("occurrence" in entry && typeof entry.occurrence !== "number") {
       continue;
     }
 
@@ -107,31 +107,47 @@ const parseRecurrenceByDay = (value: unknown): IcsRecurrenceRule["byDay"] | unde
     byDay.push({ day: parsedDay });
   }
 
-  return byDay.length > MIN_RECURRENCE_COUNT ? byDay : undefined;
+  if (byDay.length === MIN_RECURRENCE_COUNT) {
+    return;
+  }
+  return byDay;
 };
 
 const parseUntilDate = (value: unknown): IcsRecurrenceRule["until"] | undefined => {
   if (!isRecord(value)) {
-    return undefined;
+    return;
   }
 
   const { date } = value;
   if (date instanceof Date) {
-    return Number.isNaN(date.getTime()) ? undefined : { date };
+    if (Number.isNaN(date.getTime())) {
+      return;
+    }
+    return { date };
   }
 
   if (typeof date !== "string") {
-    return undefined;
+    return;
   }
 
   const parsedDate = new Date(date);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : { date: parsedDate };
+  if (Number.isNaN(parsedDate.getTime())) {
+    return;
+  }
+  return { date: parsedDate };
+};
+
+const toDate = (date: Date | string): Date => {
+  if (date instanceof Date) {
+    return date;
+  }
+  return new Date(date);
 };
 
 const parseExceptionDatesFromJson = (exceptionDates: string | null): Date[] | undefined => {
   const parsedExceptionDates = parseJson(exceptionDates);
   if (!Array.isArray(parsedExceptionDates)) {
-    return undefined;
+    return;
   }
 
   const dates = parsedExceptionDates.flatMap((exceptionDate) => {
@@ -144,7 +160,7 @@ const parseExceptionDatesFromJson = (exceptionDates: string | null): Date[] | un
       return [];
     }
 
-    const parsedDate = date instanceof Date ? date : new Date(date);
+    const parsedDate = toDate(date);
     if (Number.isNaN(parsedDate.getTime())) {
       return [];
     }
@@ -152,7 +168,10 @@ const parseExceptionDatesFromJson = (exceptionDates: string | null): Date[] | un
     return [parsedDate];
   });
 
-  return dates.length > MIN_RECURRENCE_COUNT ? dates : undefined;
+  if (dates.length === MIN_RECURRENCE_COUNT) {
+    return;
+  }
+  return dates;
 };
 
 const parseRecurrenceRuleFromJson = (recurrenceRule: string | null): IcsRecurrenceRule | null => {

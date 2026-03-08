@@ -1,3 +1,4 @@
+import { googleCalendarListResponseSchema } from "@keeper.sh/data-schemas";
 import type { GoogleCalendarListEntry, GoogleCalendarListResponse } from "../types";
 import { GOOGLE_CALENDAR_LIST_URL } from "../../shared/api";
 import { isSimpleAuthError } from "../../shared/errors";
@@ -38,7 +39,8 @@ const fetchCalendarPage = async (
     );
   }
 
-  return response.json() as Promise<GoogleCalendarListResponse>;
+  const responseBody = await response.json();
+  return googleCalendarListResponseSchema.assert(responseBody);
 };
 
 const listUserCalendars = async (accessToken: string): Promise<GoogleCalendarListEntry[]> => {

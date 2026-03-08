@@ -1,7 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { CalendarFetchError } from "@keeper.sh/calendar";
 import {
-  InvalidSourceUrlError,
   SourceLimitError,
   runCreateSource,
   runDeleteSource,
@@ -26,6 +25,9 @@ const createSourceRecord = (overrides: Partial<TestSource> = {}): TestSource => 
   ...overrides,
 });
 
+const missingSourceLifecycleCallback = (): Promise<void> =>
+  Promise.reject(new Error("Expected background callback"));
+
 describe("runCreateSource", () => {
   it("rejects source creation when plan limit is exceeded", async () => {
     await expect(
@@ -36,14 +38,14 @@ describe("runCreateSource", () => {
           userId: "user-1",
         },
         {
-          canAddSource: async () => false,
-          countExistingMappedSources: async () => 3,
-          createCalendarAccount: async () => "account-1",
-          createSourceCalendar: async () => createSourceRecord(),
-          fetchAndSyncSource: async () => {},
-          spawnBackgroundJob: () => {},
-          triggerDestinationSync: () => {},
-          validateSourceUrl: async () => {},
+          canAddSource: () => Promise.resolve(false),
+          countExistingMappedSources: () => Promise.resolve(3),
+          createCalendarAccount: () => Promise.resolve("account-1"),
+          createSourceCalendar: () => Promise.resolve(createSourceRecord()),
+          fetchAndSyncSource: () => Promise.resolve(),
+          spawnBackgroundJob: Boolean,
+          triggerDestinationSync: Boolean,
+          validateSourceUrl: () => Promise.resolve(),
         },
       ),
     ).rejects.toBeInstanceOf(SourceLimitError);
@@ -60,16 +62,14 @@ describe("runCreateSource", () => {
           userId: "user-1",
         },
         {
-          canAddSource: async () => true,
-          countExistingMappedSources: async () => 0,
-          createCalendarAccount: async () => "account-1",
-          createSourceCalendar: async () => createSourceRecord(),
-          fetchAndSyncSource: async () => {},
-          spawnBackgroundJob: () => {},
-          triggerDestinationSync: () => {},
-          validateSourceUrl: async () => {
-            throw rejection;
-          },
+          canAddSource: () => Promise.resolve(true),
+          countExistingMappedSources: () => Promise.resolve(0),
+          createCalendarAccount: () => Promise.resolve("account-1"),
+          createSourceCalendar: () => Promise.resolve(createSourceRecord()),
+          fetchAndSyncSource: () => Promise.resolve(),
+          spawnBackgroundJob: Boolean,
+          triggerDestinationSync: Boolean,
+          validateSourceUrl: () => Promise.reject(rejection),
         },
       ),
     ).rejects.toMatchObject({
@@ -86,7 +86,7 @@ describe("runCreateSource", () => {
       url: "https://example.com/feed.ics",
       userId: "user-42",
     });
-    let backgroundCallback: (() => Promise<void>) | undefined;
+    let backgroundCallback: () => Promise<void> = missingSourceLifecycleCallback;
     const fetchSyncedSourceIds: string[] = [];
     const syncedUserIds: string[] = [];
 
@@ -97,19 +97,19 @@ describe("runCreateSource", () => {
         userId: "user-42",
       },
       {
-        canAddSource: async () => true,
-        countExistingMappedSources: async () => 2,
-        createCalendarAccount: async () => "account-42",
-        createSourceCalendar: async (payload) =>
-          createSourceRecord({
+        canAddSource: () => Promise.resolve(true),
+        countExistingMappedSources: () => Promise.resolve(2),
+        createCalendarAccount: () => Promise.resolve("account-42"),
+        createSourceCalendar: (payload) => Promise.resolve(createSourceRecord({
             accountId: payload.accountId,
             id: "source-99",
             name: payload.name,
             url: payload.url,
             userId: payload.userId,
-          }),
-        fetchAndSyncSource: async (source) => {
+          })),
+        fetchAndSyncSource: (source) => {
           fetchSyncedSourceIds.push(source.id);
+          return Promise.resolve();
         },
         spawnBackgroundJob: (jobName, fields, callback) => {
           expect(jobName).toBe("ical-source-sync");
@@ -119,16 +119,12 @@ describe("runCreateSource", () => {
         triggerDestinationSync: (userId) => {
           syncedUserIds.push(userId);
         },
-        validateSourceUrl: async () => {},
+        validateSourceUrl: () => Promise.resolve(),
       },
     );
 
     expect(result).toEqual(createdSource);
-    expect(backgroundCallback).toBeDefined();
-
-    if (!backgroundCallback) {
-      throw new Error("Expected background callback");
-    }
+    expect(backgroundCallback).not.toBe(missingSourceLifecycleCallback);
 
     await backgroundCallback();
 
@@ -145,14 +141,14 @@ describe("runCreateSource", () => {
           userId: "user-1",
         },
         {
-          canAddSource: async () => true,
-          countExistingMappedSources: async () => 0,
-          createCalendarAccount: async () => undefined,
-          createSourceCalendar: async () => createSourceRecord(),
-          fetchAndSyncSource: async () => {},
-          spawnBackgroundJob: () => {},
-          triggerDestinationSync: () => {},
-          validateSourceUrl: async () => {},
+          canAddSource: () => Promise.resolve(true),
+          countExistingMappedSources: () => Promise.resolve(0),
+          createCalendarAccount: () => Promise.resolve(""),
+          createSourceCalendar: () => Promise.resolve(createSourceRecord()),
+          fetchAndSyncSource: () => Promise.resolve(),
+          spawnBackgroundJob: Boolean,
+          triggerDestinationSync: Boolean,
+          validateSourceUrl: () => Promise.resolve(),
         },
       ),
     ).rejects.toThrow("Failed to create calendar account");
@@ -167,14 +163,15 @@ describe("runCreateSource", () => {
           userId: "user-1",
         },
         {
-          canAddSource: async () => true,
-          countExistingMappedSources: async () => 0,
-          createCalendarAccount: async () => "account-1",
-          createSourceCalendar: async () => undefined,
-          fetchAndSyncSource: async () => {},
-          spawnBackgroundJob: () => {},
-          triggerDestinationSync: () => {},
-          validateSourceUrl: async () => {},
+          canAddSource: () => Promise.resolve(true),
+          countExistingMappedSources: () => Promise.resolve(0),
+          createCalendarAccount: () => Promise.resolve("account-1"),
+          createSourceCalendar: () =>
+            Promise.resolve<TestSource | undefined>(globalThis.undefined),
+          fetchAndSyncSource: () => Promise.resolve(),
+          spawnBackgroundJob: Boolean,
+          triggerDestinationSync: Boolean,
+          validateSourceUrl: () => Promise.resolve(),
         },
       ),
     ).rejects.toThrow("Failed to create source");
@@ -191,7 +188,7 @@ describe("runDeleteSource", () => {
         userId: "user-1",
       },
       {
-        deleteSourceCalendar: async () => true,
+        deleteSourceCalendar: () => Promise.resolve(true),
         triggerDestinationSync: (userId) => {
           syncedUserIds.push(userId);
         },
@@ -211,7 +208,7 @@ describe("runDeleteSource", () => {
         userId: "user-1",
       },
       {
-        deleteSourceCalendar: async () => false,
+        deleteSourceCalendar: () => Promise.resolve(false),
         triggerDestinationSync: (userId) => {
           syncedUserIds.push(userId);
         },

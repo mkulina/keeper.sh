@@ -4,16 +4,16 @@ import {
   handlePatchSourceRoute,
 } from "./source-item-routes";
 
-const readJson = async (response: Response): Promise<unknown> => response.json();
+const readJson = (response: Response): Promise<unknown> => response.json();
 
 describe("handlePatchSourceRoute", () => {
   it("returns 400 when id param is missing", async () => {
     const response = await handlePatchSourceRoute(
       { body: {}, params: {}, userId: "user-1" },
       {
-        reportError: () => {},
-        triggerDestinationSync: () => {},
-        updateSource: async () => null,
+        reportError: Boolean,
+        triggerDestinationSync: Boolean,
+        updateSource: () => Promise.resolve(null),
       },
     );
 
@@ -24,9 +24,9 @@ describe("handlePatchSourceRoute", () => {
     const response = await handlePatchSourceRoute(
       { body: { unknown: true }, params: { id: "source-1" }, userId: "user-1" },
       {
-        reportError: () => {},
-        triggerDestinationSync: () => {},
-        updateSource: async () => null,
+        reportError: Boolean,
+        triggerDestinationSync: Boolean,
+        updateSource: () => Promise.resolve(null),
       },
     );
 
@@ -41,9 +41,9 @@ describe("handlePatchSourceRoute", () => {
         userId: "user-1",
       },
       {
-        reportError: () => {},
-        triggerDestinationSync: () => {},
-        updateSource: async () => null,
+        reportError: Boolean,
+        triggerDestinationSync: Boolean,
+        updateSource: () => Promise.resolve(null),
       },
     );
 
@@ -66,7 +66,7 @@ describe("handlePatchSourceRoute", () => {
         triggerDestinationSync: () => {
           throw new Error("trigger failed");
         },
-        updateSource: async (_userId, _sourceId, updates) => ({
+        updateSource: (_userId, _sourceId, updates) => Promise.resolve({
           id: "source-1",
           ...updates,
         }),
@@ -84,9 +84,9 @@ describe("handleDeleteSourceRoute", () => {
       { params: { id: "source-1" }, userId: "user-1" },
       {
         deleteSourceByType: {
-          ical: async () => true,
+          ical: () => Promise.resolve(true),
         },
-        getSourceCalendarType: async () => "oauth",
+        getSourceCalendarType: () => Promise.resolve("oauth"),
       },
     );
 
@@ -99,9 +99,9 @@ describe("handleDeleteSourceRoute", () => {
       { params: { id: "source-1" }, userId: "user-1" },
       {
         deleteSourceByType: {
-          oauth: async () => false,
+          oauth: () => Promise.resolve(false),
         },
-        getSourceCalendarType: async () => "oauth",
+        getSourceCalendarType: () => Promise.resolve("oauth"),
       },
     );
 
@@ -113,9 +113,9 @@ describe("handleDeleteSourceRoute", () => {
       { params: { id: "source-1" }, userId: "user-1" },
       {
         deleteSourceByType: {
-          ical: async () => true,
+          ical: () => Promise.resolve(true),
         },
-        getSourceCalendarType: async () => "ical",
+        getSourceCalendarType: () => Promise.resolve("ical"),
       },
     );
 

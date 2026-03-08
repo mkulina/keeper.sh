@@ -54,6 +54,35 @@ interface CalDAVConnectFormProps {
   provider: CalDAVProvider;
 }
 
+function readFormFieldValue(formData: FormData, fieldName: string): string {
+  const value = formData.get(fieldName);
+  if (typeof value === "string") return value;
+  return "";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isCalendarOption(value: unknown): value is CalendarOption {
+  if (!isRecord(value)) return false;
+  return typeof value.url === "string" && typeof value.displayName === "string";
+}
+
+function parseCalendarOptions(value: unknown): CalendarOption[] | null {
+  if (!isRecord(value)) return null;
+  const calendars = value.calendars;
+  if (!Array.isArray(calendars)) return null;
+  if (!calendars.every(isCalendarOption)) return null;
+  return calendars;
+}
+
+function parseAccountId(value: unknown): string | undefined {
+  if (!isRecord(value)) return undefined;
+  if (typeof value.accountId === "string") return value.accountId;
+  return undefined;
+}
+
 export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
   const config = PROVIDER_CONFIGS[provider];
   const navigate = useNavigate();
@@ -68,9 +97,14 @@ export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const serverUrl = formData.get("serverUrl") as string;
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
+    const serverUrl = readFormFieldValue(formData, "serverUrl");
+    const username = readFormFieldValue(formData, "username");
+    const password = readFormFieldValue(formData, "password");
+
+    if (!serverUrl || !username || !password) {
+      setError("Missing required credentials");
+      return;
+    }
 
     startTransition(async () => {
       let discoverResponse: Response;
@@ -85,7 +119,12 @@ export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
         return;
       }
 
-      const { calendars } = (await discoverResponse.json()) as { calendars: CalendarOption[] };
+      const discoverPayload = await discoverResponse.json();
+      const calendars = parseCalendarOptions(discoverPayload);
+      if (!calendars) {
+        setError("Failed to parse discovered calendars");
+        return;
+      }
 
       if (calendars.length === 0) {
         setError("No calendars found");
@@ -112,8 +151,10 @@ export function CalDAVConnectForm({ provider }: CalDAVConnectFormProps) {
           ),
         );
 
-        const first = await responses[0]?.json();
-        accountId = first?.accountId;
+        const firstResponse = responses[0];
+        if (firstResponse) {
+          accountId = parseAccountId(await firstResponse.json());
+        }
       } catch {
         setError("Failed to import calendars");
         return;

@@ -19,15 +19,16 @@ describe("syncUserSources", () => {
       "user-1",
       [{ id: "source-1" }, { id: "source-2" }],
       {
-        fetchAndSyncSourceForCalendar: async (source) => {
+        fetchAndSyncSourceForCalendar: (source) => {
           fetchedSourceIds.push(source.id);
           if (source.id === "source-2") {
-            throw new Error("source sync failed");
+            return Promise.reject(new Error("source sync failed"));
           }
+          return Promise.resolve();
         },
-        syncDestinationsForUser: async (userId) => {
+        syncDestinationsForUser: (userId) => {
           destinationSyncRequests.push(userId);
-          return createSyncResult({ added: 3, removed: 1 });
+          return Promise.resolve(createSyncResult({ added: 3, removed: 1 }));
         },
       },
     );
@@ -35,6 +36,34 @@ describe("syncUserSources", () => {
     expect(fetchedSourceIds).toEqual(["source-1", "source-2"]);
     expect(destinationSyncRequests).toEqual(["user-1"]);
     expect(result).toEqual(createSyncResult({ added: 3, removed: 1 }));
+  });
+
+  it("continues to destination sync when source sync throws synchronously", async () => {
+    const fetchedSourceIds: string[] = [];
+    const destinationSyncRequests: string[] = [];
+
+    const result = await syncUserSources(
+      "user-1",
+      [{ id: "source-1" }, { id: "source-2" }],
+      {
+        fetchAndSyncSourceForCalendar: (source) => {
+          fetchedSourceIds.push(source.id);
+          if (source.id === "source-2") {
+            throw new Error("sync source throw");
+          }
+
+          return Promise.resolve();
+        },
+        syncDestinationsForUser: (userId) => {
+          destinationSyncRequests.push(userId);
+          return Promise.resolve(createSyncResult({ added: 8, removed: 2 }));
+        },
+      },
+    );
+
+    expect(fetchedSourceIds).toEqual(["source-1", "source-2"]);
+    expect(destinationSyncRequests).toEqual(["user-1"]);
+    expect(result).toEqual(createSyncResult({ added: 8, removed: 2 }));
   });
 });
 
@@ -44,30 +73,30 @@ describe("runSyncJob", () => {
     const syncRequests: { userId: string; sourceIds: string[] }[] = [];
 
     await runSyncJob("free", {
-      getSourcesByPlan: async () => [
+      getSourcesByPlan: () => Promise.resolve([
         { id: "source-1", userId: "user-1" },
         { id: "source-2", userId: "user-1" },
-      ],
-      getUsersWithDestinationsByPlan: async () => ["user-1", "user-2"],
+      ]),
+      getUsersWithDestinationsByPlan: () => Promise.resolve(["user-1", "user-2"]),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
-      syncUserSourcesForUser: async (userId, sources) => {
+      syncUserSourcesForUser: (userId, sources) => {
         syncRequests.push({
           sourceIds: sources.map((source) => source.id),
           userId,
         });
 
         if (userId === "user-2") {
-          throw new Error("destination sync failed");
+          return Promise.reject(new Error("destination sync failed"));
         }
 
-        return createSyncResult({
+        return Promise.resolve(createSyncResult({
           addFailed: 1,
           added: 4,
           removeFailed: 2,
           removed: 3,
-        });
+        }));
       },
     });
 
@@ -94,14 +123,12 @@ describe("runSyncJob", () => {
     const cronEventFieldSets: Record<string, unknown>[] = [];
 
     await runSyncJob("pro", {
-      getSourcesByPlan: async () => [{ id: "source-1", userId: "user-1" }],
-      getUsersWithDestinationsByPlan: async () => ["user-1"],
+      getSourcesByPlan: () => Promise.resolve([{ id: "source-1", userId: "user-1" }]),
+      getUsersWithDestinationsByPlan: () => Promise.resolve(["user-1"]),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
-      syncUserSourcesForUser: async () => {
-        throw new Error("sync failed");
-      },
+      syncUserSourcesForUser: () => Promise.reject(new Error("sync failed")),
     });
 
     expect(cronEventFieldSets).toEqual([
@@ -125,14 +152,14 @@ describe("runSyncJob", () => {
     const cronEventFieldSets: Record<string, unknown>[] = [];
 
     await runSyncJob("free", {
-      getSourcesByPlan: async () => [],
-      getUsersWithDestinationsByPlan: async () => ["user-1", "user-2"],
+      getSourcesByPlan: () => Promise.resolve([]),
+      getUsersWithDestinationsByPlan: () => Promise.resolve(["user-1", "user-2"]),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
-      syncUserSourcesForUser: async (userId, sources) => {
+      syncUserSourcesForUser: (userId, sources) => {
         syncRequests.push({ sourceCount: sources.length, userId });
-        return createSyncResult({});
+        return Promise.resolve(createSyncResult({}));
       },
     });
 
@@ -173,23 +200,23 @@ describe("runSyncJob", () => {
     }
 
     await runSyncJob("pro", {
-      getSourcesByPlan: async () =>
-        users.map((userId, index) => ({ id: `source-${index}`, userId })),
-      getUsersWithDestinationsByPlan: async () => users,
+      getSourcesByPlan: () =>
+        Promise.resolve(users.map((userId, index) => ({ id: `source-${index}`, userId }))),
+      getUsersWithDestinationsByPlan: () => Promise.resolve(users),
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
-      syncUserSourcesForUser: async (userId) => {
+      syncUserSourcesForUser: (userId) => {
         const index = Number(userId.replace("user-", ""));
         if (index % 4 === 0) {
-          throw new Error(`sync failure ${index}`);
+          return Promise.reject(new Error(`sync failure ${index}`));
         }
-        return createSyncResult({
+        return Promise.resolve(createSyncResult({
           addFailed: index % 3,
           added: index % 5,
           removeFailed: index % 2,
           removed: index % 7,
-        });
+        }));
       },
     });
 
@@ -199,6 +226,41 @@ describe("runSyncJob", () => {
       "events.removed": expectedRemoved,
       "events.remove_failed": expectedRemoveFailed,
       "user.failed.count": expectedUserFailedCount,
+    });
+  });
+
+  it("treats synchronous user sync throws as rejected users and continues aggregation", async () => {
+    const cronEventFieldSets: Record<string, unknown>[] = [];
+
+    await runSyncJob("free", {
+      getSourcesByPlan: () => Promise.resolve([
+        { id: "source-1", userId: "user-1" },
+        { id: "source-2", userId: "user-2" },
+      ]),
+      getUsersWithDestinationsByPlan: () => Promise.resolve(["user-1", "user-2", "user-3"]),
+      setCronEventFields: (fields) => {
+        cronEventFieldSets.push(fields);
+      },
+      syncUserSourcesForUser: (userId) => {
+        if (userId === "user-2") {
+          throw new Error("sync throw");
+        }
+
+        return Promise.resolve(createSyncResult({
+          addFailed: 1,
+          added: 2,
+          removeFailed: 1,
+          removed: 3,
+        }));
+      },
+    });
+
+    expect(cronEventFieldSets[1]).toEqual({
+      "events.added": 4,
+      "events.add_failed": 2,
+      "events.removed": 6,
+      "events.remove_failed": 2,
+      "user.failed.count": 1,
     });
   });
 });

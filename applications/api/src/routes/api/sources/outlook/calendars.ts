@@ -14,8 +14,8 @@ interface NormalizedOutlookCalendar {
   primary: boolean;
 }
 
-export const GET = withWideEvent(
-  withAuth(async ({ request, userId }) =>
+const GET = withWideEvent(
+  withAuth(({ request, userId }) =>
     listOAuthCalendars(request, userId, {
       isCalendarListError: (error): error is CalendarListError =>
         error instanceof CalendarListError,
@@ -29,6 +29,7 @@ export const GET = withWideEvent(
       provider: OUTLOOK_PROVIDER,
       refreshDestinationAccessToken: refreshMicrosoftAccessToken,
       refreshSourceAccessToken: refreshMicrosoftSourceAccessToken,
-    }),
-  ),
+    })),
 );
+
+export { GET };

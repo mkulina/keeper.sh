@@ -41,7 +41,8 @@ interface CaldavSyncJobDependencies {
 
 const runCaldavSourceSyncJob = async (dependencies: CaldavSyncJobDependencies): Promise<void> => {
   const settlements = await Promise.allSettled(
-    dependencies.providers.map((provider) => dependencies.syncProvider(provider)),
+    dependencies.providers.map((provider) =>
+      Promise.resolve().then(() => dependencies.syncProvider(provider))),
   );
 
   for (const settlement of settlements) {

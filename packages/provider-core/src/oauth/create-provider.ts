@@ -1,7 +1,7 @@
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import type { OAuthTokenProvider } from "./provider";
 import type { DestinationProvider } from "../sync/destinations";
-import type { BroadcastSyncStatus, OAuthProviderConfig, SyncResult, SyncableEvent } from "../types";
+import type { BroadcastSyncStatus, OAuthProviderConfig, SyncResult } from "../types";
 import type { SyncContext } from "../sync/coordinator";
 import { getEventsForDestination } from "../events/events";
 import type { OAuthCalendarProvider } from "./provider";
@@ -59,7 +59,7 @@ const createOAuthDestinationProvider = <
 
         const config = buildConfig(database, account, broadcastSyncStatus);
         const provider = createProviderInstance(config, oauthProvider);
-        return provider.sync(localEvents as SyncableEvent[], context);
+        return provider.sync(localEvents, context);
       }),
     );
 

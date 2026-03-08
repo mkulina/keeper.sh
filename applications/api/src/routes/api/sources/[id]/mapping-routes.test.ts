@@ -6,15 +6,15 @@ import {
   handlePutSourcesForDestinationRoute,
 } from "./mapping-routes";
 
-const readJson = async (response: Response): Promise<unknown> => response.json();
+const readJson = (response: Response): Promise<unknown> => response.json();
 
 describe("handleGetSourceDestinationsRoute", () => {
   it("returns 400 when source id param is missing", async () => {
     const response = await handleGetSourceDestinationsRoute(
       { params: {}, userId: "user-1" },
       {
-        getDestinationsForSource: async () => [],
-        sourceExists: async () => true,
+        getDestinationsForSource: () => Promise.resolve([]),
+        sourceExists: () => Promise.resolve(true),
       },
     );
 
@@ -25,8 +25,8 @@ describe("handleGetSourceDestinationsRoute", () => {
     const response = await handleGetSourceDestinationsRoute(
       { params: { id: "source-1" }, userId: "user-1" },
       {
-        getDestinationsForSource: async () => [],
-        sourceExists: async () => false,
+        getDestinationsForSource: () => Promise.resolve([]),
+        sourceExists: () => Promise.resolve(false),
       },
     );
 
@@ -37,8 +37,8 @@ describe("handleGetSourceDestinationsRoute", () => {
     const response = await handleGetSourceDestinationsRoute(
       { params: { id: "source-1" }, userId: "user-1" },
       {
-        getDestinationsForSource: async () => ["dest-1", "dest-2"],
-        sourceExists: async () => true,
+        getDestinationsForSource: () => Promise.resolve(["dest-1", "dest-2"]),
+        sourceExists: () => Promise.resolve(true),
       },
     );
 
@@ -56,7 +56,7 @@ describe("handlePutSourceDestinationsRoute", () => {
         userId: "user-1",
       },
       {
-        setDestinationsForSource: async () => {},
+        setDestinationsForSource: () => Promise.resolve(),
       },
     );
 
@@ -71,9 +71,8 @@ describe("handlePutSourceDestinationsRoute", () => {
         userId: "user-1",
       },
       {
-        setDestinationsForSource: async () => {
-          throw new Error("Source calendar not found");
-        },
+        setDestinationsForSource: () =>
+          Promise.reject(new Error("Source calendar not found")),
       },
     );
 
@@ -88,9 +87,8 @@ describe("handlePutSourceDestinationsRoute", () => {
         userId: "user-1",
       },
       {
-        setDestinationsForSource: async () => {
-          throw new Error("Some destination calendars not found");
-        },
+        setDestinationsForSource: () =>
+          Promise.reject(new Error("Some destination calendars not found")),
       },
     );
 
@@ -106,8 +104,8 @@ describe("handleGetSourcesForDestinationRoute", () => {
     const response = await handleGetSourcesForDestinationRoute(
       { params: {}, userId: "user-1" },
       {
-        destinationExists: async () => true,
-        getSourcesForDestination: async () => [],
+        destinationExists: () => Promise.resolve(true),
+        getSourcesForDestination: () => Promise.resolve([]),
       },
     );
 
@@ -118,8 +116,8 @@ describe("handleGetSourcesForDestinationRoute", () => {
     const response = await handleGetSourcesForDestinationRoute(
       { params: { id: "dest-1" }, userId: "user-1" },
       {
-        destinationExists: async () => false,
-        getSourcesForDestination: async () => [],
+        destinationExists: () => Promise.resolve(false),
+        getSourcesForDestination: () => Promise.resolve([]),
       },
     );
 
@@ -130,8 +128,8 @@ describe("handleGetSourcesForDestinationRoute", () => {
     const response = await handleGetSourcesForDestinationRoute(
       { params: { id: "dest-1" }, userId: "user-1" },
       {
-        destinationExists: async () => true,
-        getSourcesForDestination: async () => ["source-1"],
+        destinationExists: () => Promise.resolve(true),
+        getSourcesForDestination: () => Promise.resolve(["source-1"]),
       },
     );
 
@@ -149,7 +147,7 @@ describe("handlePutSourcesForDestinationRoute", () => {
         userId: "user-1",
       },
       {
-        setSourcesForDestination: async () => {},
+        setSourcesForDestination: () => Promise.resolve(),
       },
     );
 
@@ -164,9 +162,8 @@ describe("handlePutSourcesForDestinationRoute", () => {
         userId: "user-1",
       },
       {
-        setSourcesForDestination: async () => {
-          throw new Error("Destination calendar not found");
-        },
+        setSourcesForDestination: () =>
+          Promise.reject(new Error("Destination calendar not found")),
       },
     );
 
@@ -181,9 +178,8 @@ describe("handlePutSourcesForDestinationRoute", () => {
         userId: "user-1",
       },
       {
-        setSourcesForDestination: async () => {
-          throw new Error("Some source calendars not found");
-        },
+        setSourcesForDestination: () =>
+          Promise.reject(new Error("Some source calendars not found")),
       },
     );
 

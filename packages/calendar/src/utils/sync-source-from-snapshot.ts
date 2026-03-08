@@ -14,7 +14,7 @@ const FIRST_SNAPSHOT_INDEX = 1;
 const MINIMUM_EVENTS_TO_PROCESS = 0;
 
 type Source = typeof calendarsTable.$inferSelect;
-type StoredEventRow = {
+interface StoredEventRow {
   endTime: Date;
   exceptionDates: string | null;
   id: string;
@@ -22,7 +22,7 @@ type StoredEventRow = {
   startTime: Date;
   startTimeZone: string | null;
   uid: string | null;
-};
+}
 type StoredEvent = Omit<
   StoredEventRow,
   "exceptionDates" | "recurrenceRule" | "startTimeZone"
@@ -49,9 +49,9 @@ const getLatestSnapshot = async (
   return parseIcsCalendar({ icsString: snapshot.ical });
 };
 
-const parseOptionalJson = (value: string | null): object | undefined => {
+const parseOptionalJson = (value: string | null): object | null => {
   if (value === null) {
-    return undefined;
+    return null;
   }
 
   try {
@@ -59,9 +59,9 @@ const parseOptionalJson = (value: string | null): object | undefined => {
     if (parsedValue !== null && typeof parsedValue === "object") {
       return parsedValue;
     }
-    return undefined;
+    return null;
   } catch {
-    return undefined;
+    return null;
   }
 };
 
@@ -78,12 +78,12 @@ const toStoredEvent = (row: StoredEventRow): StoredEvent => {
   }
 
   const recurrenceRule = parseOptionalJson(row.recurrenceRule);
-  if (recurrenceRule !== undefined) {
+  if (recurrenceRule) {
     storedEvent.recurrenceRule = recurrenceRule;
   }
 
   const exceptionDates = parseOptionalJson(row.exceptionDates);
-  if (exceptionDates !== undefined) {
+  if (exceptionDates) {
     storedEvent.exceptionDates = exceptionDates;
   }
 
@@ -107,7 +107,7 @@ const getStoredEvents = async (
     .from(eventStatesTable)
     .where(eq(eventStatesTable.calendarId, calendarId));
 
-  return rows.map(toStoredEvent);
+  return rows.map((row) => toStoredEvent(row));
 };
 
 const getUserMappedDestinationUids = async (
@@ -150,18 +150,38 @@ const addEvents = async (
     exceptionDates?: object;
   }[],
 ): Promise<void> => {
-  const rows = events.map((event) => ({
-    calendarId,
-    description: event.description,
-    endTime: event.endTime,
-    exceptionDates: event.exceptionDates ? JSON.stringify(event.exceptionDates) : undefined,
-    location: event.location,
-    recurrenceRule: event.recurrenceRule ? JSON.stringify(event.recurrenceRule) : undefined,
-    sourceEventUid: event.uid,
-    startTime: event.startTime,
-    startTimeZone: event.startTimeZone,
-    title: event.title,
-  }));
+  const rows = events.map((event) => {
+    const row: {
+      calendarId: string;
+      description?: string;
+      endTime: Date;
+      exceptionDates?: string;
+      location?: string;
+      recurrenceRule?: string;
+      sourceEventUid: string;
+      startTime: Date;
+      startTimeZone?: string;
+      title?: string;
+    } = {
+      calendarId,
+      description: event.description,
+      endTime: event.endTime,
+      location: event.location,
+      sourceEventUid: event.uid,
+      startTime: event.startTime,
+      startTimeZone: event.startTimeZone,
+      title: event.title,
+    };
+
+    if (event.exceptionDates) {
+      row.exceptionDates = JSON.stringify(event.exceptionDates);
+    }
+    if (event.recurrenceRule) {
+      row.recurrenceRule = JSON.stringify(event.recurrenceRule);
+    }
+
+    return row;
+  });
 
   await database.insert(eventStatesTable).values(rows);
 };

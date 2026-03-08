@@ -137,7 +137,7 @@ const buildFetchPromises = (
     if (!url) {
       return Promise.reject(createMissingUrlError(id));
     }
-    return dependencies.fetchRemoteCalendar(id, url);
+    return Promise.resolve().then(() => dependencies.fetchRemoteCalendar(id, url));
   });
 
 const runIcalSnapshotSyncJob = async (
@@ -168,7 +168,8 @@ const runIcalSnapshotSyncJob = async (
   for (const settlement of settlements) {
     if (settlement.status === "fulfilled") {
       insertionPromises.push(
-        dependencies.processSnapshot(settlement.value.calendarId, settlement.value.ical),
+        Promise.resolve().then(() =>
+          dependencies.processSnapshot(settlement.value.calendarId, settlement.value.ical)),
       );
     }
   }

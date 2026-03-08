@@ -50,7 +50,7 @@ const validateSourceUrl = async (url: string): Promise<void> => {
   await pullRemoteCalendar("json", url);
 };
 
-const createSource = async (userId: string, name: string, url: string): Promise<Source> =>
+const createSource = (userId: string, name: string, url: string): Promise<Source> =>
   runCreateSource(
     { userId, name, url },
     {
@@ -105,7 +105,7 @@ const createSource = async (userId: string, name: string, url: string): Promise<
     },
   );
 
-const deleteSource = async (userId: string, calendarId: string): Promise<boolean> =>
+const deleteSource = (userId: string, calendarId: string): Promise<boolean> =>
   runDeleteSource(
     { userId, calendarId },
     {

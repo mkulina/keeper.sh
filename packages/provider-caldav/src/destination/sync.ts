@@ -60,9 +60,9 @@ const createCalDAVService = (config: CalDAVServiceConfig): CalDAVService => {
         ),
       );
 
-    return results.map((r) => ({
-      ...r,
-      calendarUrl: r.calendarUrl ?? "",
+    return results.map((result) => ({
+      ...result,
+      calendarUrl: result.calendarUrl ?? "",
     }));
   };
 
@@ -95,9 +95,9 @@ const createCalDAVService = (config: CalDAVServiceConfig): CalDAVService => {
         ),
       );
 
-    return results.map((r) => ({
-      ...r,
-      calendarUrl: r.calendarUrl ?? "",
+    return results.map((result) => ({
+      ...result,
+      calendarUrl: result.calendarUrl ?? "",
     }));
   };
 

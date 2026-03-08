@@ -8,8 +8,8 @@ import {
 
 const GOOGLE_PROVIDER = "google";
 
-export const GET = withWideEvent(
-  withAuth(async ({ request, userId }) =>
+const GET = withWideEvent(
+  withAuth(({ request, userId }) =>
     listOAuthCalendars(request, userId, {
       isCalendarListError: (error): error is CalendarListError =>
         error instanceof CalendarListError,
@@ -18,6 +18,7 @@ export const GET = withWideEvent(
       provider: GOOGLE_PROVIDER,
       refreshDestinationAccessToken: refreshGoogleAccessToken,
       refreshSourceAccessToken: refreshGoogleSourceAccessToken,
-    }),
-  ),
+    })),
 );
+
+export { GET };

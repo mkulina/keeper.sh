@@ -30,7 +30,7 @@ const selectLatestDestinationSyncedAt = async (userId: string): Promise<Date | n
   return aggregate?.lastSyncedAt ?? null;
 };
 
-const sendInitialSyncStatus = async (userId: string, socket: Socket): Promise<void> =>
+const sendInitialSyncStatus = (userId: string, socket: Socket): Promise<void> =>
   runSendInitialSyncStatus(userId, socket, {
     isValidSyncAggregate: syncAggregateSchema.allows,
     resolveSyncAggregatePayload: (userIdToResolve, fallback) =>

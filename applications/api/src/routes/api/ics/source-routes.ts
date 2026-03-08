@@ -48,7 +48,11 @@ const handlePostIcsSourceRoute = async (
     return Response.json(source, { status: HTTP_STATUS.CREATED });
   } catch (error) {
     if (dependencies.isSourceLimitError(error)) {
-      const message = error instanceof Error ? error.message : "Source limit reached";
+      let message = "Source limit reached";
+      if (error instanceof Error) {
+        const { message: errorMessage } = error;
+        message = errorMessage;
+      }
       return ErrorResponse.paymentRequired(message).toResponse();
     }
 

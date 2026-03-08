@@ -4,7 +4,7 @@ import {
   handlePostIcsSourceRoute,
 } from "./source-routes";
 
-const readJson = async (response: Response): Promise<unknown> => response.json();
+const readJson = (response: Response): Promise<unknown> => response.json();
 
 class TestSourceLimitError extends Error {}
 
@@ -24,9 +24,9 @@ describe("handleGetIcsSourcesRoute", () => {
     const response = await handleGetIcsSourcesRoute(
       { userId: "user-1" },
       {
-        getUserSources: async (userId) => {
+        getUserSources: (userId) => {
           receivedUserIds.push(userId);
-          return [{ id: "source-1" }];
+          return Promise.resolve([{ id: "source-1" }]);
         },
       },
     );
@@ -39,7 +39,7 @@ describe("handleGetIcsSourcesRoute", () => {
 
 describe("handlePostIcsSourceRoute", () => {
   it("creates source with parsed body and returns 201", async () => {
-    const receivedCreateCalls: Array<{ userId: string; name: string; url: string }> = [];
+    const receivedCreateCalls: { userId: string; name: string; url: string }[] = [];
 
     const response = await handlePostIcsSourceRoute(
       {
@@ -47,9 +47,9 @@ describe("handlePostIcsSourceRoute", () => {
         userId: "user-1",
       },
       {
-        createSource: async (userId, name, url) => {
+        createSource: (userId, name, url) => {
           receivedCreateCalls.push({ userId, name, url });
-          return { id: "source-1", name };
+          return Promise.resolve({ id: "source-1", name });
         },
         isInvalidSourceUrlError: (_error): _error is TestInvalidSourceUrlError => false,
         isSourceLimitError: () => false,
@@ -84,9 +84,8 @@ describe("handlePostIcsSourceRoute", () => {
         userId: "user-1",
       },
       {
-        createSource: async () => {
-          throw new TestSourceLimitError("plan limit reached");
-        },
+        createSource: () =>
+          Promise.reject(new TestSourceLimitError("plan limit reached")),
         isInvalidSourceUrlError: (_error): _error is TestInvalidSourceUrlError => false,
         isSourceLimitError: (error) => error instanceof TestSourceLimitError,
         parseCreateSourceBody: () => ({
@@ -106,9 +105,8 @@ describe("handlePostIcsSourceRoute", () => {
         userId: "user-1",
       },
       {
-        createSource: async () => {
-          throw new TestInvalidSourceUrlError("requires auth", true);
-        },
+        createSource: () =>
+          Promise.reject(new TestInvalidSourceUrlError("requires auth", true)),
         isInvalidSourceUrlError: (error): error is TestInvalidSourceUrlError =>
           error instanceof TestInvalidSourceUrlError,
         isSourceLimitError: () => false,
@@ -133,7 +131,7 @@ describe("handlePostIcsSourceRoute", () => {
         userId: "user-1",
       },
       {
-        createSource: async () => ({ id: "source-1" }),
+        createSource: () => Promise.resolve({ id: "source-1" }),
         isInvalidSourceUrlError: (_error): _error is TestInvalidSourceUrlError => false,
         isSourceLimitError: () => false,
         parseCreateSourceBody: () => {

@@ -55,7 +55,10 @@ const GET = withWideEvent(
 const PATCH = withWideEvent(
   withAuth(async ({ request, userId }) => {
     const payload = await request.json();
-    const body = icalSettingsPatchBodySchema.allows(payload) ? payload : {};
+    let body: IcalSettingsPatchBody = {};
+    if (icalSettingsPatchBodySchema.allows(payload)) {
+      body = payload;
+    }
     const updates = buildIcalSettingsUpdates(body);
 
     if (Object.keys(updates).length === 0) {

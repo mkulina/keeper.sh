@@ -14,6 +14,20 @@ import {
 } from "./recurrence";
 
 const EMPTY_SOURCES_COUNT = 0;
+
+const orAbsent = <TValue>(value: TValue | null): TValue | undefined => {
+  if (value === null) {
+    return;
+  }
+  return value;
+};
+
+const excludeOrAbsent = <TValue>(exclude: boolean, value: TValue | null): TValue | undefined => {
+  if (exclude) {
+    return;
+  }
+  return orAbsent(value);
+};
 const TEMPLATE_TOKEN_PATTERN = /\{\{(\w+)\}\}/g;
 const DEFAULT_EVENT_NAME = "Busy";
 const DEFAULT_EVENT_NAME_TEMPLATE = "{{calendar_name}}";
@@ -96,29 +110,30 @@ const fetchEventsForCalendars = async (
     }
 
     const eventName = result.title ?? DEFAULT_EVENT_NAME;
-    const calendarName = result.calendarName;
+    const {calendarName} = result;
     const template = result.customEventName || DEFAULT_EVENT_NAME_TEMPLATE;
 
-    const summary = result.excludeEventName
-      ? resolveEventNameTemplate(template, {
+    let summary = eventName;
+    if (result.excludeEventName) {
+      summary = resolveEventNameTemplate(template, {
         calendar_name: calendarName,
         event_name: eventName,
-      })
-      : eventName;
+      });
+    }
 
     syncableEvents.push({
       calendarId: result.calendarId,
       calendarName: result.calendarName,
       calendarUrl: result.calendarUrl,
-      description: result.excludeEventDescription ? undefined : result.description ?? undefined,
+      description: excludeOrAbsent(result.excludeEventDescription, result.description),
       endTime: result.endTime,
       id: result.id,
-      location: result.excludeEventLocation ? undefined : result.location ?? undefined,
+      location: excludeOrAbsent(result.excludeEventLocation, result.location),
       exceptionDates: parsedExceptionDates,
-      recurrenceRule: parsedRecurrenceRule ?? undefined,
+      recurrenceRule: orAbsent(parsedRecurrenceRule),
       sourceEventUid: result.sourceEventUid,
       startTime: result.startTime,
-      startTimeZone: result.startTimeZone ?? undefined,
+      startTimeZone: orAbsent(result.startTimeZone),
       summary,
     });
   }

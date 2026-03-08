@@ -8,7 +8,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
 const readSentPayload = (sentMessages: string[]): Record<string, unknown> => {
-  const sentMessage = sentMessages[0];
+  const [sentMessage] = sentMessages;
   if (!sentMessage) {
     throw new Error("Expected a websocket message");
   }
@@ -49,8 +49,9 @@ describe("runSendInitialSyncStatus", () => {
             "seq" in value &&
             typeof value.seq === "number",
           ),
-        resolveSyncAggregatePayload: async () => expectedPayload,
-        selectLatestDestinationSyncedAt: async () => new Date("2026-03-08T11:59:00.000Z"),
+        resolveSyncAggregatePayload: () => Promise.resolve(expectedPayload),
+        selectLatestDestinationSyncedAt: () =>
+          Promise.resolve(new Date("2026-03-08T11:59:00.000Z")),
       },
     );
 
@@ -72,10 +73,10 @@ describe("runSendInitialSyncStatus", () => {
         },
         {
           isValidSyncAggregate: (_value): _value is OutgoingSyncAggregatePayload => false,
-          resolveSyncAggregatePayload: async () => {
-            throw new Error("resolver failed");
-          },
-          selectLatestDestinationSyncedAt: async () => new Date("2026-03-08T11:59:00.000Z"),
+          resolveSyncAggregatePayload: () =>
+            Promise.reject(new Error("resolver failed")),
+          selectLatestDestinationSyncedAt: () =>
+            Promise.resolve(new Date("2026-03-08T11:59:00.000Z")),
         },
       ),
     ).rejects.toThrow("resolver failed");
@@ -96,13 +97,13 @@ describe("runSendInitialSyncStatus", () => {
         },
         {
           isValidSyncAggregate: (_value): _value is OutgoingSyncAggregatePayload => false,
-          resolveSyncAggregatePayload: async () => ({
+          resolveSyncAggregatePayload: () => Promise.resolve({
             progressPercent: 100,
             syncEventsProcessed: 0,
             syncEventsRemaining: 0,
             syncEventsTotal: 0,
           }),
-          selectLatestDestinationSyncedAt: async () => null,
+          selectLatestDestinationSyncedAt: () => Promise.resolve(null),
         },
       ),
     ).rejects.toThrow("Invalid initial sync aggregate payload");
@@ -123,12 +124,10 @@ describe("runSendInitialSyncStatus", () => {
         },
         {
           isValidSyncAggregate: (_value): _value is OutgoingSyncAggregatePayload => false,
-          resolveSyncAggregatePayload: async () => {
-            throw new Error("resolver failed");
-          },
-          selectLatestDestinationSyncedAt: async () => {
-            throw new Error("query failed");
-          },
+          resolveSyncAggregatePayload: () =>
+            Promise.reject(new Error("resolver failed")),
+          selectLatestDestinationSyncedAt: () =>
+            Promise.reject(new Error("query failed")),
         },
       ),
     ).rejects.toThrow("query failed");

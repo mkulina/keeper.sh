@@ -2,6 +2,8 @@ import type { OutlookCalendarListEntry, OutlookCalendarListResponse } from "../t
 import { MICROSOFT_GRAPH_API } from "../../shared/api";
 import { isSimpleAuthError } from "../../shared/errors";
 
+const INVALID_RESPONSE_STATUS = 502;
+
 class CalendarListError extends Error {
   constructor(
     message: string,
@@ -12,6 +14,80 @@ class CalendarListError extends Error {
     this.name = "CalendarListError";
   }
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const parseCalendarOwner = (value: unknown): OutlookCalendarListEntry["owner"] | undefined => {
+  if (!isRecord(value)) {
+    return;
+  }
+
+  const owner: OutlookCalendarListEntry["owner"] = {};
+  if (typeof value.name === "string") {
+    owner.name = value.name;
+  }
+  if (typeof value.address === "string") {
+    owner.address = value.address;
+  }
+
+  if (!owner.name && !owner.address) {
+    return;
+  }
+  return owner;
+};
+
+const parseCalendarEntry = (value: unknown): OutlookCalendarListEntry | null => {
+  if (!isRecord(value)) {
+    return null;
+  }
+  if (typeof value.id !== "string" || typeof value.name !== "string") {
+    return null;
+  }
+
+  const entry: OutlookCalendarListEntry = {
+    id: value.id,
+    name: value.name,
+  };
+
+  if (typeof value.color === "string") {
+    entry.color = value.color;
+  }
+  if (typeof value.isDefaultCalendar === "boolean") {
+    entry.isDefaultCalendar = value.isDefaultCalendar;
+  }
+  if (typeof value.canEdit === "boolean") {
+    entry.canEdit = value.canEdit;
+  }
+
+  const owner = parseCalendarOwner(value.owner);
+  if (owner) {
+    entry.owner = owner;
+  }
+
+  return entry;
+};
+
+const parseCalendarListResponse = (value: unknown): OutlookCalendarListResponse | null => {
+  if (!isRecord(value) || !Array.isArray(value.value)) {
+    return null;
+  }
+
+  const calendars: OutlookCalendarListEntry[] = [];
+  for (const calendar of value.value) {
+    const parsedCalendar = parseCalendarEntry(calendar);
+    if (!parsedCalendar) {
+      return null;
+    }
+    calendars.push(parsedCalendar);
+  }
+
+  const parsedResponse: OutlookCalendarListResponse = { value: calendars };
+  if (typeof value["@odata.nextLink"] === "string") {
+    parsedResponse["@odata.nextLink"] = value["@odata.nextLink"];
+  }
+  return parsedResponse;
+};
 
 const fetchCalendarPage = async (
   accessToken: string,
@@ -39,7 +115,12 @@ const fetchCalendarPage = async (
     );
   }
 
-  return response.json() as Promise<OutlookCalendarListResponse>;
+  const responseBody = await response.json();
+  const parsedResponse = parseCalendarListResponse(responseBody);
+  if (!parsedResponse) {
+    throw new CalendarListError("Invalid calendar list response", INVALID_RESPONSE_STATUS);
+  }
+  return parsedResponse;
 };
 
 const listUserCalendars = async (accessToken: string): Promise<OutlookCalendarListEntry[]> => {

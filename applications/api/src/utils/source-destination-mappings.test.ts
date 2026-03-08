@@ -4,6 +4,78 @@ import {
   runSetSourcesForDestination,
 } from "./source-destination-mappings";
 
+const createMappingKey = (sourceCalendarId: string, destinationCalendarId: string): string =>
+  `${sourceCalendarId}::${destinationCalendarId}`;
+
+const parseMappingKey = (
+  mappingKey: string,
+): { sourceCalendarId: string; destinationCalendarId: string } => {
+  const [sourceCalendarId, destinationCalendarId] = mappingKey.split("::");
+  if (!sourceCalendarId || !destinationCalendarId) {
+    throw new Error("Invalid mapping key");
+  }
+
+  return { destinationCalendarId, sourceCalendarId };
+};
+
+const collectDestinationIds = (
+  mappings: Set<string>,
+  sourceCalendarId: string,
+): string[] => {
+  const destinationIds: string[] = [];
+  for (const mappingKey of mappings) {
+    const mapping = parseMappingKey(mappingKey);
+    if (mapping.sourceCalendarId === sourceCalendarId) {
+      destinationIds.push(mapping.destinationCalendarId);
+    }
+  }
+
+  return destinationIds.toSorted();
+};
+
+const collectSourceIds = (
+  mappings: Set<string>,
+  destinationCalendarId: string,
+): string[] => {
+  const sourceIds: string[] = [];
+  for (const mappingKey of mappings) {
+    const mapping = parseMappingKey(mappingKey);
+    if (mapping.destinationCalendarId === destinationCalendarId) {
+      sourceIds.push(mapping.sourceCalendarId);
+    }
+  }
+
+  return sourceIds.toSorted();
+};
+
+interface UserLockManager {
+  acquire: (userId: string) => Promise<() => void>;
+}
+
+const releaseLockNoop = (): void => {
+  Number.isFinite(0);
+};
+
+const createUserLockManager = (): UserLockManager => {
+  const lockQueueByUserId = new Map<string, Promise<void>>();
+
+  return {
+    acquire: async (userId) => {
+      const previousLock = lockQueueByUserId.get(userId) ?? Promise.resolve();
+
+      const lockResolver = Promise.withResolvers<void>();
+      const currentLock = lockResolver.promise;
+
+      lockQueueByUserId.set(userId, previousLock.then(() => currentLock));
+      await previousLock;
+
+      return () => {
+        lockResolver.resolve();
+      };
+    },
+  };
+};
+
 describe("runSetDestinationsForSource", () => {
   it("throws when source calendar is not found and does not trigger sync", async () => {
     let triggerCount = 0;
@@ -13,13 +85,13 @@ describe("runSetDestinationsForSource", () => {
         triggerDestinationSync: () => {
           triggerCount += 1;
         },
-        withTransaction: async (transactionCallback) =>
+        withTransaction: (transactionCallback) =>
           transactionCallback({
-            acquireUserLock: async () => {},
-            findOwnedDestinationIds: async () => ["dest-1"],
-            replaceSourceMappings: async () => {},
-            ensureDestinationSyncStatuses: async () => {},
-            sourceExists: async () => false,
+            acquireUserLock: () => Promise.resolve(),
+            findOwnedDestinationIds: () => Promise.resolve(["dest-1"]),
+            replaceSourceMappings: () => Promise.resolve(),
+            ensureDestinationSyncStatuses: () => Promise.resolve(),
+            sourceExists: () => Promise.resolve(false),
           }),
       }),
     ).rejects.toThrow("Source calendar not found");
@@ -30,14 +102,14 @@ describe("runSetDestinationsForSource", () => {
   it("throws when destination calendars include invalid IDs", async () => {
     await expect(
       runSetDestinationsForSource("user-1", "source-1", ["dest-1", "dest-2"], {
-        triggerDestinationSync: () => {},
-        withTransaction: async (transactionCallback) =>
+        triggerDestinationSync: Boolean,
+        withTransaction: (transactionCallback) =>
           transactionCallback({
-            acquireUserLock: async () => {},
-            findOwnedDestinationIds: async () => ["dest-1"],
-            replaceSourceMappings: async () => {},
-            ensureDestinationSyncStatuses: async () => {},
-            sourceExists: async () => true,
+            acquireUserLock: () => Promise.resolve(),
+            findOwnedDestinationIds: () => Promise.resolve(["dest-1"]),
+            replaceSourceMappings: () => Promise.resolve(),
+            ensureDestinationSyncStatuses: () => Promise.resolve(),
+            sourceExists: () => Promise.resolve(true),
           }),
       }),
     ).rejects.toThrow("Some destination calendars not found");
@@ -50,19 +122,22 @@ describe("runSetDestinationsForSource", () => {
       triggerDestinationSync: (userId) => {
         operationLog.push(`trigger:${userId}`);
       },
-      withTransaction: async (transactionCallback) =>
+      withTransaction: (transactionCallback) =>
         transactionCallback({
-          acquireUserLock: async (userId) => {
+          acquireUserLock: (userId) => {
             operationLog.push(`lock:${userId}`);
+            return Promise.resolve();
           },
-          ensureDestinationSyncStatuses: async (destinationIds) => {
+          ensureDestinationSyncStatuses: (destinationIds) => {
             operationLog.push(`status:${destinationIds.join(",")}`);
+            return Promise.resolve();
           },
-          findOwnedDestinationIds: async () => ["dest-1", "dest-2"],
-          replaceSourceMappings: async (_sourceCalendarId, destinationIds) => {
+          findOwnedDestinationIds: () => Promise.resolve(["dest-1", "dest-2"]),
+          replaceSourceMappings: (_sourceCalendarId, destinationIds) => {
             operationLog.push(`replace:${destinationIds.join(",")}`);
+            return Promise.resolve();
           },
-          sourceExists: async () => true,
+          sourceExists: () => Promise.resolve(true),
         }),
     });
 
@@ -85,13 +160,13 @@ describe("runSetDestinationsForSource", () => {
         triggerDestinationSync: () => {
           throw new Error("trigger failed");
         },
-        withTransaction: async (transactionCallback) =>
+        withTransaction: (transactionCallback) =>
           transactionCallback({
-            acquireUserLock: async () => {},
-            ensureDestinationSyncStatuses: async () => {},
-            findOwnedDestinationIds: async () => ["dest-1"],
-            replaceSourceMappings: async () => {},
-            sourceExists: async () => true,
+            acquireUserLock: () => Promise.resolve(),
+            ensureDestinationSyncStatuses: () => Promise.resolve(),
+            findOwnedDestinationIds: () => Promise.resolve(["dest-1"]),
+            replaceSourceMappings: () => Promise.resolve(),
+            sourceExists: () => Promise.resolve(true),
           }),
       }),
     ).resolves.toBeUndefined();
@@ -100,18 +175,287 @@ describe("runSetDestinationsForSource", () => {
   });
 });
 
+describe("mapping transaction adversarial behavior", () => {
+  it("serializes concurrent destination writes for the same source", async () => {
+    let mappings = new Set<string>([
+      createMappingKey("source-1", "dest-0"),
+    ]);
+    const triggerUsers: string[] = [];
+    const lockManager = createUserLockManager();
+
+    const withTransaction = async <TResult>(
+      transactionCallback: (transaction: {
+        acquireUserLock: (userId: string) => Promise<void>;
+        sourceExists: (userId: string, sourceCalendarId: string) => Promise<boolean>;
+        findOwnedDestinationIds: (
+          userId: string,
+          destinationCalendarIds: string[],
+        ) => Promise<string[]>;
+        replaceSourceMappings: (
+          sourceCalendarId: string,
+          destinationCalendarIds: string[],
+        ) => Promise<void>;
+        ensureDestinationSyncStatuses: (destinationCalendarIds: string[]) => Promise<void>;
+      }) => Promise<TResult>,
+    ): Promise<TResult> => {
+      const draftMappings = new Set(mappings);
+      let releaseLock: () => void = releaseLockNoop;
+
+      try {
+        const result = await transactionCallback({
+          acquireUserLock: async (userId) => {
+            releaseLock = await lockManager.acquire(userId);
+          },
+          ensureDestinationSyncStatuses: () => Promise.resolve(),
+          findOwnedDestinationIds: (_userId, destinationCalendarIds) =>
+            Promise.resolve(destinationCalendarIds),
+          replaceSourceMappings: async (sourceCalendarId, destinationCalendarIds) => {
+            const mappingKeys = [...draftMappings];
+            for (const mappingKey of mappingKeys) {
+              const mapping = parseMappingKey(mappingKey);
+              if (mapping.sourceCalendarId === sourceCalendarId) {
+                draftMappings.delete(mappingKey);
+              }
+            }
+
+            await Bun.sleep(5);
+
+            for (const destinationCalendarId of destinationCalendarIds) {
+              draftMappings.add(createMappingKey(sourceCalendarId, destinationCalendarId));
+            }
+          },
+          sourceExists: () => Promise.resolve(true),
+        });
+
+        mappings = draftMappings;
+        return result;
+      } finally {
+        releaseLock();
+      }
+    };
+
+    const firstWrite = runSetDestinationsForSource("user-1", "source-1", ["dest-1", "dest-2"], {
+      triggerDestinationSync: (userId) => {
+        triggerUsers.push(userId);
+      },
+      withTransaction,
+    });
+    await Bun.sleep(1);
+    const secondWrite = runSetDestinationsForSource("user-1", "source-1", ["dest-3"], {
+      triggerDestinationSync: (userId) => {
+        triggerUsers.push(userId);
+      },
+      withTransaction,
+    });
+
+    await Promise.all([firstWrite, secondWrite]);
+
+    expect(collectDestinationIds(mappings, "source-1")).toEqual(["dest-3"]);
+    expect(triggerUsers).toEqual(["user-1", "user-1"]);
+  });
+
+  it("rolls back destination mapping writes when transaction fails mid-flight", async () => {
+    let mappings = new Set<string>([
+      createMappingKey("source-1", "dest-0"),
+    ]);
+    let triggerCount = 0;
+
+    const withTransaction = async <TResult>(
+      transactionCallback: (transaction: {
+        acquireUserLock: (userId: string) => Promise<void>;
+        sourceExists: (userId: string, sourceCalendarId: string) => Promise<boolean>;
+        findOwnedDestinationIds: (
+          userId: string,
+          destinationCalendarIds: string[],
+        ) => Promise<string[]>;
+        replaceSourceMappings: (
+          sourceCalendarId: string,
+          destinationCalendarIds: string[],
+        ) => Promise<void>;
+        ensureDestinationSyncStatuses: (destinationCalendarIds: string[]) => Promise<void>;
+      }) => Promise<TResult>,
+    ): Promise<TResult> => {
+      const draftMappings = new Set(mappings);
+      const result = await transactionCallback({
+        acquireUserLock: () => Promise.resolve(),
+        ensureDestinationSyncStatuses: () =>
+          Promise.reject(new Error("status upsert failed")),
+        findOwnedDestinationIds: (_userId, destinationCalendarIds) =>
+          Promise.resolve(destinationCalendarIds),
+        replaceSourceMappings: (sourceCalendarId, destinationCalendarIds) => {
+          const mappingKeys = [...draftMappings];
+          for (const mappingKey of mappingKeys) {
+            const mapping = parseMappingKey(mappingKey);
+            if (mapping.sourceCalendarId === sourceCalendarId) {
+              draftMappings.delete(mappingKey);
+            }
+          }
+          for (const destinationCalendarId of destinationCalendarIds) {
+            draftMappings.add(createMappingKey(sourceCalendarId, destinationCalendarId));
+          }
+          return Promise.resolve();
+        },
+        sourceExists: () => Promise.resolve(true),
+      });
+      mappings = draftMappings;
+      return result;
+    };
+
+    await expect(
+      runSetDestinationsForSource("user-1", "source-1", ["dest-1"], {
+        triggerDestinationSync: () => {
+          triggerCount += 1;
+        },
+        withTransaction,
+      }),
+    ).rejects.toThrow("status upsert failed");
+
+    expect(collectDestinationIds(mappings, "source-1")).toEqual(["dest-0"]);
+    expect(triggerCount).toBe(0);
+  });
+
+  it("serializes cross-endpoint writes for the same user", async () => {
+    let mappings = new Set<string>([
+      createMappingKey("source-a", "dest-legacy"),
+      createMappingKey("source-b", "dest-1"),
+    ]);
+    const lockManager = createUserLockManager();
+
+    const withDestinationTransaction = async <TResult>(
+      transactionCallback: (transaction: {
+        acquireUserLock: (userId: string) => Promise<void>;
+        sourceExists: (userId: string, sourceCalendarId: string) => Promise<boolean>;
+        findOwnedDestinationIds: (
+          userId: string,
+          destinationCalendarIds: string[],
+        ) => Promise<string[]>;
+        replaceSourceMappings: (
+          sourceCalendarId: string,
+          destinationCalendarIds: string[],
+        ) => Promise<void>;
+        ensureDestinationSyncStatuses: (destinationCalendarIds: string[]) => Promise<void>;
+      }) => Promise<TResult>,
+    ): Promise<TResult> => {
+      let releaseLock: () => void = releaseLockNoop;
+
+      try {
+        const result = await transactionCallback({
+          acquireUserLock: async (userId) => {
+            releaseLock = await lockManager.acquire(userId);
+          },
+          ensureDestinationSyncStatuses: () => Promise.resolve(),
+          findOwnedDestinationIds: (_userId, destinationCalendarIds) =>
+            Promise.resolve(destinationCalendarIds),
+          replaceSourceMappings: async (sourceCalendarId, destinationCalendarIds) => {
+            const mappingKeys = [...mappings];
+            for (const mappingKey of mappingKeys) {
+              const mapping = parseMappingKey(mappingKey);
+              if (mapping.sourceCalendarId === sourceCalendarId) {
+                mappings.delete(mappingKey);
+              }
+            }
+
+            await Bun.sleep(5);
+
+            for (const destinationCalendarId of destinationCalendarIds) {
+              mappings.add(createMappingKey(sourceCalendarId, destinationCalendarId));
+            }
+          },
+          sourceExists: () => Promise.resolve(true),
+        });
+        return result;
+      } finally {
+        releaseLock();
+      }
+    };
+
+    const withSourceTransaction = async <TResult>(
+      transactionCallback: (transaction: {
+        acquireUserLock: (userId: string) => Promise<void>;
+        destinationExists: (userId: string, destinationCalendarId: string) => Promise<boolean>;
+        findOwnedSourceIds: (
+          userId: string,
+          sourceCalendarIds: string[],
+        ) => Promise<string[]>;
+        replaceDestinationMappings: (
+          destinationCalendarId: string,
+          sourceCalendarIds: string[],
+        ) => Promise<void>;
+        ensureDestinationSyncStatus: (destinationCalendarId: string) => Promise<void>;
+      }) => Promise<TResult>,
+    ): Promise<TResult> => {
+      let releaseLock: () => void = releaseLockNoop;
+
+      try {
+        const result = await transactionCallback({
+          acquireUserLock: async (userId) => {
+            releaseLock = await lockManager.acquire(userId);
+          },
+          destinationExists: () => Promise.resolve(true),
+          ensureDestinationSyncStatus: () => Promise.resolve(),
+          findOwnedSourceIds: (_userId, sourceCalendarIds) =>
+            Promise.resolve(sourceCalendarIds),
+          replaceDestinationMappings: async (destinationCalendarId, sourceCalendarIds) => {
+            const mappingKeys = [...mappings];
+            for (const mappingKey of mappingKeys) {
+              const mapping = parseMappingKey(mappingKey);
+              if (mapping.destinationCalendarId === destinationCalendarId) {
+                mappings.delete(mappingKey);
+              }
+            }
+
+            await Bun.sleep(5);
+
+            for (const sourceCalendarId of sourceCalendarIds) {
+              mappings.add(createMappingKey(sourceCalendarId, destinationCalendarId));
+            }
+          },
+        });
+        return result;
+      } finally {
+        releaseLock();
+      }
+    };
+
+    const destinationWrite = runSetDestinationsForSource(
+      "user-1",
+      "source-a",
+      ["dest-1", "dest-2"],
+      {
+        triggerDestinationSync: Boolean,
+        withTransaction: withDestinationTransaction,
+      },
+    );
+    await Bun.sleep(1);
+    const sourceWrite = runSetSourcesForDestination(
+      "user-1",
+      "dest-1",
+      ["source-b"],
+      {
+        triggerDestinationSync: Boolean,
+        withTransaction: withSourceTransaction,
+      },
+    );
+
+    await Promise.all([destinationWrite, sourceWrite]);
+
+    expect(collectDestinationIds(mappings, "source-a")).toEqual(["dest-2"]);
+    expect(collectSourceIds(mappings, "dest-1")).toEqual(["source-b"]);
+  });
+});
+
 describe("runSetSourcesForDestination", () => {
   it("throws when destination calendar is not found", async () => {
     await expect(
       runSetSourcesForDestination("user-1", "dest-1", ["source-1"], {
-        triggerDestinationSync: () => {},
-        withTransaction: async (transactionCallback) =>
+        triggerDestinationSync: Boolean,
+        withTransaction: (transactionCallback) =>
           transactionCallback({
-            acquireUserLock: async () => {},
-            destinationExists: async () => false,
-            ensureDestinationSyncStatus: async () => {},
-            findOwnedSourceIds: async () => ["source-1"],
-            replaceDestinationMappings: async () => {},
+            acquireUserLock: () => Promise.resolve(),
+            destinationExists: () => Promise.resolve(false),
+            ensureDestinationSyncStatus: () => Promise.resolve(),
+            findOwnedSourceIds: () => Promise.resolve(["source-1"]),
+            replaceDestinationMappings: () => Promise.resolve(),
           }),
       }),
     ).rejects.toThrow("Destination calendar not found");
@@ -120,14 +464,14 @@ describe("runSetSourcesForDestination", () => {
   it("throws when source calendars include invalid IDs", async () => {
     await expect(
       runSetSourcesForDestination("user-1", "dest-1", ["source-1", "source-2"], {
-        triggerDestinationSync: () => {},
-        withTransaction: async (transactionCallback) =>
+        triggerDestinationSync: Boolean,
+        withTransaction: (transactionCallback) =>
           transactionCallback({
-            acquireUserLock: async () => {},
-            destinationExists: async () => true,
-            ensureDestinationSyncStatus: async () => {},
-            findOwnedSourceIds: async () => ["source-1"],
-            replaceDestinationMappings: async () => {},
+            acquireUserLock: () => Promise.resolve(),
+            destinationExists: () => Promise.resolve(true),
+            ensureDestinationSyncStatus: () => Promise.resolve(),
+            findOwnedSourceIds: () => Promise.resolve(["source-1"]),
+            replaceDestinationMappings: () => Promise.resolve(),
           }),
       }),
     ).rejects.toThrow("Some source calendars not found");
@@ -140,18 +484,21 @@ describe("runSetSourcesForDestination", () => {
       triggerDestinationSync: (userId) => {
         operationLog.push(`trigger:${userId}`);
       },
-      withTransaction: async (transactionCallback) =>
+      withTransaction: (transactionCallback) =>
         transactionCallback({
-          acquireUserLock: async (userId) => {
+          acquireUserLock: (userId) => {
             operationLog.push(`lock:${userId}`);
+            return Promise.resolve();
           },
-          destinationExists: async () => true,
-          ensureDestinationSyncStatus: async () => {
+          destinationExists: () => Promise.resolve(true),
+          ensureDestinationSyncStatus: () => {
             operationLog.push("status");
+            return Promise.resolve();
           },
-          findOwnedSourceIds: async () => [],
-          replaceDestinationMappings: async (_destinationCalendarId, sourceCalendarIds) => {
+          findOwnedSourceIds: () => Promise.resolve([]),
+          replaceDestinationMappings: (_destinationCalendarId, sourceCalendarIds) => {
             operationLog.push(`replace:${sourceCalendarIds.length}`);
+            return Promise.resolve();
           },
         }),
     });
@@ -170,16 +517,18 @@ describe("runSetSourcesForDestination", () => {
       triggerDestinationSync: (userId) => {
         operationLog.push(`trigger:${userId}`);
       },
-      withTransaction: async (transactionCallback) =>
+      withTransaction: (transactionCallback) =>
         transactionCallback({
-          acquireUserLock: async () => {},
-          destinationExists: async () => true,
-          ensureDestinationSyncStatus: async (destinationCalendarId) => {
+          acquireUserLock: () => Promise.resolve(),
+          destinationExists: () => Promise.resolve(true),
+          ensureDestinationSyncStatus: (destinationCalendarId) => {
             operationLog.push(`status:${destinationCalendarId}`);
+            return Promise.resolve();
           },
-          findOwnedSourceIds: async () => ["source-1"],
-          replaceDestinationMappings: async (_destinationCalendarId, sourceCalendarIds) => {
+          findOwnedSourceIds: () => Promise.resolve(["source-1"]),
+          replaceDestinationMappings: (_destinationCalendarId, sourceCalendarIds) => {
             operationLog.push(`replace:${sourceCalendarIds.join(",")}`);
+            return Promise.resolve();
           },
         }),
     });
@@ -202,13 +551,13 @@ describe("runSetSourcesForDestination", () => {
         triggerDestinationSync: () => {
           throw new Error("trigger failed");
         },
-        withTransaction: async (transactionCallback) =>
+        withTransaction: (transactionCallback) =>
           transactionCallback({
-            acquireUserLock: async () => {},
-            destinationExists: async () => true,
-            ensureDestinationSyncStatus: async () => {},
-            findOwnedSourceIds: async () => ["source-1"],
-            replaceDestinationMappings: async () => {},
+            acquireUserLock: () => Promise.resolve(),
+            destinationExists: () => Promise.resolve(true),
+            ensureDestinationSyncStatus: () => Promise.resolve(),
+            findOwnedSourceIds: () => Promise.resolve(["source-1"]),
+            replaceDestinationMappings: () => Promise.resolve(),
           }),
       }),
     ).resolves.toBeUndefined();

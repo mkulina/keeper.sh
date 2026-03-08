@@ -5,6 +5,6 @@ interface ParseIcsCalendarOptions {
 }
 
 const parseIcsCalendar = (options: ParseIcsCalendarOptions) =>
-  convertIcsCalendar(undefined, options.icsString);
+  convertIcsCalendar(globalThis.undefined, options.icsString);
 
 export { parseIcsCalendar };

@@ -33,8 +33,8 @@ const publishProviderMetrics = (
 
 const runOAuthSourceSyncJob = async (dependencies: OAuthSyncJobDependencies): Promise<void> => {
   const settlements = await Promise.allSettled([
-    dependencies.syncGoogleSources(),
-    dependencies.syncOutlookSources(),
+    Promise.resolve().then(() => dependencies.syncGoogleSources()),
+    Promise.resolve().then(() => dependencies.syncOutlookSources()),
   ]);
 
   const [googleSettlement, outlookSettlement] = settlements;

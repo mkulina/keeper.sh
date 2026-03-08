@@ -18,7 +18,7 @@ describe("resolveSyncAggregatePayload", () => {
     const fallbackPayload = createFallbackPayload();
 
     const resolvedPayload = await resolveSyncAggregatePayload("user-1", fallbackPayload, {
-      getCachedSyncAggregate: async () => ({
+      getCachedSyncAggregate: () => Promise.resolve({
         progressPercent: 100,
         seq: 5,
         syncEventsProcessed: 10,
@@ -51,7 +51,7 @@ describe("resolveSyncAggregatePayload", () => {
     const fallbackPayload = createFallbackPayload();
 
     const resolvedPayload = await resolveSyncAggregatePayload("user-1", fallbackPayload, {
-      getCachedSyncAggregate: async () => ({
+      getCachedSyncAggregate: () => Promise.resolve({
         progressPercent: 90,
         seq: 18,
         syncEventsProcessed: 9,
@@ -85,7 +85,7 @@ describe("resolveSyncAggregatePayload", () => {
     const fallbackPayload = createFallbackPayload();
 
     const resolvedPayload = await resolveSyncAggregatePayload("user-1", fallbackPayload, {
-      getCachedSyncAggregate: async () => ({
+      getCachedSyncAggregate: () => Promise.resolve({
         progressPercent: "100%",
       }),
       getCurrentSyncAggregate: () => ({
@@ -113,7 +113,7 @@ describe("resolveSyncAggregatePayload", () => {
     const fallbackPayload = createFallbackPayload();
 
     const resolvedPayload = await resolveSyncAggregatePayload("user-1", fallbackPayload, {
-      getCachedSyncAggregate: async () => ({
+      getCachedSyncAggregate: () => Promise.resolve({
         lastSyncedAt: "2026-03-08T11:00:00.000Z",
         progressPercent: 100,
         seq: 50,
@@ -140,7 +140,7 @@ describe("resolveSyncAggregatePayload", () => {
     const fallbackPayload = createFallbackPayload();
 
     const resolvedPayload = await resolveSyncAggregatePayload("user-1", fallbackPayload, {
-      getCachedSyncAggregate: async () => ({
+      getCachedSyncAggregate: () => Promise.resolve({
         progressPercent: 60,
         seq: 12,
         syncEventsProcessed: 6,

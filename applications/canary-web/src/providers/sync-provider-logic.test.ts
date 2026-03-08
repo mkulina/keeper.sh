@@ -101,6 +101,62 @@ describe("shouldAcceptAggregatePayload", () => {
     expect(decision.nextSeq).toBe(8);
   });
 
+  it("accepts lower sequence when a new sync cycle starts", () => {
+    const current = createCurrentState({
+      progressPercent: 100,
+      seq: 25,
+      state: "idle",
+      syncEventsProcessed: 0,
+      syncEventsRemaining: 0,
+      syncEventsTotal: 0,
+    });
+
+    const decision = shouldAcceptAggregatePayload(
+      current,
+      25,
+      createAggregate({
+        lastSyncedAt: current.lastSyncedAt,
+        progressPercent: 0,
+        seq: 1,
+        syncing: true,
+        syncEventsProcessed: 0,
+        syncEventsRemaining: 12,
+        syncEventsTotal: 12,
+      }),
+    );
+
+    expect(decision.accepted).toBe(true);
+    expect(decision.nextSeq).toBe(25);
+  });
+
+  it("accepts lower sequence when lastSyncedAt moves forward", () => {
+    const current = createCurrentState({
+      lastSyncedAt: "2026-03-08T12:00:00.000Z",
+      seq: 30,
+      state: "idle",
+      syncEventsProcessed: 0,
+      syncEventsRemaining: 0,
+      syncEventsTotal: 0,
+    });
+
+    const decision = shouldAcceptAggregatePayload(
+      current,
+      30,
+      createAggregate({
+        lastSyncedAt: "2026-03-08T12:05:00.000Z",
+        progressPercent: 100,
+        seq: 2,
+        syncing: false,
+        syncEventsProcessed: 0,
+        syncEventsRemaining: 0,
+        syncEventsTotal: 0,
+      }),
+    );
+
+    expect(decision.accepted).toBe(true);
+    expect(decision.nextSeq).toBe(30);
+  });
+
   it("rejects non-increasing sequence with no forward progress", () => {
     const current = createCurrentState({
       progressPercent: 40,
@@ -123,5 +179,33 @@ describe("shouldAcceptAggregatePayload", () => {
 
     expect(decision.accepted).toBe(false);
     expect(decision.nextSeq).toBe(8);
+  });
+
+  it("rejects lower sequence with stale idle payload and no progress", () => {
+    const current = createCurrentState({
+      progressPercent: 100,
+      seq: 50,
+      state: "idle",
+      syncEventsProcessed: 0,
+      syncEventsRemaining: 0,
+      syncEventsTotal: 0,
+    });
+
+    const decision = shouldAcceptAggregatePayload(
+      current,
+      50,
+      createAggregate({
+        lastSyncedAt: current.lastSyncedAt,
+        progressPercent: 100,
+        seq: 4,
+        syncing: false,
+        syncEventsProcessed: 0,
+        syncEventsRemaining: 0,
+        syncEventsTotal: 0,
+      }),
+    );
+
+    expect(decision.accepted).toBe(false);
+    expect(decision.nextSeq).toBe(50);
   });
 });

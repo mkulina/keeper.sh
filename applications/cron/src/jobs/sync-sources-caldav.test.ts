@@ -13,7 +13,7 @@ describe("runCaldavSourceSyncJob", () => {
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
-      syncProvider: async (provider) => ({
+      syncProvider: (provider) => Promise.resolve({
         eventsAdded: provider.id.length,
         eventsRemoved: provider.id.length + 1,
         providerId: provider.id,
@@ -47,16 +47,16 @@ describe("runCaldavSourceSyncJob", () => {
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
-      syncProvider: async (provider) => {
+      syncProvider: (provider) => {
         if (provider.id === "caldav") {
-          throw new Error("caldav provider exploded");
+          return Promise.reject(new Error("caldav provider exploded"));
         }
 
-        return {
+        return Promise.resolve({
           eventsAdded: 3,
           eventsRemoved: 1,
           providerId: provider.id,
-        };
+        });
       },
     });
 
@@ -64,6 +64,43 @@ describe("runCaldavSourceSyncJob", () => {
     expect(cronEventFieldSets).toEqual([
       {
         "icloud.events.added": 3,
+        "icloud.events.removed": 1,
+      },
+    ]);
+  });
+
+  it("continues when one provider throws synchronously", async () => {
+    const cronEventFieldSets: Record<string, unknown>[] = [];
+    const errors: unknown[] = [];
+
+    await runCaldavSourceSyncJob({
+      providers: [
+        { id: "caldav", name: "CalDAV" },
+        { id: "icloud", name: "iCloud" },
+      ],
+      reportError: (error) => {
+        errors.push(error);
+      },
+      setCronEventFields: (fields) => {
+        cronEventFieldSets.push(fields);
+      },
+      syncProvider: (provider) => {
+        if (provider.id === "caldav") {
+          throw new Error("sync throw");
+        }
+
+        return Promise.resolve({
+          eventsAdded: 2,
+          eventsRemoved: 1,
+          providerId: provider.id,
+        });
+      },
+    });
+
+    expect(errors).toHaveLength(1);
+    expect(cronEventFieldSets).toEqual([
+      {
+        "icloud.events.added": 2,
         "icloud.events.removed": 1,
       },
     ]);
@@ -77,7 +114,7 @@ describe("runCaldavSourceSyncJob", () => {
       setCronEventFields: (fields) => {
         cronEventFieldSets.push(fields);
       },
-      syncProvider: async () => null,
+      syncProvider: () => Promise.resolve(null),
     });
 
     expect(cronEventFieldSets).toEqual([]);
@@ -94,10 +131,8 @@ describe("runCaldavSourceSyncJob", () => {
       reportError: (error) => {
         errors.push(error);
       },
-      setCronEventFields: () => {},
-      syncProvider: async () => {
-        throw new Error("provider failure");
-      },
+      setCronEventFields: Boolean,
+      syncProvider: () => Promise.reject(new Error("provider failure")),
     });
 
     expect(errors).toHaveLength(2);

@@ -12,7 +12,7 @@ import {
 } from "./source-routes";
 
 const GET = withWideEvent(
-  withAuth(async ({ userId }) =>
+  withAuth(({ userId }) =>
     handleGetIcsSourcesRoute(
       { userId },
       {

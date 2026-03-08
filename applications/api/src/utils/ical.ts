@@ -32,31 +32,32 @@ interface CalendarEvent {
   calendarName: string;
 }
 
-function isAllDayEvent(event: CalendarEvent): boolean {
+const isAllDayEvent = (event: CalendarEvent): boolean => {
   const durationMs = event.endTime.getTime() - event.startTime.getTime();
   const hours = durationMs / (1000 * 60 * 60);
   return hours >= 24 && event.startTime.getHours() === 0 && event.endTime.getHours() === 0;
-}
+};
 
-function resolveTemplate(template: string, variables: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, name) => variables[name] ?? match);
-}
+const resolveTemplate = (template: string, variables: Record<string, string>): string =>
+  template.replaceAll(/\{\{(\w+)\}\}/g, (match, name) => variables[name] ?? match);
 
-function resolveEventSummary(event: CalendarEvent, settings: FeedSettings): string {
-  const template = settings.includeEventName
-    ? (event.title || settings.customEventName)
-    : settings.customEventName;
+const resolveEventSummary = (event: CalendarEvent, settings: FeedSettings): string => {
+  let template = settings.customEventName;
+  if (settings.includeEventName) {
+    template = event.title || settings.customEventName;
+  }
 
   return resolveTemplate(template, {
     event_name: event.title || "Untitled",
     calendar_name: event.calendarName,
   });
-}
+};
 
 const formatEventsAsIcal = (events: CalendarEvent[], settings: FeedSettings): string => {
-  const filteredEvents = settings.excludeAllDayEvents
-    ? events.filter((event) => !isAllDayEvent(event))
-    : events;
+  let filteredEvents = events;
+  if (settings.excludeAllDayEvents) {
+    filteredEvents = events.filter((event) => !isAllDayEvent(event));
+  }
 
   const icsEvents: IcsEvent[] = filteredEvents.map((event) => {
     const icsEvent: IcsEvent = {
@@ -87,7 +88,7 @@ const formatEventsAsIcal = (events: CalendarEvent[], settings: FeedSettings): st
   return generateIcsCalendar(calendar);
 };
 
-async function getFeedSettings(userId: string): Promise<FeedSettings> {
+const getFeedSettings = async (userId: string): Promise<FeedSettings> => {
   const [settings] = await database
     .select()
     .from(icalFeedSettingsTable)
@@ -95,7 +96,7 @@ async function getFeedSettings(userId: string): Promise<FeedSettings> {
     .limit(1);
 
   return settings ?? DEFAULT_FEED_SETTINGS;
-}
+};
 
 const generateUserCalendar = async (identifier: string): Promise<string | null> => {
   const userId = await resolveUserIdentifier(identifier);

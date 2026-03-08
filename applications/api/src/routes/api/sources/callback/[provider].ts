@@ -18,7 +18,7 @@ const GET = withWideEvent(async ({ request, params }) => {
     return ErrorResponse.notFound().toResponse();
   }
 
-  const provider = params.provider;
+  const {provider} = params;
 
   const errorUrl = buildRedirectUrl("/dashboard/integrations", {
     error: "Failed to connect source",

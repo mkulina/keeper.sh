@@ -62,7 +62,10 @@ class SyncAggregateTracker {
 
   private static calculatePercent(processed: number, total: number, syncing: boolean): number {
     if (total === INITIAL_COUNT) {
-      return syncing ? INITIAL_COUNT : PERCENT_MULTIPLIER;
+      if (syncing) {
+        return INITIAL_COUNT;
+      }
+      return PERCENT_MULTIPLIER;
     }
     return (processed / total) * PERCENT_MULTIPLIER;
   }
@@ -97,7 +100,10 @@ class SyncAggregateTracker {
     current: CalendarOperationProgress | undefined,
   ): CalendarOperationProgress {
     const total = current?.total ?? INITIAL_COUNT;
-    const processed = total > INITIAL_COUNT ? total : current?.processed ?? INITIAL_COUNT;
+    let processed = current?.processed ?? INITIAL_COUNT;
+    if (total > INITIAL_COUNT) {
+      processed = total;
+    }
 
     return {
       processed,
@@ -146,7 +152,7 @@ class SyncAggregateTracker {
     );
 
     return {
-      ...(options?.lastSyncedAt !== undefined && { lastSyncedAt: options.lastSyncedAt }),
+      ...(options && "lastSyncedAt" in options && { lastSyncedAt: options.lastSyncedAt }),
       progressPercent,
       syncEventsProcessed,
       syncEventsRemaining,

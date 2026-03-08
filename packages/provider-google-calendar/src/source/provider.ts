@@ -26,6 +26,13 @@ import {
 
 const GOOGLE_PROVIDER_ID = "google";
 const EMPTY_COUNT = 0;
+
+const stringifyIfPresent = (value: unknown) => {
+  if (!value) {
+    return;
+  }
+  return JSON.stringify(value);
+};
 const YEARS_UNTIL_FUTURE = 2;
 
 interface GoogleSourceConfig extends OAuthSourceConfig {
@@ -121,7 +128,7 @@ class GoogleCalendarSourceProvider extends OAuthSourceProvider<GoogleSourceConfi
     const existingUidSet = new Set(existingEvents.map((event) => event.sourceEventUid));
 
     const toAdd = events.filter((event) => !existingUidSet.has(event.uid));
-    const toUpdate = events.filter((event) => existingUidSet.has(event.uid));
+
 
     const toRemoveUids = GoogleCalendarSourceProvider.calculateEventsToRemove(
       existingEvents,
@@ -147,9 +154,9 @@ class GoogleCalendarSourceProvider extends OAuthSourceProvider<GoogleSourceConfi
           calendarId,
           description: event.description,
           endTime: event.endTime,
-          exceptionDates: event.exceptionDates ? JSON.stringify(event.exceptionDates) : undefined,
+          exceptionDates: stringifyIfPresent(event.exceptionDates),
           location: event.location,
-          recurrenceRule: event.recurrenceRule ? JSON.stringify(event.recurrenceRule) : undefined,
+          recurrenceRule: stringifyIfPresent(event.recurrenceRule),
           sourceEventUid: event.uid,
           startTime: event.startTime,
           startTimeZone: event.startTimeZone,

@@ -73,7 +73,8 @@ export function ModalContent({ children }: PropsWithChildren) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-6"
       onClick={(event) => {
-        if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
+        if (!(event.target instanceof Node)) return;
+        if (contentRef.current && !contentRef.current.contains(event.target)) {
           setOpen(false);
         }
       }}

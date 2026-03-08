@@ -54,6 +54,13 @@ const pathExists = async (path: string): Promise<boolean> => {
   }
 };
 
+const getEnabledFixtures = (manifest: FixtureManifest, includeDisabled?: boolean): FixtureManifest => {
+  if (includeDisabled) {
+    return manifest;
+  }
+  return manifest.filter((fixtureSource) => fixtureSource.enabled !== false);
+};
+
 const syncFixtureFiles = async (
   fixtureManifest: FixtureManifest,
   options: SyncFixtureFilesOptions = {},
@@ -62,9 +69,7 @@ const syncFixtureFiles = async (
   await mkdir(fixtureDirectory, { recursive: true });
 
   const fetchImplementation = options.fetchImplementation ?? fetch;
-  const enabledFixtures = options.includeDisabled
-    ? fixtureManifest
-    : fixtureManifest.filter((fixtureSource) => fixtureSource.enabled !== false);
+  const enabledFixtures = getEnabledFixtures(fixtureManifest, options.includeDisabled);
 
   const syncedFixtures: SyncedFixture[] = [];
 

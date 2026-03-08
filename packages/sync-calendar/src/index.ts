@@ -5,9 +5,17 @@ import { diffEvents, parseIcsEvents } from "@keeper.sh/sync-events";
 import { parseIcsCalendar } from "@keeper.sh/calendar";
 import { desc, eq, inArray } from "drizzle-orm";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import { parseOptionalJsonObject } from "./optional-json";
 
 const FIRST_RESULT_LIMIT = 1;
 const EMPTY_EVENTS_COUNT = 0;
+
+const stringifyIfPresent = (value: unknown) => {
+  if (!value) {
+    return;
+  }
+  return JSON.stringify(value);
+};
 
 class RemoteCalendarSyncError extends Error {
   constructor(
@@ -26,22 +34,6 @@ interface SyncCalendarService {
   syncSourceFromSnapshot: (source: Source) => Promise<void>;
   fetchAndSyncSource: (source: Source) => Promise<void>;
 }
-
-const parseOptionalJson = (value: string | null): object | undefined => {
-  if (value === null) {
-    return undefined;
-  }
-
-  try {
-    const parsedValue = JSON.parse(value);
-    if (parsedValue !== null && typeof parsedValue === "object") {
-      return parsedValue;
-    }
-    return undefined;
-  } catch {
-    return undefined;
-  }
-};
 
 const toStoredEvent = (row: {
   id: string;
@@ -79,13 +71,13 @@ const toStoredEvent = (row: {
     storedEvent.startTimeZone = row.startTimeZone;
   }
 
-  const recurrenceRule = parseOptionalJson(row.recurrenceRule);
-  if (recurrenceRule !== undefined) {
+  const recurrenceRule = parseOptionalJsonObject(row.recurrenceRule);
+  if (recurrenceRule) {
     storedEvent.recurrenceRule = recurrenceRule;
   }
 
-  const exceptionDates = parseOptionalJson(row.exceptionDates);
-  if (exceptionDates !== undefined) {
+  const exceptionDates = parseOptionalJsonObject(row.exceptionDates);
+  if (exceptionDates) {
     storedEvent.exceptionDates = exceptionDates;
   }
 
@@ -153,10 +145,10 @@ const createSyncCalendarService = (database: BunSQLDatabase): SyncCalendarServic
   ): Promise<void> => {
     const rows = events.map((event) => ({
       endTime: event.endTime,
-      exceptionDates: event.exceptionDates ? JSON.stringify(event.exceptionDates) : undefined,
+      exceptionDates: stringifyIfPresent(event.exceptionDates),
       sourceEventUid: event.uid,
       calendarId,
-      recurrenceRule: event.recurrenceRule ? JSON.stringify(event.recurrenceRule) : undefined,
+      recurrenceRule: stringifyIfPresent(event.recurrenceRule),
       startTime: event.startTime,
       startTimeZone: event.startTimeZone,
     }));

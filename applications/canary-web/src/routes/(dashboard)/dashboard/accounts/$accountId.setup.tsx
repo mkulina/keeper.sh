@@ -30,6 +30,7 @@ interface SetupSearch {
 
 type MappingRoute = "destinations" | "sources";
 type MappingResponseKey = "destinationIds" | "sourceIds";
+type CalendarMappingData = Partial<Record<MappingResponseKey, string[]>>;
 
 function isValidStep(value: unknown): value is SetupStep {
   const validSteps: readonly string[] = VALID_STEPS;
@@ -206,8 +207,8 @@ function SetupStepContent({
   return <SourcesSection calendar={calendar} allCalendars={allCalendars} onNext={onNext} />;
 }
 
-function buildMappingData(responseKey: MappingResponseKey, ids: string[]): Record<MappingResponseKey, string[]> {
-  return { [responseKey]: ids } as Record<MappingResponseKey, string[]>;
+function buildMappingData(responseKey: MappingResponseKey, ids: string[]): CalendarMappingData {
+  return { [responseKey]: ids };
 }
 
 function useCalendarMapping({
@@ -220,7 +221,7 @@ function useCalendarMapping({
   responseKey: MappingResponseKey;
 }) {
   const endpoint = calendarId ? `/api/sources/${calendarId}/${route}` : null;
-  const { data, mutate } = useSWR<Record<MappingResponseKey, string[]>>(endpoint);
+  const { data, mutate } = useSWR<CalendarMappingData>(endpoint);
 
   const selectedIds = new Set(data?.[responseKey] ?? []);
 

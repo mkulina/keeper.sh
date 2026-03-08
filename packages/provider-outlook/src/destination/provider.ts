@@ -240,7 +240,7 @@ class OutlookCalendarProviderInstance extends OAuthCalendarProvider<OutlookCalen
 
   private static getLocationFromSyncableEvent(event: SyncableEvent): OutlookEvent["location"] {
     if (!event.location) {
-      return undefined;
+      return;
     }
 
     return {

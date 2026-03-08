@@ -17,7 +17,7 @@ const createInvalidCronExportError = (entrypoint: string, suffix?: string): Erro
   new Error(`Job module ${entrypoint} has an invalid cron export${suffix ?? ""}`);
 
 const normalizeJobExport = (value: unknown, entrypoint: string): CronOptions[] => {
-  if (value === undefined) {
+  if (value === globalThis.undefined) {
     throw createMissingDefaultExportError(entrypoint);
   }
 

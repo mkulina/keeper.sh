@@ -21,11 +21,18 @@ const createOutlookEvent = (
 
 const originalFetch = globalThis.fetch;
 
+const resolveInputUrl = (input: Request | URL | string): string => {
+  if (input instanceof URL) {
+    return input.toString();
+  }
+  if (typeof input === "string") {
+    return input;
+  }
+  return input.url;
+};
+
 const createJsonResponse = (body: unknown, status = 200): Response =>
-  new Response(JSON.stringify(body), {
-    headers: { "Content-Type": "application/json" },
-    status,
-  });
+  Response.json(body, { status });
 
 const createFetchQueue = (
   queuedResponses: Response[],
@@ -33,10 +40,8 @@ const createFetchQueue = (
 ): typeof fetch => {
   let requestCount = 0;
 
-  const queuedFetch = async (input: Request | URL | string): Promise<Response> => {
-    requestedUrls.push(
-      input instanceof URL ? input.toString() : typeof input === "string" ? input : input.url,
-    );
+  const queuedFetch = (input: Request | URL | string): Promise<Response> => {
+    requestedUrls.push(resolveInputUrl(input));
 
     const nextResponse = queuedResponses[requestCount];
     requestCount += 1;
@@ -45,7 +50,7 @@ const createFetchQueue = (
       throw new Error("Unexpected fetch invocation");
     }
 
-    return nextResponse;
+    return Promise.resolve(nextResponse);
   };
 
   queuedFetch.preconnect = originalFetch.preconnect;
@@ -118,7 +123,7 @@ describe("fetchCalendarEvents", () => {
       timeMin: new Date("2026-06-01T00:00:00.000Z"),
     });
 
-    const firstRequestUrl = requestedUrls[0];
+    const [firstRequestUrl] = requestedUrls;
     if (!firstRequestUrl) {
       throw new Error("Expected first request URL");
     }
@@ -174,7 +179,7 @@ describe("parseOutlookEvents", () => {
 
     expect(parsedEvents).toHaveLength(1);
 
-    const parsedEvent = parsedEvents[0];
+    const [parsedEvent] = parsedEvents;
     if (!parsedEvent) {
       throw new Error("Expected parsed event");
     }

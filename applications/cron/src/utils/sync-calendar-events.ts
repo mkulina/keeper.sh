@@ -36,7 +36,8 @@ const syncUserSources = async <TSource>(
   dependencies: SyncUserSourcesDependencies<TSource>,
 ): Promise<SyncResult> => {
   await Promise.allSettled(
-    sources.map((source) => dependencies.fetchAndSyncSourceForCalendar(source)),
+    sources.map((source) =>
+      Promise.resolve().then(() => dependencies.fetchAndSyncSourceForCalendar(source))),
   );
   return dependencies.syncDestinationsForUser(userId);
 };
@@ -91,7 +92,8 @@ const runSyncJob = async <TSource extends SourceOwner>(
   ensureUsersWithDestinationsIncluded(sourcesByUser, usersWithDestinations);
 
   const userSyncs = [...sourcesByUser.entries()].map(([userId, userSources]) =>
-    dependencies.syncUserSourcesForUser(userId, userSources),
+    Promise.resolve().then(() =>
+      dependencies.syncUserSourcesForUser(userId, userSources)),
   );
 
   const settledResults = await Promise.allSettled(userSyncs);

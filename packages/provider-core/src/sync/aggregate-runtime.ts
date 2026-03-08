@@ -4,6 +4,8 @@ import type { DestinationSyncResult, SyncProgressUpdate } from "./coordinator";
 import { SyncAggregateTracker } from "./aggregate-tracker";
 import type { SyncAggregateMessage, SyncAggregateSnapshot } from "./aggregate-tracker";
 
+const swallowError = (_error: unknown): null => null;
+
 const SYNC_AGGREGATE_LATEST_KEY_PREFIX = "sync:aggregate:latest:";
 const SYNC_AGGREGATE_SEQUENCE_KEY_PREFIX = "sync:aggregate:seq:";
 
@@ -41,13 +43,11 @@ const isSyncAggregateMessage = (value: unknown): value is SyncAggregateMessage =
     return false;
   }
 
-  const { lastSyncedAt } = value;
-  if (
-    lastSyncedAt !== undefined &&
-    lastSyncedAt !== null &&
-    typeof lastSyncedAt !== "string"
-  ) {
-    return false;
+  if ("lastSyncedAt" in value) {
+    const { lastSyncedAt } = value;
+    if (lastSyncedAt !== null && typeof lastSyncedAt !== "string") {
+      return false;
+    }
   }
 
   return (
@@ -101,7 +101,7 @@ const createSyncAggregateRuntime = (config: SyncAggregateRuntimeConfig): SyncAgg
   const onSyncProgress = (update: SyncProgressUpdate): void => {
     const aggregate = tracker.trackProgress(update);
     if (aggregate) {
-      void emitSyncAggregate(update.userId, aggregate);
+      emitSyncAggregate(update.userId, aggregate).catch(swallowError);
     }
   };
 
@@ -120,7 +120,10 @@ const createSyncAggregateRuntime = (config: SyncAggregateRuntimeConfig): SyncAgg
 
     try {
       const parsed: unknown = JSON.parse(value);
-      return isSyncAggregateMessage(parsed) ? parsed : null;
+      if (isSyncAggregateMessage(parsed)) {
+        return parsed;
+      }
+      return null;
     } catch {
       return null;
     }

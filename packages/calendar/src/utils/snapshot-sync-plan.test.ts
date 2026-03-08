@@ -20,6 +20,40 @@ const createStoredEvent = (overrides: Partial<SnapshotStoredEvent>): SnapshotSto
   ...overrides,
 });
 
+const toStoredEvents = (parsedEvents: EventTimeSlot[]): SnapshotStoredEvent[] =>
+  parsedEvents.map((event, index) =>
+    createStoredEvent({
+      endTime: event.endTime,
+      id: `${event.uid}-stored-${index}`,
+      startTime: event.startTime,
+      startTimeZone: event.startTimeZone,
+      uid: event.uid,
+    }));
+
+const applySnapshotPlan = (
+  storedEvents: SnapshotStoredEvent[],
+  parsedEvents: EventTimeSlot[],
+): SnapshotStoredEvent[] => {
+  const plan = buildSnapshotSyncPlan({
+    mappedDestinationUids: new Set(),
+    parsedEvents,
+    storedEvents,
+  });
+
+  const removedStoredIds = new Set(plan.toRemove.map((event) => event.id));
+  const retainedEvents = storedEvents.filter((event) => !removedStoredIds.has(event.id));
+  const addedEvents = plan.toAdd.map((event, index) =>
+    createStoredEvent({
+      endTime: event.endTime,
+      id: `added-${event.uid}-${index}`,
+      startTime: event.startTime,
+      startTimeZone: event.startTimeZone,
+      uid: event.uid,
+    }));
+
+  return [...retainedEvents, ...addedEvents];
+};
+
 describe("buildSnapshotSyncPlan", () => {
   it("excludes remote events already mapped on destination", () => {
     const parsedEvents = [
@@ -100,5 +134,78 @@ describe("buildSnapshotSyncPlan", () => {
 
     expect(result.toAdd).toHaveLength(0);
     expect(result.toRemove).toHaveLength(0);
+  });
+
+  it("is idempotent when retrying the same snapshot payload", () => {
+    const parsedEvents = [
+      createEventTimeSlot({
+        uid: "idempotent-1",
+      }),
+      createEventTimeSlot({
+        endTime: new Date("2026-03-10T16:30:00.000Z"),
+        startTime: new Date("2026-03-10T15:30:00.000Z"),
+        uid: "idempotent-2",
+      }),
+    ];
+
+    const initiallyStored = toStoredEvents(parsedEvents);
+    const firstRetryPlan = buildSnapshotSyncPlan({
+      mappedDestinationUids: new Set(),
+      parsedEvents,
+      storedEvents: initiallyStored,
+    });
+    const secondRetryPlan = buildSnapshotSyncPlan({
+      mappedDestinationUids: new Set(),
+      parsedEvents,
+      storedEvents: initiallyStored,
+    });
+
+    expect(firstRetryPlan.toAdd).toHaveLength(0);
+    expect(firstRetryPlan.toRemove).toHaveLength(0);
+    expect(secondRetryPlan.toAdd).toHaveLength(0);
+    expect(secondRetryPlan.toRemove).toHaveLength(0);
+  });
+
+  it("converges to a deterministic final state under rapid add-remove-add churn", () => {
+    const snapshotInitial = Array.from({ length: 12 }, (_value, index) =>
+      createEventTimeSlot({
+        uid: `event-${index + 1}`,
+      }));
+
+    const snapshotIntermediate = [
+      ...snapshotInitial.slice(3),
+      ...Array.from({ length: 5 }, (_value, index) =>
+        createEventTimeSlot({
+          endTime: new Date(`2026-03-10T${String(index + 10).padStart(2, "0")}:00:00.000Z`),
+          startTime: new Date(`2026-03-10T${String(index + 9).padStart(2, "0")}:00:00.000Z`),
+          uid: `intermediate-${index + 1}`,
+        })),
+    ];
+
+    const snapshotFinal = [
+      ...snapshotIntermediate.slice(12),
+      ...Array.from({ length: 5 }, (_value, index) =>
+        createEventTimeSlot({
+          endTime: new Date(`2026-03-11T${String(index + 10).padStart(2, "0")}:00:00.000Z`),
+          startTime: new Date(`2026-03-11T${String(index + 9).padStart(2, "0")}:00:00.000Z`),
+          uid: `final-${index + 1}`,
+        })),
+    ];
+
+    const storedAfterInitial = toStoredEvents(snapshotInitial);
+    const storedAfterIntermediate = applySnapshotPlan(storedAfterInitial, snapshotIntermediate);
+    const storedAfterFinal = applySnapshotPlan(storedAfterIntermediate, snapshotFinal);
+
+    const finalPlan = buildSnapshotSyncPlan({
+      mappedDestinationUids: new Set(),
+      parsedEvents: snapshotFinal,
+      storedEvents: storedAfterFinal,
+    });
+
+    expect(finalPlan.toAdd).toHaveLength(0);
+    expect(finalPlan.toRemove).toHaveLength(0);
+    expect(storedAfterFinal.map((event) => event.uid).toSorted()).toEqual(
+      snapshotFinal.map((event) => event.uid).toSorted(),
+    );
   });
 });
