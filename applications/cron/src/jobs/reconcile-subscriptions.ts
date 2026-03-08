@@ -2,7 +2,6 @@ import type { CronOptions } from "cronbake";
 import { userSubscriptionsTable } from "@keeper.sh/database/schema";
 import { user } from "@keeper.sh/database/auth-schema";
 import { WideEvent } from "@keeper.sh/log";
-import { database, polarClient } from "../context";
 import { setCronEventFields, withCronWideEvent } from "../utils/with-wide-event";
 import { countSettledResults } from "../utils/count-settled-results";
 
@@ -16,59 +15,94 @@ const getPlanFromSubscriptionStatus = (hasActive: boolean): "pro" | "free" => {
   return "free";
 };
 
-const reconcileUserSubscription = async (userId: string): Promise<void> => {
-  if (!polarClient) {
+interface ReconcileSubscriptionsDependencies {
+  hasBillingClient: boolean;
+  selectUserIds: () => Promise<string[]>;
+  reconcileUserSubscription: (userId: string) => Promise<void>;
+  setCronEventFields: (fields: Record<string, unknown>) => void;
+  reportError?: (error: unknown) => void;
+}
+
+const runReconcileSubscriptionsJob = async (
+  dependencies: ReconcileSubscriptionsDependencies,
+): Promise<void> => {
+  if (!dependencies.hasBillingClient) {
+    dependencies.setCronEventFields({ "processed.count": INITIAL_PROCESSED_COUNT });
     return;
   }
 
-  try {
-    const subscriptions = await polarClient.subscriptions.list({
-      active: true,
-      externalCustomerId: userId,
-    });
+  const userIds = await dependencies.selectUserIds();
+  dependencies.setCronEventFields({ "processed.count": userIds.length });
 
-    const hasActiveSubscription = subscriptions.result.items.length > EMPTY_SUBSCRIPTIONS_COUNT;
-    const plan = getPlanFromSubscriptionStatus(hasActiveSubscription);
+  const settlements = await Promise.allSettled(
+    userIds.map((userId) => dependencies.reconcileUserSubscription(userId)),
+  );
 
-    const [polarSubscription] = subscriptions.result.items;
-    const polarSubscriptionId = polarSubscription?.id ?? null;
+  for (const settlement of settlements) {
+    if (settlement.status === "rejected") {
+      dependencies.reportError?.(settlement.reason);
+    }
+  }
 
-    await database
-      .insert(userSubscriptionsTable)
-      .values({
-        plan,
-        polarSubscriptionId,
-        userId,
-      })
-      .onConflictDoUpdate({
-        set: {
+  const { failed } = countSettledResults(settlements);
+  dependencies.setCronEventFields({ "failed.count": failed });
+};
+
+const createDefaultDependencies = async (): Promise<ReconcileSubscriptionsDependencies> => {
+  const { database, polarClient } = await import("../context");
+
+  return {
+    hasBillingClient: Boolean(polarClient),
+    reconcileUserSubscription: async (userId) => {
+      if (!polarClient) {
+        return;
+      }
+
+      const subscriptions = await polarClient.subscriptions.list({
+        active: true,
+        externalCustomerId: userId,
+      });
+
+      const hasActiveSubscription = subscriptions.result.items.length > EMPTY_SUBSCRIPTIONS_COUNT;
+      const plan = getPlanFromSubscriptionStatus(hasActiveSubscription);
+
+      const [polarSubscription] = subscriptions.result.items;
+      const polarSubscriptionId = polarSubscription?.id ?? null;
+
+      await database
+        .insert(userSubscriptionsTable)
+        .values({
           plan,
           polarSubscriptionId,
-        },
-        target: userSubscriptionsTable.userId,
-      });
-  } catch (error) {
-    WideEvent.error(error);
-  }
+          userId,
+        })
+        .onConflictDoUpdate({
+          set: {
+            plan,
+            polarSubscriptionId,
+          },
+          target: userSubscriptionsTable.userId,
+        });
+    },
+    reportError: (error) => {
+      WideEvent.error(error);
+    },
+    selectUserIds: async () => {
+      const users = await database.select({ id: user.id }).from(user);
+      return users.map((userRecord) => userRecord.id);
+    },
+    setCronEventFields,
+  };
 };
 
 export default withCronWideEvent({
   async callback() {
-    if (!polarClient) {
-      setCronEventFields({ "processed.count": INITIAL_PROCESSED_COUNT });
-      return;
-    }
-
-    const users = await database.select({ id: user.id }).from(user);
-    setCronEventFields({ "processed.count": users.length });
-
-    const reconciliations = users.map((userRecord) => reconcileUserSubscription(userRecord.id));
-
-    const results = await Promise.allSettled(reconciliations);
-    const { failed } = countSettledResults(results);
-    setCronEventFields({ "failed.count": failed });
+    const dependencies = await createDefaultDependencies();
+    await runReconcileSubscriptionsJob(dependencies);
   },
   cron: "0 0 * * * *",
   immediate: true,
   name: import.meta.file,
 }) satisfies CronOptions;
+
+export { runReconcileSubscriptionsJob };

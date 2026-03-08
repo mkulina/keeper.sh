@@ -7,44 +7,13 @@ import { deleteSource as deleteIcsSource } from "../../../utils/sources";
 import { deleteOAuthSource } from "../../../utils/oauth-sources";
 import { deleteCalDAVSource } from "../../../utils/caldav-sources";
 import { triggerDestinationSync } from "../../../utils/sync";
-import { sourcePatchBodySchema, type SourcePatchBody } from "../../../utils/request-body";
 import { idParamSchema } from "../../../utils/request-query";
 import {
   getDestinationsForSource,
   getSourcesForDestination,
 } from "../../../utils/source-destination-mappings";
-
-const SOURCE_BOOLEAN_UPDATE_FIELDS = [
-  "excludeAllDayEvents",
-  "excludeEventDescription",
-  "excludeEventLocation",
-  "excludeEventName",
-  "excludeFocusTime",
-  "excludeOutOfOffice",
-  "excludeWorkingLocation",
-  "includeInIcalFeed",
-] as const;
-
-const buildSourceUpdates = (
-  body: SourcePatchBody,
-): Record<string, string | boolean> => {
-  const updates: Record<string, string | boolean> = {};
-
-  if (body.name) {
-    updates.name = body.name;
-  }
-  if (typeof body.customEventName === "string") {
-    updates.customEventName = body.customEventName;
-  }
-
-  for (const field of SOURCE_BOOLEAN_UPDATE_FIELDS) {
-    if (typeof body[field] === "boolean") {
-      updates[field] = body[field];
-    }
-  }
-
-  return updates;
-};
+import { WideEvent } from "@keeper.sh/log";
+import { handleDeleteSourceRoute, handlePatchSourceRoute } from "./[id]/source-item-routes";
 
 export const GET = withWideEvent(
   withAuth(async ({ params, userId }) => {
@@ -98,37 +67,30 @@ export const GET = withWideEvent(
 
 export const PATCH = withWideEvent(
   withAuth(async ({ request, params, userId }) => {
-    if (!params.id || !idParamSchema.allows(params)) {
-      return ErrorResponse.badRequest("ID is required").toResponse();
-    }
-    const { id } = params;
-
     const payload = await request.json();
-    const body = sourcePatchBodySchema.allows(payload) ? payload : {};
-    const updates = buildSourceUpdates(body);
+    return handlePatchSourceRoute(
+      { body: payload, params, userId },
+      {
+        reportError: (error) => {
+          WideEvent.error(error);
+        },
+        triggerDestinationSync,
+        updateSource: async (userIdToUpdate, sourceCalendarId, updates) => {
+          const [updated] = await database
+            .update(calendarsTable)
+            .set(updates)
+            .where(
+              and(
+                eq(calendarsTable.id, sourceCalendarId),
+                eq(calendarsTable.userId, userIdToUpdate),
+              ),
+            )
+            .returning();
 
-    if (Object.keys(updates).length === 0) {
-      return ErrorResponse.badRequest("No valid fields to update").toResponse();
-    }
-
-    const [updated] = await database
-      .update(calendarsTable)
-      .set(updates)
-      .where(
-        and(
-          eq(calendarsTable.id, id),
-          eq(calendarsTable.userId, userId),
-        ),
-      )
-      .returning();
-
-    if (!updated) {
-      return ErrorResponse.notFound().toResponse();
-    }
-
-    triggerDestinationSync(userId);
-
-    return Response.json(updated);
+          return updated ?? null;
+        },
+      },
+    );
   }),
 );
 
@@ -140,34 +102,25 @@ const calendarTypeDeleters: Record<string, (userId: string, calendarId: string) 
 
 export const DELETE = withWideEvent(
   withAuth(async ({ params, userId }) => {
-    if (!params.id || !idParamSchema.allows(params)) {
-      return ErrorResponse.badRequest("ID is required").toResponse();
-    }
-    const { id } = params;
+    return handleDeleteSourceRoute(
+      { params, userId },
+      {
+        deleteSourceByType: calendarTypeDeleters,
+        getSourceCalendarType: async (userIdToFind, sourceCalendarId) => {
+          const [source] = await database
+            .select({ calendarType: calendarsTable.calendarType })
+            .from(calendarsTable)
+            .where(
+              and(
+                eq(calendarsTable.id, sourceCalendarId),
+                eq(calendarsTable.userId, userIdToFind),
+              ),
+            )
+            .limit(1);
 
-    const [source] = await database
-      .select({ calendarType: calendarsTable.calendarType })
-      .from(calendarsTable)
-      .where(
-        and(
-          eq(calendarsTable.id, id),
-          eq(calendarsTable.userId, userId),
-        ),
-      )
-      .limit(1);
-
-    if (!source) {
-      return ErrorResponse.notFound().toResponse();
-    }
-
-    const deleter = calendarTypeDeleters[source.calendarType];
-
-    if (!deleter) {
-      return ErrorResponse.badRequest("Unknown source type").toResponse();
-    }
-
-    await deleter(userId, id);
-
-    return Response.json({ success: true });
+          return source?.calendarType ?? null;
+        },
+      },
+    );
   }),
 );

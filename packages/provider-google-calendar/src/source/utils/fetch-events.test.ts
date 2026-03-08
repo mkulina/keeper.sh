@@ -1,5 +1,5 @@
-import { describe, expect, it } from "bun:test";
-import { parseGoogleEvents } from "./fetch-events";
+import { afterEach, describe, expect, it } from "bun:test";
+import { EventsFetchError, fetchCalendarEvents, parseGoogleEvents } from "./fetch-events";
 import type { EventTypeFilters } from "./fetch-events";
 import type { GoogleCalendarEvent } from "../types";
 
@@ -23,6 +23,144 @@ const createGoogleEvent = (overrides: Partial<GoogleCalendarEvent>): GoogleCalen
   status: "confirmed",
   summary: "Planning Session",
   ...overrides,
+});
+
+const originalFetch = globalThis.fetch;
+
+const createJsonResponse = (body: unknown, status = 200): Response =>
+  new Response(JSON.stringify(body), {
+    headers: { "Content-Type": "application/json" },
+    status,
+  });
+
+const createFetchQueue = (
+  queuedResponses: Response[],
+  requestedUrls: string[],
+): typeof fetch => {
+  let requestCount = 0;
+
+  const queuedFetch = async (input: Request | URL | string): Promise<Response> => {
+    requestedUrls.push(
+      input instanceof URL ? input.toString() : typeof input === "string" ? input : input.url,
+    );
+
+    const nextResponse = queuedResponses[requestCount];
+    requestCount += 1;
+
+    if (!nextResponse) {
+      throw new Error("Unexpected fetch invocation");
+    }
+
+    return nextResponse;
+  };
+
+  queuedFetch.preconnect = originalFetch.preconnect;
+  return queuedFetch;
+};
+
+afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
+
+describe("fetchCalendarEvents", () => {
+  it("collects paged events and cancelled UIDs during delta sync", async () => {
+    const requestedUrls: string[] = [];
+
+    globalThis.fetch = createFetchQueue(
+      [
+        createJsonResponse({
+          items: [
+            { iCalUID: "ext-uid-1", id: "event-1", status: "confirmed" },
+            { iCalUID: "cancelled-uid", id: "event-2", status: "cancelled" },
+          ],
+          nextPageToken: "next-page-token",
+          nextSyncToken: "sync-token-1",
+        }),
+        createJsonResponse({
+          items: [
+            { id: "cancelled-by-id", status: "cancelled" },
+            { iCalUID: "ext-uid-2", id: "event-3", status: "confirmed" },
+          ],
+          nextSyncToken: "sync-token-2",
+        }),
+      ],
+      requestedUrls,
+    );
+
+    const fetchResult = await fetchCalendarEvents({
+      accessToken: "token",
+      calendarId: "calendar-id",
+      syncToken: "existing-sync-token",
+    });
+
+    expect(fetchResult.fullSyncRequired).toBe(false);
+    expect(fetchResult.isDeltaSync).toBe(true);
+    expect(fetchResult.nextSyncToken).toBe("sync-token-2");
+    expect(fetchResult.events.map((event) => event.id)).toEqual(["event-1", "event-3"]);
+    expect(fetchResult.cancelledEventUids).toEqual(["cancelled-uid", "cancelled-by-id"]);
+    expect(requestedUrls).toHaveLength(2);
+
+    const firstRequestUrl = requestedUrls[0];
+    if (!firstRequestUrl) {
+      throw new Error("Expected first request URL");
+    }
+
+    const firstRequestSearchParams = new URL(firstRequestUrl).searchParams;
+    expect(firstRequestSearchParams.get("syncToken")).toBe("existing-sync-token");
+    expect(firstRequestSearchParams.get("timeMin")).toBeNull();
+    expect(firstRequestSearchParams.get("timeMax")).toBeNull();
+    expect(firstRequestSearchParams.get("maxResults")).toBe("2500");
+    expect(firstRequestSearchParams.get("pageToken")).toBeNull();
+
+    const secondRequestUrl = requestedUrls[1];
+    if (!secondRequestUrl) {
+      throw new Error("Expected second request URL");
+    }
+
+    const secondRequestSearchParams = new URL(secondRequestUrl).searchParams;
+    expect(secondRequestSearchParams.get("pageToken")).toBe("next-page-token");
+  });
+
+  it("returns full-sync-required when Google responds with gone", async () => {
+    const requestedUrls: string[] = [];
+
+    globalThis.fetch = createFetchQueue(
+      [new Response(null, { status: 410 })],
+      requestedUrls,
+    );
+
+    const fetchResult = await fetchCalendarEvents({
+      accessToken: "token",
+      calendarId: "calendar-id",
+      syncToken: "existing-sync-token",
+    });
+
+    expect(fetchResult).toEqual({ events: [], fullSyncRequired: true });
+    expect(requestedUrls).toHaveLength(1);
+  });
+
+  it("throws auth-required error details on unauthorized response", async () => {
+    globalThis.fetch = createFetchQueue([new Response(null, { status: 401 })], []);
+
+    try {
+      await fetchCalendarEvents({
+        accessToken: "token",
+        calendarId: "calendar-id",
+        syncToken: "existing-sync-token",
+      });
+      throw new Error("Expected fetchCalendarEvents to throw");
+    } catch (error) {
+      expect(error).toBeInstanceOf(EventsFetchError);
+
+      if (!(error instanceof EventsFetchError)) {
+        throw error;
+      }
+
+      expect(error.status).toBe(401);
+      expect(error.authRequired).toBe(true);
+      expect(error.message).toContain("Failed to fetch events: 401");
+    }
+  });
 });
 
 describe("parseGoogleEvents", () => {

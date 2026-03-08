@@ -1,5 +1,5 @@
-import { describe, expect, it } from "bun:test";
-import { parseOutlookEvents } from "./fetch-events";
+import { afterEach, describe, expect, it } from "bun:test";
+import { EventsFetchError, fetchCalendarEvents, parseOutlookEvents } from "./fetch-events";
 import type { OutlookCalendarEvent } from "../types";
 
 const createOutlookEvent = (
@@ -17,6 +17,155 @@ const createOutlookEvent = (
   },
   subject: "Outlook Planning",
   ...overrides,
+});
+
+const originalFetch = globalThis.fetch;
+
+const createJsonResponse = (body: unknown, status = 200): Response =>
+  new Response(JSON.stringify(body), {
+    headers: { "Content-Type": "application/json" },
+    status,
+  });
+
+const createFetchQueue = (
+  queuedResponses: Response[],
+  requestedUrls: string[],
+): typeof fetch => {
+  let requestCount = 0;
+
+  const queuedFetch = async (input: Request | URL | string): Promise<Response> => {
+    requestedUrls.push(
+      input instanceof URL ? input.toString() : typeof input === "string" ? input : input.url,
+    );
+
+    const nextResponse = queuedResponses[requestCount];
+    requestCount += 1;
+
+    if (!nextResponse) {
+      throw new Error("Unexpected fetch invocation");
+    }
+
+    return nextResponse;
+  };
+
+  queuedFetch.preconnect = originalFetch.preconnect;
+  return queuedFetch;
+};
+
+afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
+
+describe("fetchCalendarEvents", () => {
+  it("collects paged events and removals during delta sync", async () => {
+    const requestedUrls: string[] = [];
+
+    const initialDeltaLink = "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$deltatoken=original";
+    const nextPageLink = "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$skiptoken=next-page";
+
+    globalThis.fetch = createFetchQueue(
+      [
+        createJsonResponse({
+          "@odata.deltaLink": "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$deltatoken=first",
+          "@odata.nextLink": nextPageLink,
+          value: [
+            { iCalUId: "ext-uid-1", id: "event-1" },
+            { "@removed": { reason: "deleted" }, iCalUId: "removed-uid", id: "event-2" },
+          ],
+        }),
+        createJsonResponse({
+          "@odata.deltaLink": "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$deltatoken=final",
+          value: [
+            { "@removed": { reason: "deleted" }, id: "removed-by-id" },
+            { iCalUId: "ext-uid-2", id: "event-3" },
+          ],
+        }),
+      ],
+      requestedUrls,
+    );
+
+    const fetchResult = await fetchCalendarEvents({
+      accessToken: "token",
+      calendarId: "calendar-id",
+      deltaLink: initialDeltaLink,
+    });
+
+    expect(fetchResult.fullSyncRequired).toBe(false);
+    expect(fetchResult.isDeltaSync).toBe(true);
+    expect(fetchResult.nextDeltaLink).toContain("deltatoken=final");
+    expect(fetchResult.events.map((event) => event.id)).toEqual(["event-1", "event-3"]);
+    expect(fetchResult.cancelledEventUids).toEqual(["removed-uid", "removed-by-id"]);
+    expect(requestedUrls).toEqual([initialDeltaLink, nextPageLink]);
+  });
+
+  it("builds initial range URL when running full sync", async () => {
+    const requestedUrls: string[] = [];
+
+    globalThis.fetch = createFetchQueue(
+      [
+        createJsonResponse({
+          "@odata.deltaLink": "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$deltatoken=final",
+          value: [],
+        }),
+      ],
+      requestedUrls,
+    );
+
+    await fetchCalendarEvents({
+      accessToken: "token",
+      calendarId: "calendar/id:with chars",
+      timeMax: new Date("2026-06-02T00:00:00.000Z"),
+      timeMin: new Date("2026-06-01T00:00:00.000Z"),
+    });
+
+    const firstRequestUrl = requestedUrls[0];
+    if (!firstRequestUrl) {
+      throw new Error("Expected first request URL");
+    }
+
+    const parsedUrl = new URL(firstRequestUrl);
+    expect(parsedUrl.pathname).toContain(
+      "/me/calendars/calendar%2Fid%3Awith%20chars/calendarView/delta",
+    );
+    expect(parsedUrl.searchParams.get("startDateTime")).toBe("2026-06-01T00:00:00.000Z");
+    expect(parsedUrl.searchParams.get("endDateTime")).toBe("2026-06-02T00:00:00.000Z");
+    expect(parsedUrl.searchParams.get("$select")).toBe("id,iCalUId,subject,body,location,start,end");
+  });
+
+  it("returns full-sync-required when Microsoft responds with gone", async () => {
+    globalThis.fetch = createFetchQueue([new Response(null, { status: 410 })], []);
+
+    const fetchResult = await fetchCalendarEvents({
+      accessToken: "token",
+      calendarId: "calendar-id",
+      deltaLink: "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$deltatoken=original",
+    });
+
+    expect(fetchResult).toEqual({ events: [], fullSyncRequired: true });
+  });
+
+  it("throws auth-required error details on forbidden response", async () => {
+    globalThis.fetch = createFetchQueue([new Response(null, { status: 403 })], []);
+
+    try {
+      await fetchCalendarEvents({
+        accessToken: "token",
+        calendarId: "calendar-id",
+        deltaLink: "https://graph.microsoft.com/v1.0/me/calendars/cal-1/calendarView/delta?$deltatoken=original",
+      });
+      throw new Error("Expected fetchCalendarEvents to throw");
+    } catch (error) {
+      expect(error).toBeInstanceOf(EventsFetchError);
+
+      if (!(error instanceof EventsFetchError)) {
+        throw error;
+      }
+
+      expect(error.status).toBe(403);
+      expect(error.authRequired).toBe(true);
+      expect(error.message).toContain("Failed to fetch events: 403");
+    }
+  });
 });
 
 describe("parseOutlookEvents", () => {

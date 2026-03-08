@@ -1,43 +1,20 @@
 import { calendarAccountsTable, calendarsTable, sourceDestinationMappingsTable } from "@keeper.sh/database/schema";
-import { CalendarFetchError, fetchAndSyncSource, pullRemoteCalendar } from "@keeper.sh/calendar";
+import { fetchAndSyncSource, pullRemoteCalendar } from "@keeper.sh/calendar";
 import { and, eq, inArray } from "drizzle-orm";
 import { triggerDestinationSync } from "./sync";
+import {
+  SourceLimitError,
+  InvalidSourceUrlError,
+  runCreateSource,
+  runDeleteSource,
+} from "./source-lifecycle";
 
 import { spawnBackgroundJob } from "./background-task";
 import { database, premiumService } from "../context";
 
 const FIRST_RESULT_LIMIT = 1;
 const ICAL_CALENDAR_TYPE = "ical";
-
-class SourceLimitError extends Error {
-  constructor() {
-    super("Source limit reached. Upgrade to Pro for unlimited sources.");
-  }
-}
-
-class InvalidSourceUrlError extends Error {
-  public readonly authRequired: boolean;
-
-  constructor(cause?: unknown) {
-    if (cause instanceof CalendarFetchError) {
-      super(cause.message);
-      this.authRequired = cause.authRequired;
-    } else {
-      super("Invalid calendar URL");
-      this.authRequired = false;
-    }
-    this.cause = cause;
-  }
-}
-
-interface Source {
-  id: string;
-  accountId: string;
-  userId: string;
-  name: string;
-  url: string | null;
-  createdAt: Date;
-}
+type Source = typeof calendarsTable.$inferSelect;
 
 const getUserSources = async (userId: string): Promise<Source[]> => {
   const sources = await database
@@ -73,87 +50,81 @@ const validateSourceUrl = async (url: string): Promise<void> => {
   await pullRemoteCalendar("json", url);
 };
 
-const createSource = async (userId: string, name: string, url: string): Promise<Source> => {
-  const existingSources = await database
-    .select({ id: calendarsTable.id })
-    .from(calendarsTable)
-    .where(
-      and(
-        eq(calendarsTable.userId, userId),
-        inArray(calendarsTable.id,
-          database.selectDistinct({ id: sourceDestinationMappingsTable.sourceCalendarId })
-            .from(sourceDestinationMappingsTable)
-        ),
-      ),
-    );
+const createSource = async (userId: string, name: string, url: string): Promise<Source> =>
+  runCreateSource(
+    { userId, name, url },
+    {
+      canAddSource: (userIdToCheck, existingSourceCount) =>
+        premiumService.canAddSource(userIdToCheck, existingSourceCount),
+      countExistingMappedSources: async (userIdToCount) => {
+        const existingSources = await database
+          .select({ id: calendarsTable.id })
+          .from(calendarsTable)
+          .where(
+            and(
+              eq(calendarsTable.userId, userIdToCount),
+              inArray(calendarsTable.id,
+                database.selectDistinct({ id: sourceDestinationMappingsTable.sourceCalendarId })
+                  .from(sourceDestinationMappingsTable)
+              ),
+            ),
+          );
+        return existingSources.length;
+      },
+      createCalendarAccount: async ({ userId: accountUserId, displayName }) => {
+        const [account] = await database
+          .insert(calendarAccountsTable)
+          .values({
+            authType: "none",
+            displayName,
+            provider: "ics",
+            userId: accountUserId,
+          })
+          .returning({ id: calendarAccountsTable.id });
+        return account?.id;
+      },
+      createSourceCalendar: async ({ accountId, name: sourceName, url: sourceUrl, userId: sourceUserId }) => {
+        const [source] = await database
+          .insert(calendarsTable)
+          .values({
+            accountId,
+            calendarType: ICAL_CALENDAR_TYPE,
+            name: sourceName,
+            url: sourceUrl,
+            userId: sourceUserId,
+          })
+          .returning();
+        return source;
+      },
+      fetchAndSyncSource: async (source) => {
+        await fetchAndSyncSource(database, source);
+      },
+      spawnBackgroundJob,
+      triggerDestinationSync,
+      validateSourceUrl,
+    },
+  );
 
-  const allowed = await premiumService.canAddSource(userId, existingSources.length);
-  if (!allowed) {
-    throw new SourceLimitError();
-  }
-
-  try {
-    await validateSourceUrl(url);
-  } catch (error) {
-    throw new InvalidSourceUrlError(error);
-  }
-
-  const [account] = await database
-    .insert(calendarAccountsTable)
-    .values({
-      authType: "none",
-      displayName: url,
-      provider: "ics",
-      userId,
-    })
-    .returning({ id: calendarAccountsTable.id });
-
-  if (!account) {
-    throw new Error("Failed to create calendar account");
-  }
-
-  const [source] = await database
-    .insert(calendarsTable)
-    .values({
-      accountId: account.id,
-      calendarType: ICAL_CALENDAR_TYPE,
-      name,
-      url,
-      userId,
-    })
-    .returning();
-
-  if (!source) {
-    throw new Error("Failed to create source");
-  }
-
-  spawnBackgroundJob("ical-source-sync", { userId, calendarId: source.id }, async () => {
-    await fetchAndSyncSource(database, source);
-    triggerDestinationSync(userId);
-  });
-
-  return source;
-};
-
-const deleteSource = async (userId: string, calendarId: string): Promise<boolean> => {
-  const [deleted] = await database
-    .delete(calendarsTable)
-    .where(
-      and(
-        eq(calendarsTable.id, calendarId),
-        eq(calendarsTable.userId, userId),
-        eq(calendarsTable.calendarType, ICAL_CALENDAR_TYPE),
-      ),
-    )
-    .returning();
-
-  if (deleted) {
-    triggerDestinationSync(userId);
-    return true;
-  }
-
-  return false;
-};
+const deleteSource = async (userId: string, calendarId: string): Promise<boolean> =>
+  runDeleteSource(
+    { userId, calendarId },
+    {
+      deleteSourceCalendar: async ({ userId: deletionUserId, calendarId: deletionCalendarId }) => {
+        const [deleted] = await database
+          .delete(calendarsTable)
+          .where(
+            and(
+              eq(calendarsTable.id, deletionCalendarId),
+              eq(calendarsTable.userId, deletionUserId),
+              eq(calendarsTable.calendarType, ICAL_CALENDAR_TYPE),
+            ),
+          )
+          .returning();
+        return Boolean(deleted);
+      },
+      triggerDestinationSync,
+    },
+  );
 
 export {
   SourceLimitError,
@@ -163,3 +134,4 @@ export {
   createSource,
   deleteSource,
 };
+export type { Source };

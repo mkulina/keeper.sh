@@ -1,0 +1,105 @@
+import { describe, expect, it } from "bun:test";
+import { runCaldavSourceSyncJob } from "./sync-sources-caldav";
+
+describe("runCaldavSourceSyncJob", () => {
+  it("publishes metrics for each successful CalDAV provider", async () => {
+    const cronEventFieldSets: Record<string, unknown>[] = [];
+
+    await runCaldavSourceSyncJob({
+      providers: [
+        { id: "caldav", name: "CalDAV" },
+        { id: "fastmail", name: "Fastmail" },
+      ],
+      setCronEventFields: (fields) => {
+        cronEventFieldSets.push(fields);
+      },
+      syncProvider: async (provider) => ({
+        eventsAdded: provider.id.length,
+        eventsRemoved: provider.id.length + 1,
+        providerId: provider.id,
+      }),
+    });
+
+    expect(cronEventFieldSets).toEqual([
+      {
+        "caldav.events.added": 6,
+        "caldav.events.removed": 7,
+      },
+      {
+        "fastmail.events.added": 8,
+        "fastmail.events.removed": 9,
+      },
+    ]);
+  });
+
+  it("continues when one provider throws unexpectedly", async () => {
+    const cronEventFieldSets: Record<string, unknown>[] = [];
+    const errors: unknown[] = [];
+
+    await runCaldavSourceSyncJob({
+      providers: [
+        { id: "caldav", name: "CalDAV" },
+        { id: "icloud", name: "iCloud" },
+      ],
+      reportError: (error) => {
+        errors.push(error);
+      },
+      setCronEventFields: (fields) => {
+        cronEventFieldSets.push(fields);
+      },
+      syncProvider: async (provider) => {
+        if (provider.id === "caldav") {
+          throw new Error("caldav provider exploded");
+        }
+
+        return {
+          eventsAdded: 3,
+          eventsRemoved: 1,
+          providerId: provider.id,
+        };
+      },
+    });
+
+    expect(errors).toHaveLength(1);
+    expect(cronEventFieldSets).toEqual([
+      {
+        "icloud.events.added": 3,
+        "icloud.events.removed": 1,
+      },
+    ]);
+  });
+
+  it("does not emit metrics for null provider results", async () => {
+    const cronEventFieldSets: Record<string, unknown>[] = [];
+
+    await runCaldavSourceSyncJob({
+      providers: [{ id: "caldav", name: "CalDAV" }],
+      setCronEventFields: (fields) => {
+        cronEventFieldSets.push(fields);
+      },
+      syncProvider: async () => null,
+    });
+
+    expect(cronEventFieldSets).toEqual([]);
+  });
+
+  it("reports each provider rejection when multiple providers throw", async () => {
+    const errors: unknown[] = [];
+
+    await runCaldavSourceSyncJob({
+      providers: [
+        { id: "caldav", name: "CalDAV" },
+        { id: "icloud", name: "iCloud" },
+      ],
+      reportError: (error) => {
+        errors.push(error);
+      },
+      setCronEventFields: () => {},
+      syncProvider: async () => {
+        throw new Error("provider failure");
+      },
+    });
+
+    expect(errors).toHaveLength(2);
+  });
+});

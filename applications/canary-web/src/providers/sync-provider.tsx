@@ -1,20 +1,26 @@
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";
-import { socketMessageSchema, syncAggregateSchema } from "@keeper.sh/data-schemas";
-import { syncStateAtom, type CompositeSyncState, type SyncAggregateData } from "../state/sync";
+import { syncStateAtom, type CompositeSyncState } from "../state/sync";
+import {
+  parseIncomingSocketAction,
+  shouldAcceptAggregatePayload,
+} from "./sync-provider-logic";
 
 interface ConnectionState {
   socket: WebSocket | null;
   abortController: AbortController;
   reconnectTimer: ReturnType<typeof setTimeout> | null;
+  initialAggregateTimer: ReturnType<typeof setTimeout> | null;
   attempts: number;
   disposed: boolean;
+  hasReceivedSocketAggregate: boolean;
   lastSeq: number;
   currentState: CompositeSyncState;
 }
 
 const MAX_RECONNECT_DELAY_MS = 30_000;
 const BASE_RECONNECT_DELAY_MS = 2_000;
+const INITIAL_AGGREGATE_TIMEOUT_MS = 10_000;
 
 const INITIAL_SYNC_STATE: CompositeSyncState = {
   connected: false,
@@ -70,46 +76,29 @@ const setConnected = (
   });
 };
 
-const parseTimestampMs = (value: string | null | undefined): number | null => {
-  if (!value) {
-    return null;
+const clearInitialAggregateTimer = (connectionState: ConnectionState): void => {
+  if (connectionState.initialAggregateTimer) {
+    clearTimeout(connectionState.initialAggregateTimer);
+    connectionState.initialAggregateTimer = null;
   }
-
-  const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? timestamp : null;
 };
 
-const isForwardProgress = (
-  current: CompositeSyncState,
-  next: SyncAggregateData,
-): boolean => {
-  const currentLastSyncedAtMs = parseTimestampMs(current.lastSyncedAt);
-  const nextLastSyncedAtMs = parseTimestampMs(next.lastSyncedAt);
+const startInitialAggregateTimer = (
+  connectionState: ConnectionState,
+  socket: WebSocket,
+): void => {
+  clearInitialAggregateTimer(connectionState);
+  connectionState.initialAggregateTimer = setTimeout(() => {
+    if (connectionState.disposed || connectionState.socket !== socket) {
+      return;
+    }
 
-  if (
-    nextLastSyncedAtMs !== null &&
-    (currentLastSyncedAtMs === null || nextLastSyncedAtMs > currentLastSyncedAtMs)
-  ) {
-    return true;
-  }
+    if (connectionState.hasReceivedSocketAggregate) {
+      return;
+    }
 
-  if (next.syncEventsProcessed > current.syncEventsProcessed) {
-    return true;
-  }
-
-  if (next.syncEventsRemaining < current.syncEventsRemaining) {
-    return true;
-  }
-
-  if (next.progressPercent > current.progressPercent) {
-    return true;
-  }
-
-  if (current.state === "syncing" && !next.syncing && next.syncEventsRemaining === 0) {
-    return true;
-  }
-
-  return false;
+    socket.close();
+  }, INITIAL_AGGREGATE_TIMEOUT_MS);
 };
 
 const handleMessage = (
@@ -118,44 +107,47 @@ const handleMessage = (
   raw: string,
   socket: WebSocket,
 ): void => {
-  let parsed: unknown;
+  const action = parseIncomingSocketAction(raw);
 
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
+  if (action.kind === "ignore") {
     return;
   }
 
-  if (!socketMessageSchema.allows(parsed)) {
-    return;
-  }
-
-  if (parsed.event === "ping") {
+  if (action.kind === "pong") {
     socket.send(JSON.stringify({ event: "pong" }));
     return;
   }
 
-  if (parsed.event !== "sync:aggregate" || !syncAggregateSchema.allows(parsed.data)) {
+  if (action.kind === "reconnect") {
+    if (connectionState.socket === socket && socket.readyState === WebSocket.OPEN) {
+      socket.close();
+    }
     return;
   }
 
-  const isNewerSequence = parsed.data.seq > connectionState.lastSeq;
-  if (!isNewerSequence && !isForwardProgress(connectionState.currentState, parsed.data)) {
+  const decision = shouldAcceptAggregatePayload(
+    connectionState.currentState,
+    connectionState.lastSeq,
+    action.data,
+  );
+  if (!decision.accepted) {
     return;
   }
 
-  connectionState.lastSeq = Math.max(connectionState.lastSeq, parsed.data.seq);
+  connectionState.hasReceivedSocketAggregate = true;
+  clearInitialAggregateTimer(connectionState);
+  connectionState.lastSeq = decision.nextSeq;
 
   applyState(connectionState, setSyncState, {
     connected: true,
     hasReceivedAggregate: true,
-    lastSyncedAt: parsed.data.lastSyncedAt ?? null,
-    progressPercent: parsed.data.progressPercent,
-    seq: parsed.data.seq,
-    syncEventsProcessed: parsed.data.syncEventsProcessed,
-    syncEventsRemaining: parsed.data.syncEventsRemaining,
-    syncEventsTotal: parsed.data.syncEventsTotal,
-    state: parsed.data.syncing ? "syncing" : "idle",
+    lastSyncedAt: action.data.lastSyncedAt ?? null,
+    progressPercent: action.data.progressPercent,
+    seq: action.data.seq,
+    syncEventsProcessed: action.data.syncEventsProcessed,
+    syncEventsRemaining: action.data.syncEventsRemaining,
+    syncEventsTotal: action.data.syncEventsTotal,
+    state: action.data.syncing ? "syncing" : "idle",
   });
 };
 
@@ -191,12 +183,16 @@ const connect = async (
     socket.addEventListener("open", () => {
       connectionState.attempts = 0;
       connectionState.lastSeq = -1;
-      setConnected(connectionState, setSyncState, true);
+      connectionState.hasReceivedSocketAggregate = false;
+      setConnected(connectionState, setSyncState, false);
+      startInitialAggregateTimer(connectionState, socket);
     });
     socket.addEventListener("message", (event) => {
       handleMessage(connectionState, setSyncState, String(event.data), socket);
     });
     socket.addEventListener("close", () => {
+      clearInitialAggregateTimer(connectionState);
+      connectionState.hasReceivedSocketAggregate = false;
       setConnected(connectionState, setSyncState, false);
       scheduleReconnect(connectionState, () => {
         void connect(connectionState, setSyncState);
@@ -216,6 +212,7 @@ const connect = async (
 const dispose = (connectionState: ConnectionState): void => {
   connectionState.disposed = true;
   connectionState.abortController.abort();
+  clearInitialAggregateTimer(connectionState);
   if (connectionState.reconnectTimer) {
     clearTimeout(connectionState.reconnectTimer);
   }
@@ -231,6 +228,8 @@ export function SyncProvider() {
       attempts: 0,
       currentState: INITIAL_SYNC_STATE,
       disposed: false,
+      hasReceivedSocketAggregate: false,
+      initialAggregateTimer: null,
       lastSeq: -1,
       reconnectTimer: null,
       socket: null,

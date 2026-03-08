@@ -2,18 +2,60 @@ import type { CronOptions } from "cronbake";
 import { Glob } from "bun";
 import { join } from "node:path";
 
-type JobExport = CronOptions | CronOptions[];
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isCronOptionsExport = (value: unknown): value is CronOptions =>
+  isRecord(value)
+  && typeof value.callback === "function"
+  && typeof value.name === "string";
+
+const createMissingDefaultExportError = (entrypoint: string): Error =>
+  new Error(`Job module ${entrypoint} is missing a default cron export`);
+
+const createInvalidCronExportError = (entrypoint: string, suffix?: string): Error =>
+  new Error(`Job module ${entrypoint} has an invalid cron export${suffix ?? ""}`);
+
+const normalizeJobExport = (value: unknown, entrypoint: string): CronOptions[] => {
+  if (value === undefined) {
+    throw createMissingDefaultExportError(entrypoint);
+  }
+
+  if (Array.isArray(value)) {
+    const jobs: CronOptions[] = [];
+    for (const [index, entry] of value.entries()) {
+      if (!isCronOptionsExport(entry)) {
+        throw createInvalidCronExportError(entrypoint, ` at index ${index}`);
+      }
+
+      jobs.push(entry);
+    }
+
+    return jobs;
+  }
+
+  if (isCronOptionsExport(value)) {
+    return [value];
+  }
+
+  throw createInvalidCronExportError(entrypoint);
+};
 
 export const getAllJobs = async (rootDirectory: string): Promise<CronOptions[]> => {
   const globPattern = join(rootDirectory, "**/*.{ts,js}");
   const globScanner = new Glob(globPattern);
   const entrypoints = await Array.fromAsync(globScanner.scan());
 
-  const imports = entrypoints.map(async (entrypoint): Promise<JobExport> => {
+  const imports = entrypoints.map(async (entrypoint): Promise<{ entrypoint: string; defaultExport: unknown }> => {
     const module = await import(entrypoint);
-    return module.default;
+    return {
+      defaultExport: module.default,
+      entrypoint,
+    };
   });
 
-  const jobExports = await Promise.all(imports);
-  return jobExports.flat();
+  const defaultExports = await Promise.all(imports);
+  return defaultExports.flatMap(({ defaultExport, entrypoint }) =>
+    normalizeJobExport(defaultExport, entrypoint),
+  );
 };

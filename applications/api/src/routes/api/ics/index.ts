@@ -1,42 +1,40 @@
 import { createSourceSchema } from "@keeper.sh/data-schemas";
-import { HTTP_STATUS } from "@keeper.sh/constants";
 import { withAuth, withWideEvent } from "../../../utils/middleware";
-import { ErrorResponse } from "../../../utils/responses";
 import {
   InvalidSourceUrlError,
   SourceLimitError,
   createSource,
   getUserSources,
 } from "../../../utils/sources";
+import {
+  handleGetIcsSourcesRoute,
+  handlePostIcsSourceRoute,
+} from "./source-routes";
 
 const GET = withWideEvent(
-  withAuth(async ({ userId }) => {
-    const sources = await getUserSources(userId);
-    return Response.json(sources);
-  }),
+  withAuth(async ({ userId }) =>
+    handleGetIcsSourcesRoute(
+      { userId },
+      {
+        getUserSources,
+      },
+    )),
 );
 
 const POST = withWideEvent(
   withAuth(async ({ request, userId }) => {
     const body = await request.json();
-
-    try {
-      const { name, url } = createSourceSchema.assert(body);
-      const source = await createSource(userId, name, url);
-      return Response.json(source, { status: 201 });
-    } catch (error) {
-      if (error instanceof SourceLimitError) {
-        return ErrorResponse.paymentRequired(error.message).toResponse();
-      }
-      if (error instanceof InvalidSourceUrlError) {
-        return Response.json(
-          { authRequired: error.authRequired, error: error.message },
-          { status: HTTP_STATUS.BAD_REQUEST },
-        );
-      }
-
-      return ErrorResponse.badRequest("Name and URL are required").toResponse();
-    }
+    return handlePostIcsSourceRoute(
+      { body, userId },
+      {
+        createSource,
+        isInvalidSourceUrlError: (error): error is InvalidSourceUrlError =>
+          error instanceof InvalidSourceUrlError,
+        isSourceLimitError: (error): error is SourceLimitError =>
+          error instanceof SourceLimitError,
+        parseCreateSourceBody: (value) => createSourceSchema.assert(value),
+      },
+    );
   }),
 );
 
