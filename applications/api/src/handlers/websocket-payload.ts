@@ -38,6 +38,9 @@ const resolveSyncAggregatePayload = async (
   if (!cached || !dependencies.isValidSyncAggregate(cached)) {
     return current;
   }
+  if (cached.syncing) {
+    return current;
+  }
 
   return {
     ...cached,

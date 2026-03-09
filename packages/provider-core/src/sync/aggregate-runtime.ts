@@ -74,9 +74,11 @@ const createSyncAggregateRuntime = (config: SyncAggregateRuntimeConfig): SyncAgg
 
       const payload: SyncAggregateMessage = { ...aggregate, seq: sequence };
 
-      const latestKey = getSyncAggregateLatestKey(userId);
-      await config.redis.set(latestKey, JSON.stringify(payload));
-      await config.redis.expire(latestKey, SYNC_TTL_SECONDS);
+      if (!payload.syncing) {
+        const latestKey = getSyncAggregateLatestKey(userId);
+        await config.redis.set(latestKey, JSON.stringify(payload));
+        await config.redis.expire(latestKey, SYNC_TTL_SECONDS);
+      }
 
       config.broadcast(userId, "sync:aggregate", payload);
     } catch {

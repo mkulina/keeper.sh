@@ -282,7 +282,45 @@ describe("createSyncAggregateRuntime", () => {
   });
 
   describe("emitSyncAggregate", () => {
-    it("stores aggregate in redis and broadcasts with redis sequence", async () => {
+    it("stores idle aggregate in redis and broadcasts with redis sequence", async () => {
+      const redis = createMockRedis();
+      const broadcasts: { data: unknown; eventName: string; userId: string }[] = [];
+
+      const runtime = createSyncAggregateRuntime({
+        broadcast: (userId, eventName, data) => {
+          broadcasts.push({ data, eventName, userId });
+        },
+        persistSyncStatus: ignorePersistSyncStatus,
+        redis: redis as never,
+      });
+
+      await runtime.emitSyncAggregate("user-1", {
+        progressPercent: 50,
+        seq: 1,
+        syncEventsProcessed: 5,
+        syncEventsRemaining: 5,
+        syncEventsTotal: 10,
+        syncing: false,
+      });
+
+      expect(broadcasts).toHaveLength(1);
+      const [firstBroadcast] = broadcasts;
+      expect(firstBroadcast).toBeDefined();
+      if (!firstBroadcast) {
+        throw new TypeError("Expected first broadcast");
+      }
+      const { data: broadcastData } = firstBroadcast;
+      expect(isRecord(broadcastData)).toBe(true);
+      if (!isRecord(broadcastData)) {
+        throw new TypeError("Expected broadcast data object");
+      }
+      expect(broadcastData.seq).toBe(1);
+
+      const stored = redis.store.get("sync:aggregate:latest:user-1");
+      expect(stored).toBeDefined();
+    });
+
+    it("does not store syncing aggregate in redis latest cache", async () => {
       const redis = createMockRedis();
       const broadcasts: { data: unknown; eventName: string; userId: string }[] = [];
 
@@ -304,20 +342,8 @@ describe("createSyncAggregateRuntime", () => {
       });
 
       expect(broadcasts).toHaveLength(1);
-      const [firstBroadcast] = broadcasts;
-      expect(firstBroadcast).toBeDefined();
-      if (!firstBroadcast) {
-        throw new TypeError("Expected first broadcast");
-      }
-      const { data: broadcastData } = firstBroadcast;
-      expect(isRecord(broadcastData)).toBe(true);
-      if (!isRecord(broadcastData)) {
-        throw new TypeError("Expected broadcast data object");
-      }
-      expect(broadcastData.seq).toBe(1);
-
-      const stored = redis.store.get("sync:aggregate:latest:user-1");
-      expect(stored).toBeDefined();
+      expect(redis.store.get("sync:aggregate:latest:user-1")).toBeUndefined();
+      expect(redis.store.get("sync:aggregate:seq:user-1")).toBe("1");
     });
 
     it("still broadcasts even if redis fails", async () => {

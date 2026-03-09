@@ -81,6 +81,39 @@ describe("resolveSyncAggregatePayload", () => {
     });
   });
 
+  it("ignores cached syncing aggregate when current state is idle", async () => {
+    const fallbackPayload = createFallbackPayload();
+
+    const resolvedPayload = await resolveSyncAggregatePayload("user-1", fallbackPayload, {
+      getCachedSyncAggregate: () => Promise.resolve({
+        progressPercent: 1.6,
+        seq: 7027,
+        syncEventsProcessed: 47,
+        syncEventsRemaining: 2890,
+        syncEventsTotal: 2937,
+        syncing: true,
+      }),
+      getCurrentSyncAggregate: () => ({
+        progressPercent: 100,
+        seq: 7028,
+        syncEventsProcessed: 0,
+        syncEventsRemaining: 0,
+        syncEventsTotal: 0,
+        syncing: false,
+      }),
+      isValidSyncAggregate: (_value): _value is SyncAggregatePayload => true,
+    });
+
+    expect(resolvedPayload).toEqual({
+      progressPercent: 100,
+      seq: 7028,
+      syncEventsProcessed: 0,
+      syncEventsRemaining: 0,
+      syncEventsTotal: 0,
+      syncing: false,
+    });
+  });
+
   it("falls back to current aggregate when cached data is invalid", async () => {
     const fallbackPayload = createFallbackPayload();
 
