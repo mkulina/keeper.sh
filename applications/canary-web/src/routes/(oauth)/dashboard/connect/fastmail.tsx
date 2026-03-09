@@ -13,7 +13,7 @@ function ConnectFastmailPage() {
       provider="fastmail"
       icon={<img src="/integrations/icon-fastmail.svg" alt="Fastmail" width={40} height={40} className="size-full rounded-lg p-3" />}
       heading="Connect Fastmail"
-      description="Fastmail uses an app-specific password to authenticate Keeper to interact with your calendar."
+      description="Fastmail uses an app-specific password to authenticate Keeper.sh to interact with your calendar."
       steps={[
         <>
           Navigate to{" "}

@@ -14,7 +14,7 @@ export function BlogPostCta() {
             Create an account, connect your sources and destinations, and keep your availability aligned everywhere.
           </Text>
           <LinkButton size="compact" to="/register" variant="highlight">
-            <ButtonText>Register for Keeper</ButtonText>
+            <ButtonText>Register for Keeper.sh</ButtonText>
           </LinkButton>
         </div>
         <div

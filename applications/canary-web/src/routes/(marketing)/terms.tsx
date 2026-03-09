@@ -18,18 +18,18 @@ function TermsPage() {
         <Section title="Agreement to Terms">
           <Text size="sm">
             These Terms and Conditions (&ldquo;Terms&rdquo;) constitute a legally binding agreement between you
-            and Keeper (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) governing your access to and use of the Keeper calendar
+            and Keeper.sh (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) governing your access to and use of the Keeper.sh calendar
             synchronization service.
           </Text>
           <Text size="sm">
-            By accessing or using Keeper, you agree to be bound by these Terms. If you disagree with
+            By accessing or using Keeper.sh, you agree to be bound by these Terms. If you disagree with
             any part of these Terms, you may not access or use the service.
           </Text>
         </Section>
 
         <Section title="Description of Service">
           <Text size="sm">
-            Keeper provides calendar aggregation and synchronization services that allow you to
+            Keeper.sh provides calendar aggregation and synchronization services that allow you to
             combine events from multiple calendar sources into a unified, anonymized feed. The service
             includes generating iCal feeds and pushing events to external calendar providers.
           </Text>
@@ -42,7 +42,7 @@ function TermsPage() {
 
         <Section title="Account Registration">
           <Text size="sm">
-            To use Keeper, you must create an account. You agree to provide accurate, current, and
+            To use Keeper.sh, you must create an account. You agree to provide accurate, current, and
             complete information during registration and to update such information as necessary.
           </Text>
           <Text size="sm">
@@ -58,7 +58,7 @@ function TermsPage() {
 
         <Section title="Subscription and Billing">
           <Text size="sm">
-            Keeper offers both free and paid subscription plans. Paid subscriptions are billed in
+            Keeper.sh offers both free and paid subscription plans. Paid subscriptions are billed in
             advance on a monthly or yearly basis. All fees are non-refundable except as required by
             law or as explicitly stated in these Terms.
           </Text>
@@ -83,11 +83,11 @@ function TermsPage() {
 
         <Section title="Intellectual Property">
           <Text size="sm">
-            The service and its original content, features, and functionality are owned by Keeper and
+            The service and its original content, features, and functionality are owned by Keeper.sh and
             are protected by international copyright, trademark, and other intellectual property laws.
           </Text>
           <Text size="sm">
-            Keeper is open-source software licensed under the AGPL-3.0 license. The source code is
+            Keeper.sh is open-source software licensed under the AGPL-3.0 license. The source code is
             available at{" "}
             <a href="https://github.com/ridafkih/keeper.sh" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-2">
               github.com/ridafkih/keeper.sh
@@ -99,18 +99,18 @@ function TermsPage() {
         <Section title="Your Content">
           <Text size="sm">
             You retain ownership of any calendar data and content you provide to the service. By using
-            Keeper, you grant us a limited license to access, process, and display your content solely
+            Keeper.sh, you grant us a limited license to access, process, and display your content solely
             as necessary to provide the service.
           </Text>
           <Text size="sm">
-            You represent that you have the right to share any calendar data you connect to Keeper and
+            You represent that you have the right to share any calendar data you connect to Keeper.sh and
             that doing so does not violate any third-party rights or agreements.
           </Text>
         </Section>
 
         <Section title="Third-Party Services">
           <Text size="sm">
-            Keeper integrates with third-party calendar providers and services. Your use of these
+            Keeper.sh integrates with third-party calendar providers and services. Your use of these
             integrations is subject to the terms and policies of those third parties. We are not
             responsible for the practices of third-party services.
           </Text>
@@ -131,7 +131,7 @@ function TermsPage() {
 
         <Section title="Limitation of Liability">
           <Text size="sm">
-            TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL KEEPER, ITS OFFICERS, DIRECTORS,
+            TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL KEEPER.SH, ITS OFFICERS, DIRECTORS,
             EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
             PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, USE, OR GOODWILL,
             ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SERVICE.
@@ -144,7 +144,7 @@ function TermsPage() {
 
         <Section title="Indemnification">
           <Text size="sm">
-            You agree to indemnify and hold harmless Keeper and its officers, directors, employees,
+            You agree to indemnify and hold harmless Keeper.sh and its officers, directors, employees,
             and agents from any claims, damages, losses, or expenses (including reasonable attorneys&apos;
             fees) arising from your use of the service, violation of these Terms, or infringement of
             any third-party rights.
@@ -167,7 +167,7 @@ function TermsPage() {
         <Section title="Governing Law">
           <Text size="sm">
             These Terms shall be governed by and construed in accordance with the laws of the
-            jurisdiction in which Keeper operates, without regard to conflict of law principles.
+            jurisdiction in which Keeper.sh operates, without regard to conflict of law principles.
           </Text>
         </Section>
 

@@ -17,12 +17,12 @@ function PrivacyPage() {
       <div className="flex flex-col gap-8">
         <Section title="Overview">
           <Text size="sm">
-            Keeper (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) is committed to protecting your privacy. This Privacy Policy
+            Keeper.sh (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) is committed to protecting your privacy. This Privacy Policy
             explains how we collect, use, disclose, and safeguard your information when you use our
             calendar synchronization service.
           </Text>
           <Text size="sm">
-            By using Keeper, you consent to the data practices described in this policy. If you do not
+            By using Keeper.sh, you consent to the data practices described in this policy. If you do not
             agree with the terms of this policy, please do not access or use our service.
           </Text>
         </Section>
@@ -62,7 +62,7 @@ function PrivacyPage() {
 
         <Section title="Data Anonymization">
           <Text size="sm">
-            A core feature of Keeper is event anonymization. When you generate a shared iCal feed or
+            A core feature of Keeper.sh is event anonymization. When you generate a shared iCal feed or
             push to external calendars, event details (titles, descriptions, attendees, locations) are
             stripped. Only busy/free time blocks are shared, protecting the privacy of your schedule
             details.
@@ -137,7 +137,7 @@ function PrivacyPage() {
 
         <Section title="Children's Privacy">
           <Text size="sm">
-            Keeper is not intended for use by individuals under the age of 13. We do not knowingly
+            Keeper.sh is not intended for use by individuals under the age of 13. We do not knowingly
             collect personal information from children. If we become aware that we have collected data
             from a child, we will take steps to delete it promptly.
           </Text>

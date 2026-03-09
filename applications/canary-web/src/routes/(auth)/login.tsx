@@ -7,7 +7,7 @@ export const Route = createFileRoute("/(auth)/login")({
 
 const copy: AuthScreenCopy = {
   heading: "Welcome back",
-  subtitle: "Sign in to your Keeper account",
+  subtitle: "Sign in to your Keeper.sh account",
   oauthActionLabel: "Sign in",
   submitLabel: "Sign in",
   switchPrompt: "Don't have an account yet?",

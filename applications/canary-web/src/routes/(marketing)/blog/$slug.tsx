@@ -11,12 +11,12 @@ export const Route = createFileRoute("/(marketing)/blog/$slug")({
   head: ({ params }) => {
     const blogPost = findBlogPostBySlug(params.slug);
     if (!blogPost) {
-      return { meta: [{ title: "Blog Post · Keeper" }] };
+      return { meta: [{ title: "Blog Post · Keeper.sh" }] };
     }
 
     return {
       meta: [
-        { title: `${blogPost.metadata.title} · Keeper` },
+        { title: `${blogPost.metadata.title} · Keeper.sh` },
         { content: blogPost.metadata.description, name: "description" },
         { content: blogPost.metadata.tags.join(", "), name: "keywords" },
         { content: "article", property: "og:type" },

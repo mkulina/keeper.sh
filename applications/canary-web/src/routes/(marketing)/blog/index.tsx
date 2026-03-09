@@ -12,9 +12,9 @@ export const Route = createFileRoute("/(marketing)/blog/")({
   component: BlogDirectoryPage,
   head: () => ({
     meta: [
-      { title: "Blog · Keeper" },
+      { title: "Blog · Keeper.sh" },
       {
-        content: "Engineering and product updates from Keeper.",
+        content: "Engineering and product updates from Keeper.sh.",
         name: "description",
       },
     ],
@@ -27,7 +27,7 @@ function BlogDirectoryPage() {
       <header className="flex flex-col gap-1.5">
         <Heading1>Blog</Heading1>
         <Text size="base" tone="muted" className="leading-6">
-          Product and engineering updates from Keeper.
+          Product and engineering updates from Keeper.sh.
         </Text>
       </header>
 

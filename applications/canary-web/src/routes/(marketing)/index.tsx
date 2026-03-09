@@ -199,7 +199,7 @@ function MarketingPage() {
             <MarketingPricingIntro>
               <Heading2 className="text-center">Hosted Pricing</Heading2>
               <Text size='sm' align="center">
-                Keeper uses a low-cost freemium model to give you a solid range of choice. Check the GitHub repository for self-hosting options.
+                Keeper.sh uses a low-cost freemium model to give you a solid range of choice. Check the GitHub repository for self-hosting options.
               </Text>
             </MarketingPricingIntro>
 

@@ -206,7 +206,7 @@ function RenameSection({ calendarId }: { calendarId: string }) {
     <>
       <DashboardSection
         title="Calendar Name"
-        description="Click below to rename the calendar within Keeper. This does not affect the calendar outside of the Keeper ecosystem."
+        description="Click below to rename the calendar within Keeper.sh. This does not affect the calendar outside of the Keeper.sh ecosystem."
       />
       <NavigationMenu>
         <RenameItem calendarId={calendarId} />
