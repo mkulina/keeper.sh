@@ -19,6 +19,15 @@ function ConnectPage() {
     <div className="flex flex-col gap-1.5">
       <BackButton />
       <NavigationMenu>
+        <NavigationMenuLinkItem to="/dashboard/connect/ical-link">
+          <NavigationMenuItemIcon>
+            <Link size={15} />
+          </NavigationMenuItemIcon>
+          <NavigationMenuItemLabel>Subscribe to ICS Calendar Feed</NavigationMenuItemLabel>
+          <NavigationMenuItemTrailing />
+        </NavigationMenuLinkItem>
+      </NavigationMenu>
+      <NavigationMenu>
         <NavigationMenuLinkItem to="/dashboard/connect/google">
           <NavigationMenuItemIcon>
             <img src="/integrations/icon-google.svg" alt="" width={15} height={15} />
@@ -61,15 +70,6 @@ function ConnectPage() {
             <Calendar size={15} />
           </NavigationMenuItemIcon>
           <NavigationMenuItemLabel>Connect CalDAV Server</NavigationMenuItemLabel>
-          <NavigationMenuItemTrailing />
-        </NavigationMenuLinkItem>
-      </NavigationMenu>
-      <NavigationMenu>
-        <NavigationMenuLinkItem to="/dashboard/connect/ical-link">
-          <NavigationMenuItemIcon>
-            <Link size={15} />
-          </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Subscribe to ICS Calendar Feed</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing />
         </NavigationMenuLinkItem>
       </NavigationMenu>

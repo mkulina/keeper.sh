@@ -30,7 +30,6 @@ const oauthCallbackQuerySchema = type({
   "code?": "string",
   "state?": "string",
   "error?": "string",
-  "+": "reject",
 });
 type OAuthCallbackQuery = typeof oauthCallbackQuerySchema.infer;
 

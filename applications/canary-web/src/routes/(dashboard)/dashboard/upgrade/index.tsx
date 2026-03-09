@@ -1,37 +1,30 @@
 import { useState, useTransition } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BackButton } from "../../../../components/ui/primitives/back-button";
-import { DashboardSection } from "../../../../components/ui/primitives/dashboard-heading";
-import { Heading2, Heading3 } from "../../../../components/ui/primitives/heading";
+import { DashboardHeading1, DashboardHeading3 } from "../../../../components/ui/primitives/dashboard-heading";
 import { Text } from "../../../../components/ui/primitives/text";
 import { Button, ButtonText } from "../../../../components/ui/primitives/button";
 import {
-  NavigationMenu,
-  NavigationMenuCheckboxItem,
-  NavigationMenuItemIcon,
-  NavigationMenuItemLabel,
-} from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
-import {
-  MarketingPricingCard,
-  MarketingPricingCardAction,
-  MarketingPricingCardBody,
-  MarketingPricingCardCopy,
-} from "../../../../features/marketing/components/marketing-pricing-section";
-import CalendarClock from "lucide-react/dist/esm/icons/calendar-clock";
+  UpgradeCard,
+  UpgradeCardSection,
+  UpgradeCardToggle,
+  UpgradeCardFeature,
+  UpgradeCardFeatureIcon,
+  UpgradeCardActions,
+} from "../../../../features/dashboard/components/upgrade-card";
 import Check from "lucide-react/dist/esm/icons/check";
-import Infinity from "lucide-react/dist/esm/icons/infinity";
-import { MetadataRow } from "../../../../features/dashboard/components/metadata-row";
 import { useSubscription } from "../../../../hooks/use-subscription";
 import { openCheckout, openCustomerPortal } from "../../../../utils/checkout";
 import { plans } from "../../../../config/plans";
 
-export const Route = createFileRoute("/(dashboard)/dashboard/upgrade/")(
-  { component: UpgradePage },
-);
+export const Route = createFileRoute("/(dashboard)/dashboard/upgrade/")({
+  component: UpgradePage,
+});
 
-const pro = plans.find((p) => p.id === "pro")!;
+const proPlan = plans.find((plan) => plan.id === "pro")!;
 
 function UpgradePage() {
+  const navigate = useNavigate();
   const { data: subscription, isLoading, mutate } = useSubscription();
   const [yearly, setYearly] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -39,13 +32,18 @@ function UpgradePage() {
   const currentPlan = subscription?.plan ?? "free";
   const currentInterval = subscription?.interval;
   const isCurrent = currentPlan === "pro";
+
+  if (isCurrent && !isLoading) {
+    navigate({ to: "/dashboard" });
+    return null;
+  }
   const isCurrentInterval =
     (currentInterval === "year" && yearly) ||
     (currentInterval === "month" && !yearly);
 
-  const price = yearly ? pro.yearlyPrice : pro.monthlyPrice;
-  const period = yearly ? "per year" : "per month";
-  const productId = yearly ? pro.yearlyProductId : pro.monthlyProductId;
+  const price = yearly ? (proPlan.yearlyPrice / 12).toFixed(2) : proPlan.monthlyPrice.toFixed(2);
+  const period = yearly ? "per month, billed annually" : "per month";
+  const productId = yearly ? proPlan.yearlyProductId : proPlan.monthlyProductId;
 
   const handleUpgrade = () => {
     if (!productId) return;
@@ -61,60 +59,44 @@ function UpgradePage() {
   };
 
   const busy = isLoading || isPending;
+  const mode = !isCurrent ? "upgrade" : isCurrentInterval ? "manage" : "switch-interval";
 
   return (
     <div className="flex flex-col gap-1.5">
       <BackButton />
 
-      <DashboardSection
-        title="Upgrade to Pro"
-        description="Thank you for supporting the project. I maintain Keeper on my own time and dime so all support is appreciated."
-        level={1}
-      />
-
-      <NavigationMenu>
-        <NavigationMenuCheckboxItem checked={yearly} onCheckedChange={setYearly}>
-          <NavigationMenuItemIcon>
-            <CalendarClock size={15} />
-          </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>
-            Annual billing
-          </NavigationMenuItemLabel>
-        </NavigationMenuCheckboxItem>
-      </NavigationMenu>
-
-      <MarketingPricingCard tone="inverse">
-        <MarketingPricingCardBody>
-          <Heading3 className="text-foreground-inverse">{pro.name}</Heading3>
+      <UpgradeCard className="mt-4">
+        <UpgradeCardSection gap="sm">
+          <DashboardHeading3 as="h1" className="text-white">Upgrade to Pro</DashboardHeading3>
           <div className="flex items-baseline gap-1">
-            <Heading2 className="text-foreground-inverse">${price}</Heading2>
-            <Text size="sm" tone="inverseMuted" align="left">
+            <DashboardHeading1 as="span" className="text-white tabular-nums">${price}</DashboardHeading1>
+            <Text size="sm" align="left" className="text-neutral-400">
               {period}
             </Text>
           </div>
-          <MarketingPricingCardCopy>
-            <Text size="sm" tone="inverseMuted" align="left">
-              {pro.description}
-            </Text>
-          </MarketingPricingCardCopy>
-        </MarketingPricingCardBody>
-        <MarketingPricingCardAction>
-          <UpgradeAction
-            mode={!isCurrent ? "upgrade" : isCurrentInterval ? "manage" : "switch-interval"}
-            isLoading={busy}
-            onUpgrade={handleUpgrade}
-            onManage={handleManage}
-          />
-        </MarketingPricingCardAction>
-      </MarketingPricingCard>
+          <UpgradeCardToggle checked={yearly} onCheckedChange={setYearly}>
+            <Text size="sm" tone="highlight">Annual billing</Text>
+          </UpgradeCardToggle>
+          <Text size="sm" align="left" className="text-neutral-400 pt-1">
+            For power users who need minutely syncs and unlimited calendars. Thank you for supporting this project.
+          </Text>
+        </UpgradeCardSection>
 
-      <NavigationMenu>
-        <MetadataRow label="Sync Interval" value="Every 1 minute" />
-        <MetadataRow label="Linked Calendar Accounts" icon={<Infinity size={15} />} />
-        <MetadataRow label="Calendars per Account" icon={<Infinity size={15} />} />
-        <MetadataRow label="Aggregated iCal Link" icon={<Check size={15} />} />
-        <MetadataRow label="Priority Support" icon={<Check size={15} />} />
-      </NavigationMenu>
+        <UpgradeCardSection>
+          {proPlan.features.map((feature) => (
+            <UpgradeCardFeature key={feature}>
+              <UpgradeCardFeatureIcon>
+                <Check size={14} />
+              </UpgradeCardFeatureIcon>
+              <Text size="sm" className="text-neutral-300">{feature}</Text>
+            </UpgradeCardFeature>
+          ))}
+        </UpgradeCardSection>
+
+        <UpgradeCardActions>
+          <UpgradeAction mode={mode} isLoading={busy} onUpgrade={handleUpgrade} onManage={handleManage} />
+        </UpgradeCardActions>
+      </UpgradeCard>
     </div>
   );
 }
@@ -127,27 +109,18 @@ type UpgradeActionProps = {
 };
 
 function UpgradeAction({ mode, isLoading, onUpgrade, onManage }: UpgradeActionProps) {
-  const base = "w-full justify-center border-transparent";
+  const base = "w-full justify-center border-transparent bg-white text-neutral-900 hover:bg-neutral-100";
 
-  if (mode === "manage") {
-    return (
-      <Button variant="border" className={base} onClick={onManage} disabled={isLoading}>
-        <ButtonText>Manage Subscription</ButtonText>
-      </Button>
-    );
-  }
+  const label =
+    mode === "manage" ? "Manage Subscription" :
+    mode === "switch-interval" ? "Switch Billing Period" :
+    isLoading ? "Loading..." : "Upgrade to Pro";
 
-  if (mode === "switch-interval") {
-    return (
-      <Button variant="border" className={base} onClick={onManage} disabled={isLoading}>
-        <ButtonText>Switch Billing Period</ButtonText>
-      </Button>
-    );
-  }
+  const handler = mode === "upgrade" ? onUpgrade : onManage;
 
   return (
-    <Button variant="border" className={base} onClick={onUpgrade} disabled={isLoading}>
-      <ButtonText>{isLoading ? "Loading..." : "Upgrade to Pro"}</ButtonText>
+    <Button variant="border" className={base} onClick={handler} disabled={isLoading}>
+      <ButtonText>{label}</ButtonText>
     </Button>
   );
 }

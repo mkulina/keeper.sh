@@ -14,6 +14,7 @@ async function createCheckoutSession(productId: string): Promise<CheckoutRespons
       embedOrigin: globalThis.location.origin,
       products: [productId],
       redirect: false,
+      successUrl: `${globalThis.location.origin}/dashboard`,
     }),
     headers: { "Content-Type": "application/json" },
     method: "POST",

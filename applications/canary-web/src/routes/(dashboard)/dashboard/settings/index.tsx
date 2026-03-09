@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import KeyRound from "lucide-react/dist/esm/icons/key-round";
 import Lock from "lucide-react/dist/esm/icons/lock";
 import Mail from "lucide-react/dist/esm/icons/mail";
@@ -29,6 +30,8 @@ import {
 } from "../../../../components/ui/composites/navigation-menu/navigation-menu-items";
 import { Text } from "../../../../components/ui/primitives/text";
 import { resolveErrorMessage } from "../../../../utils/errors";
+import { useSubscription } from "../../../../hooks/use-subscription";
+import { openCustomerPortal } from "../../../../utils/checkout";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/settings/")({
   component: SettingsPage,
@@ -40,9 +43,25 @@ function SettingsPage() {
   const passwordRef = useRef<HTMLInputElement>(null);
   const email = user?.email ?? "";
   const { data: passkeys = [] } = usePasskeys();
+  const { data: subscription, isLoading: subscriptionLoading } = useSubscription();
+  const isPro = subscription?.plan === "pro";
+  const [isManaging, setIsManaging] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleManagePlan = async () => {
+    if (!isPro) {
+      navigate({ to: "/dashboard/upgrade" });
+      return;
+    }
+    setIsManaging(true);
+    try {
+      await openCustomerPortal();
+    } catch {
+      setIsManaging(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     const password = passwordRef.current?.value;
@@ -93,6 +112,15 @@ function SettingsPage() {
             </Text>
           </NavigationMenuItemTrailing>
         </NavigationMenuLinkItem>
+      </NavigationMenu>
+      <NavigationMenu>
+        <NavigationMenuButtonItem onClick={handleManagePlan} disabled={isManaging || subscriptionLoading}>
+          <NavigationMenuItemIcon>
+            <CreditCard size={15} />
+          </NavigationMenuItemIcon>
+          <NavigationMenuItemLabel>Manage Plan</NavigationMenuItemLabel>
+          <NavigationMenuItemTrailing />
+        </NavigationMenuButtonItem>
       </NavigationMenu>
       <NavigationMenu>
         <NavigationMenuButtonItem onClick={() => setDeleteOpen(true)}>

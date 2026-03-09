@@ -14,7 +14,9 @@ interface CustomerStateResponse {
   activeSubscriptions?: ActiveSubscription[] | null;
 }
 
-async function fetchSubscriptionState(): Promise<SubscriptionState> {
+const SUBSCRIPTION_STATE_CACHE_KEY = "customer-state";
+
+const fetchSubscriptionState = async (): Promise<SubscriptionState> => {
   const data = await fetcher<CustomerStateResponse>("/api/auth/customer/state");
   const [active] = data.activeSubscriptions ?? [];
 
@@ -24,9 +26,11 @@ async function fetchSubscriptionState(): Promise<SubscriptionState> {
     plan: "pro",
     interval: active.recurringInterval === "year" ? "year" : "month",
   };
-}
+};
 
 export function useSubscription() {
-  const { data, error, isLoading, mutate } = useSWR("customer-state", fetchSubscriptionState);
+  const { data, error, isLoading, mutate } = useSWR(SUBSCRIPTION_STATE_CACHE_KEY, fetchSubscriptionState);
   return { data, error, isLoading, mutate };
 }
+
+export { fetchSubscriptionState };
