@@ -11,7 +11,7 @@
     "lint": "oxlint ."
   },
   "dependencies": {
-    "arktype": "^2.1.29"
+    "arktype": "^2.2.0"
   },
   "devDependencies": {
     "@keeper.sh/typescript-config": "workspace:*",
