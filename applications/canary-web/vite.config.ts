@@ -4,9 +4,11 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import svgr from "vite-plugin-svgr";
 import { visualizer } from "rollup-plugin-visualizer";
+import { blogPlugin } from "./plugins/blog";
 
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
+    blogPlugin(),
     tailwindcss(),
     tanstackRouter({
       autoCodeSplitting: true,
@@ -26,7 +28,7 @@ export default defineConfig(({ isSsrBuild }) => ({
       : undefined,
   ].filter(Boolean),
   build: {
-    sourcemap: process.env.NODE_ENV !== "production",
+    sourcemap: process.env.ENV !== "production",
     rollupOptions: !isSsrBuild
       ? {
           output: {

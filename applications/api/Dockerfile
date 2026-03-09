@@ -25,7 +25,7 @@ COPY --from=source /app/packages/database/drizzle ./packages/database/drizzle
 COPY --from=source /app/applications/api/entrypoint.sh ./applications/api/entrypoint.sh
 RUN chmod +x ./applications/api/entrypoint.sh
 
-ENV NODE_ENV=production
+ENV DEV=production
 EXPOSE 3001
 
 ENTRYPOINT ["./applications/api/entrypoint.sh"]

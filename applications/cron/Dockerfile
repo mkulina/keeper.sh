@@ -22,6 +22,6 @@ COPY --from=build /app/applications/cron/dist ./applications/cron/dist
 COPY --from=source /app/applications/cron/entrypoint.sh ./applications/cron/entrypoint.sh
 RUN chmod +x ./applications/cron/entrypoint.sh
 
-ENV NODE_ENV=production
+ENV ENV=production
 
 ENTRYPOINT ["./applications/cron/entrypoint.sh"]

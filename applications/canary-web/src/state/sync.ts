@@ -1,17 +1,10 @@
 import { atom } from "jotai";
 import { selectAtom } from "jotai/utils";
+import type { SyncAggregate } from "@keeper.sh/data-schemas/client";
 
 export type CompositeState = "idle" | "syncing";
 
-export interface SyncAggregateData {
-  progressPercent: number;
-  seq: number;
-  syncEventsProcessed: number;
-  syncEventsRemaining: number;
-  syncEventsTotal: number;
-  lastSyncedAt?: string | null;
-  syncing: boolean;
-}
+export type SyncAggregateData = SyncAggregate;
 
 export interface CompositeSyncState {
   state: CompositeState;

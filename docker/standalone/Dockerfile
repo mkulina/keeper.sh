@@ -81,7 +81,7 @@ RUN chmod +x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/scripts/* \
   && mkdir -p /var/lib/postgresql/data /run/postgresql /var/log/keeper \
   && chown -R postgres:postgres /var/lib/postgresql /run/postgresql
 
-ENV NODE_ENV=production
+ENV ENV=production
 ENV S6_KEEP_ENV=1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=60000

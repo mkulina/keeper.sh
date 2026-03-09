@@ -1,4 +1,4 @@
-import { socketMessageSchema, syncAggregateSchema } from "@keeper.sh/data-schemas";
+import { isSocketMessage, isSyncAggregate } from "@keeper.sh/data-schemas/client";
 import type { CompositeSyncState, SyncAggregateData } from "../state/sync";
 
 type IncomingSocketAction =
@@ -69,7 +69,7 @@ const parseIncomingSocketAction = (
     return { kind: "reconnect" };
   }
 
-  if (!socketMessageSchema.allows(parsed)) {
+  if (!isSocketMessage(parsed)) {
     return { kind: "reconnect" };
   }
 
@@ -81,7 +81,7 @@ const parseIncomingSocketAction = (
     return { kind: "ignore" };
   }
 
-  if (!syncAggregateSchema.allows(parsed.data)) {
+  if (!isSyncAggregate(parsed.data)) {
     return { kind: "reconnect" };
   }
 

@@ -1,4 +1,3 @@
-import { type } from "arktype";
 import { createStaleCache } from "./cache/stale-cache";
 
 export interface GithubStarsSnapshot {
@@ -6,9 +5,15 @@ export interface GithubStarsSnapshot {
   fetchedAt: string;
 }
 
-const githubRepositoryResponseSchema = type({
-  stargazers_count: "number.integer >= 0",
-});
+function hasStargazersCount(value: unknown): value is { stargazers_count: number } {
+  if (typeof value !== "object" || value === null) return false;
+  return (
+    "stargazers_count" in value &&
+    typeof value.stargazers_count === "number" &&
+    Number.isInteger(value.stargazers_count) &&
+    value.stargazers_count >= 0
+  );
+}
 
 const githubRepositoryApiUrl = "https://api.github.com/repos/ridafkih/keeper.sh";
 const githubApiVersion = "2022-11-28";
@@ -27,12 +32,12 @@ async function fetchGithubStarsCount(): Promise<number> {
     throw new Error(`GitHub stars request failed: ${response.status} ${response.statusText}`);
   }
 
-  const parsedResponse = githubRepositoryResponseSchema(await response.json());
-  if (parsedResponse instanceof type.errors) {
-    throw new Error(`Invalid GitHub stars response: ${parsedResponse}`);
+  const json: unknown = await response.json();
+  if (!hasStargazersCount(json)) {
+    throw new Error("Invalid GitHub stars response");
   }
 
-  return parsedResponse.stargazers_count;
+  return json.stargazers_count;
 }
 
 const githubStarsCache = createStaleCache<number>({

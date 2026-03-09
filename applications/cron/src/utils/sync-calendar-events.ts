@@ -199,7 +199,7 @@ const createSyncJob = (plan: Plan, cron: string): CronOptions =>
       }
     },
     cron,
-    immediate: process.env.NODE_ENV !== "production",
+    immediate: process.env.ENV !== "production",
     name: `sync-calendar-events-${plan}`,
   });
 

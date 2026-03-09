@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "NODE_ENV=development PORT=5173 API_PROXY_TARGET=http://localhost:3000 VITE_DEV_SERVER_PORT=5174 bun src/server/index.ts",
+    "dev": "ENV=development PORT=5173 API_PROXY_TARGET=http://localhost:3000 VITE_DEV_SERVER_PORT=5174 bun src/server/index.ts",
     "build": "vite build --outDir dist/client && vite build --ssr src/server.tsx --outDir dist/server",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "types": "tsc --noEmit",
     "preview": "vite preview",
-    "start": "NODE_ENV=production PORT=5173 API_PROXY_TARGET=http://localhost:3000 VITE_DEV_SERVER_PORT=5174 bun src/server/index.ts"
+    "start": "DEV=production PORT=5173 API_PROXY_TARGET=http://localhost:3000 VITE_DEV_SERVER_PORT=5174 bun src/server/index.ts"
   },
   "dependencies": {
     "@better-auth/passkey": "^1.5.2",

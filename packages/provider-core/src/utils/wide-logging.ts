@@ -39,7 +39,7 @@ const getDefaultLogLevel = (): string | undefined => {
     return process.env.LOG_LEVEL;
   }
 
-  if (process.env.NODE_ENV === "test") {
+  if (process.env.ENV === "test") {
     return "silent";
   }
 
@@ -49,7 +49,7 @@ const getDefaultLogLevel = (): string | undefined => {
 const getDefaultConfig = (): LoggerConfig => ({
   commitHash: process.env.COMMIT_SHA,
   defaultEventName: DEFAULT_EVENT_NAME,
-  environment: process.env.NODE_ENV,
+  environment: process.env.ENV,
   level: getDefaultLogLevel(),
   service: getDefaultServiceName(),
   version: process.env.npm_package_version,

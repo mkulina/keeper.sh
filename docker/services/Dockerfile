@@ -65,7 +65,7 @@ COPY docker/services/rootfs /
 
 RUN chmod +x /etc/s6-overlay/s6-rc.d/*/run /etc/s6-overlay/scripts/*
 
-ENV NODE_ENV=production
+ENV ENV=production
 ENV S6_KEEP_ENV=1
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME=60000

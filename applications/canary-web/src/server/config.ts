@@ -3,14 +3,14 @@ import type { ServerConfig } from "./types";
 
 export const envSchema = type({
   API_PROXY_TARGET: "string.url",
-  NODE_ENV: "'development'|'production'|'test'",
+  ENV: "'development'|'production'|'test'",
   PORT: "string",
   VITE_DEV_SERVER_PORT: "string",
 });
 
 interface ParsedEnvironment {
   API_PROXY_TARGET: string;
-  NODE_ENV: "development" | "production" | "test";
+  ENV: "development" | "production" | "test";
   PORT: string;
   VITE_DEV_SERVER_PORT: string;
 }
@@ -27,7 +27,7 @@ function parsePort(variableName: string, value: string): number {
 export function createServerConfig(environment: ParsedEnvironment): ServerConfig {
   const serverPort = parsePort("PORT", environment.PORT);
   const vitePort = parsePort("VITE_DEV_SERVER_PORT", environment.VITE_DEV_SERVER_PORT);
-  const runtimeEnvironment = environment.NODE_ENV;
+  const runtimeEnvironment = environment.ENV;
 
   return {
     apiProxyOrigin: environment.API_PROXY_TARGET,

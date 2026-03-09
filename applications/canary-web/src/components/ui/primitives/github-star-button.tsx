@@ -1,4 +1,3 @@
-import { type } from "arktype";
 import { AnimatePresence } from "motion/react";
 import Star from "lucide-react/dist/esm/icons/star";
 import {
@@ -15,11 +14,22 @@ const SCROLL_THRESHOLD = 32;
 const GITHUB_STARS_ENDPOINT_PATH = "/internal/github-stars";
 const GITHUB_REPOSITORY_URL = "https://github.com/ridafkih/keeper.sh";
 
-const githubStarsResponseSchema = type({
-  "+": "reject",
-  fetchedAt: "string.date.iso",
-  count: "number.integer >= 0",
-});
+interface GithubStarsResponse {
+  fetchedAt: string;
+  count: number;
+}
+
+function isGithubStarsResponse(value: unknown): value is GithubStarsResponse {
+  if (typeof value !== "object" || value === null) return false;
+  return (
+    "fetchedAt" in value &&
+    typeof value.fetchedAt === "string" &&
+    "count" in value &&
+    typeof value.count === "number" &&
+    Number.isInteger(value.count) &&
+    value.count >= 0
+  );
+}
 
 function formatStarCount(starCount: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -38,12 +48,12 @@ async function fetchGithubStarCount(url: string): Promise<number> {
     );
   }
 
-  const parsedResponse = githubStarsResponseSchema(await response.json());
-  if (parsedResponse instanceof type.errors) {
-    throw new Error(`Invalid GitHub stars payload: ${parsedResponse}`);
+  const json: unknown = await response.json();
+  if (!isGithubStarsResponse(json)) {
+    throw new Error("Invalid GitHub stars payload");
   }
 
-  return parsedResponse.count;
+  return json.count;
 }
 
 interface GithubStarButtonProps {
