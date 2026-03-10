@@ -72,7 +72,6 @@ COPY --from=source /app/packages/database/scripts ./packages/database/scripts
 COPY --from=source /app/packages/database/drizzle ./packages/database/drizzle
 
 COPY --from=build /app/applications/canary-web/dist ./applications/canary-web/dist
-COPY --from=source /app/applications/canary-web/src/server ./applications/canary-web/src/server
 
 COPY docker/standalone/rootfs /
 
@@ -97,6 +96,6 @@ EXPOSE 80
 VOLUME ["/var/lib/postgresql/data"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-  CMD curl -f http://localhost/ || exit 1
+  CMD curl -f -H "Accept: text/html" http://localhost/ || exit 1
 
 ENTRYPOINT ["/init"]

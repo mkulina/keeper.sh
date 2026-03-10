@@ -5,7 +5,7 @@ until curl -sf http://127.0.0.1:3001/api/health > /dev/null; do
   sleep 1
 done
 
-cd /app
+cd /app/applications/canary-web
 export HOSTNAME=0.0.0.0
 export PORT=3000
-exec /root/.bun/bin/bun applications/canary-web/src/server/index.ts
+exec /root/.bun/bin/bun dist/server-entry/index.js

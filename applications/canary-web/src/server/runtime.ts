@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import { createServer as createViteServer, type ViteDevServer } from "vite";
+import type { ViteDevServer } from "vite";
 import { clientDistDirectory, serverDistEntry, sourceTemplatePath } from "./paths";
 import { proxyRequest, readStaticFile } from "./proxy/http";
 import { extractViteAssets } from "./vite-assets";
@@ -45,7 +45,8 @@ async function createProductionRuntime(): Promise<Runtime> {
 }
 
 async function createViteDevServerInstance(vitePort: number): Promise<ViteDevServer> {
-  const viteServer = await createViteServer({
+  const { createServer } = await import("vite");
+  const viteServer = await createServer({
     appType: "custom",
     server: {
       hmr: {

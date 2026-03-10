@@ -20,9 +20,10 @@ FROM base AS runtime
 COPY --from=prune /app/out/json/ .
 RUN bun install --frozen-lockfile --production
 COPY --from=build /app/applications/canary-web/dist ./applications/canary-web/dist
-COPY --from=source /app/applications/canary-web/src/server ./applications/canary-web/src/server
+
+WORKDIR /app/applications/canary-web
 
 ENV ENV=production
 EXPOSE 3000
 
-CMD ["bun", "applications/canary-web/src/server/index.ts"]
+CMD ["bun", "dist/server-entry/index.js"]

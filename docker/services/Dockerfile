@@ -58,7 +58,6 @@ COPY --from=source /app/packages/database/scripts ./packages/database/scripts
 COPY --from=source /app/packages/database/drizzle ./packages/database/drizzle
 
 COPY --from=build /app/applications/canary-web/dist ./applications/canary-web/dist
-COPY --from=source /app/applications/canary-web/src/server ./applications/canary-web/src/server
 
 COPY docker/services/rootfs /
 
@@ -76,6 +75,6 @@ ENV COMMERCIAL_MODE=false
 EXPOSE 3000 3001
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:3000/ || exit 1
+  CMD curl -f -H "Accept: text/html" http://localhost:3000/ || exit 1
 
 ENTRYPOINT ["/init"]
