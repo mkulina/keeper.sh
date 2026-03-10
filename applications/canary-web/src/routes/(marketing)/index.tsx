@@ -3,8 +3,15 @@ import { createFileRoute } from '@tanstack/react-router'
 import { CanonicalLink, jsonLdMeta, seoMeta, softwareApplicationSchema, faqSchema } from '../../lib/seo'
 import { Heading1, Heading2, Heading3 } from '../../components/ui/primitives/heading'
 import { Text } from '../../components/ui/primitives/text'
-import { MarketingHowItWorksSection, MarketingHowItWorksGrid, MarketingHowItWorksStep } from '../../features/marketing/components/marketing-how-it-works'
-import { MarketingFaqSection, MarketingFaqList, MarketingFaqQuestion } from '../../features/marketing/components/marketing-faq'
+import {
+  MarketingHowItWorksSection,
+  MarketingHowItWorksCard,
+  MarketingHowItWorksRow,
+  MarketingHowItWorksStepBody,
+  MarketingHowItWorksStepIllustration,
+} from '../../features/marketing/components/marketing-how-it-works'
+import { MarketingFaqSection, MarketingFaqList, MarketingFaqItem, MarketingFaqQuestion } from '../../features/marketing/components/marketing-faq'
+import { MarketingCtaSection, MarketingCtaCard } from '../../features/marketing/components/marketing-cta'
 import { Collapsible } from '../../components/ui/primitives/collapsible'
 import { ButtonIcon, ButtonText, ExternalLinkButton, LinkButton } from '../../components/ui/primitives/button'
 import { MarketingIllustrationCalendar, MarketingIllustrationCalendarCard, type Skew, type SkewTuple } from '../../features/marketing/components/marketing-illustration-calendar'
@@ -324,14 +331,34 @@ function MarketingPage() {
 
           <MarketingHowItWorksSection>
             <Heading2 className="text-center">How It Works</Heading2>
-            <MarketingHowItWorksGrid>
-              {HOW_IT_WORKS_STEPS.map((step, index) => (
-                <MarketingHowItWorksStep key={step.title} step={index + 1}>
-                  <Heading3 as="h3">{step.title}</Heading3>
-                  <Text size="sm" tone="muted">{step.description}</Text>
-                </MarketingHowItWorksStep>
-              ))}
-            </MarketingHowItWorksGrid>
+            <Text size="sm" align="center" className="mt-2 max-w-[48ch] mx-auto">
+              Three steps to keep every calendar on the same page. Connect, configure, and forget about it.
+            </Text>
+            <MarketingHowItWorksCard>
+              <MarketingHowItWorksRow>
+                <MarketingHowItWorksStepBody step={1}>
+                  <Heading3 as="h3">{HOW_IT_WORKS_STEPS[0].title}</Heading3>
+                  <Text size="sm" tone="muted">{HOW_IT_WORKS_STEPS[0].description}</Text>
+                </MarketingHowItWorksStepBody>
+                <MarketingHowItWorksStepIllustration />
+              </MarketingHowItWorksRow>
+
+              <MarketingHowItWorksRow className="sm:flex-row-reverse">
+                <MarketingHowItWorksStepBody step={2}>
+                  <Heading3 as="h3">{HOW_IT_WORKS_STEPS[1].title}</Heading3>
+                  <Text size="sm" tone="muted">{HOW_IT_WORKS_STEPS[1].description}</Text>
+                </MarketingHowItWorksStepBody>
+                <MarketingHowItWorksStepIllustration />
+              </MarketingHowItWorksRow>
+
+              <MarketingHowItWorksRow>
+                <MarketingHowItWorksStepBody step={3}>
+                  <Heading3 as="h3">{HOW_IT_WORKS_STEPS[2].title}</Heading3>
+                  <Text size="sm" tone="muted">{HOW_IT_WORKS_STEPS[2].description}</Text>
+                </MarketingHowItWorksStepBody>
+                <MarketingHowItWorksStepIllustration />
+              </MarketingHowItWorksRow>
+            </MarketingHowItWorksCard>
           </MarketingHowItWorksSection>
 
           <MarketingFaqSection>
@@ -342,15 +369,45 @@ function MarketingPage() {
             </Text>
             <MarketingFaqList>
               {FAQ_ITEMS.map((item) => (
-                <Collapsible
-                  key={item.question}
-                  trigger={<MarketingFaqQuestion>{item.question}</MarketingFaqQuestion>}
-                >
-                  <Text size="sm" tone="muted">{item.content ?? item.answer}</Text>
-                </Collapsible>
+                <MarketingFaqItem key={item.question}>
+                  <Collapsible
+                    trigger={<MarketingFaqQuestion>{item.question}</MarketingFaqQuestion>}
+                  >
+                    <Text size="sm" tone="muted">{item.content ?? item.answer}</Text>
+                  </Collapsible>
+                </MarketingFaqItem>
               ))}
             </MarketingFaqList>
           </MarketingFaqSection>
+
+          <MarketingCtaSection>
+            <MarketingCtaCard>
+              <Heading2 className="text-center text-white">Ready to sync your calendars?</Heading2>
+              <Text size="sm" align="center" className="text-white/80 max-w-[46ch]">
+                Start syncing your calendars in seconds. Free to use, no credit card required.
+              </Text>
+              <div className="flex items-center gap-2 mt-2">
+                <LinkButton to="/register" size="compact" variant="inverse">
+                  <ButtonText>Get Started</ButtonText>
+                  <ButtonIcon>
+                    <ArrowRightIcon size={16} />
+                  </ButtonIcon>
+                </LinkButton>
+                <ExternalLinkButton
+                  href="https://github.com/ridafkih/keeper.sh"
+                  target="_blank"
+                  rel="noreferrer"
+                  size="compact"
+                  variant="inverse-ghost"
+                >
+                  <ButtonText>View on GitHub</ButtonText>
+                  <ButtonIcon>
+                    <ArrowUpRightIcon size={16} />
+                  </ButtonIcon>
+                </ExternalLinkButton>
+              </div>
+            </MarketingCtaCard>
+          </MarketingCtaSection>
         </div>
       </div>
     </div>

@@ -14,6 +14,8 @@ const button = tv({
       border: "border-interactive-border shadow-xs bg-background hover:bg-background-hover",
       elevated: "border-border-elevated shadow-xs bg-background-elevated hover:bg-background-hover",
       ghost: "border-transparent bg-transparent hover:bg-foreground/5",
+      inverse: "shadow-xs border-transparent bg-background text-foreground hover:bg-background-hover",
+      "inverse-ghost": "border-transparent bg-transparent text-background hover:bg-background/10",
       destructive: "shadow-xs border-destructive-border bg-destructive-background text-destructive hover:bg-destructive-background-hover",
     },
   },

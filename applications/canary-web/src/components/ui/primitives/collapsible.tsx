@@ -32,6 +32,7 @@ export function Collapsible({ trigger, children, className }: CollapsibleProps) 
       onClick={(event) => {
         if (!(event.target instanceof HTMLElement)) return;
         if (event.target.closest("summary")) return;
+        if (event.target.closest("a")) return;
         event.preventDefault();
         if (detailsRef.current) {
           detailsRef.current.open = !detailsRef.current.open;
