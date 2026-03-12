@@ -78,4 +78,28 @@ describe("runReconcileSubscriptionsJob", () => {
       { "failed.count": 0 },
     ]);
   });
+
+  it("counts timed out reconciliation operations as failed", async () => {
+    const cronEventFieldSets: Record<string, unknown>[] = [];
+
+    await runReconcileSubscriptionsJob({
+      hasBillingClient: true,
+      reconcileUserSubscription: (userId) => {
+        if (userId === "user-2") {
+          return Bun.sleep(10_000);
+        }
+        return Promise.resolve();
+      },
+      reconcileUserTimeoutMs: 1,
+      selectUserIds: () => Promise.resolve(["user-1", "user-2"]),
+      setCronEventFields: (fields) => {
+        cronEventFieldSets.push(fields);
+      },
+    });
+
+    expect(cronEventFieldSets).toEqual([
+      { "processed.count": 2 },
+      { "failed.count": 1 },
+    ]);
+  });
 });
