@@ -1,10 +1,12 @@
 import type { MaybePromise } from "bun";
 import { isKeeperMcpEnabledAuth } from "@keeper.sh/auth";
 import { ErrorResponse } from "./responses";
-import { calendarsTable, sourceDestinationMappingsTable } from "@keeper.sh/database/schema";
+import { apiTokensTable, calendarsTable, sourceDestinationMappingsTable } from "@keeper.sh/database/schema";
+import { isApiToken, hashApiToken } from "./api-tokens";
 import { user as userTable } from "@keeper.sh/database/auth-schema";
 import { and, count, eq, inArray } from "drizzle-orm";
-import { auth, database, premiumService } from "../context";
+import { auth, database, premiumService, redis } from "../context";
+import { checkAndIncrementApiUsage } from "./api-rate-limit";
 import {
   runApiWideEventContext,
   setWideEventFields,
@@ -135,7 +137,11 @@ const fetchAccountAgeDays = async (userId: string): Promise<number | null> => {
   }
 };
 
-const enrichWithUserContext = async (userId: string): Promise<void> => {
+interface UserContext {
+  plan: "free" | "pro" | null;
+}
+
+const enrichWithUserContext = async (userId: string): Promise<UserContext> => {
   widelog.set("user.id", userId);
 
   const [plan, counts, accountAgeDays] = await Promise.all([
@@ -153,6 +159,8 @@ const enrichWithUserContext = async (userId: string): Promise<void> => {
   if (accountAgeDays !== null) {
     widelog.set("account.age_days", accountAgeDays);
   }
+
+  return { plan };
 };
 
 interface Session {
@@ -202,23 +210,90 @@ const withAuth =
     return handler({ params, request, userId: session.user.id });
   };
 
+const resolveApiTokenUserId = async (bearerToken: string): Promise<string | null> => {
+  const tokenHash = hashApiToken(bearerToken);
+  const [match] = await database
+    .select({
+      userId: apiTokensTable.userId,
+      expiresAt: apiTokensTable.expiresAt,
+      id: apiTokensTable.id,
+    })
+    .from(apiTokensTable)
+    .where(eq(apiTokensTable.tokenHash, tokenHash))
+    .limit(1);
+
+  if (!match) {
+    return null;
+  }
+
+  if (match.expiresAt && match.expiresAt.getTime() < Date.now()) {
+    return null;
+  }
+
+  await database
+    .update(apiTokensTable)
+    .set({ lastUsedAt: new Date() })
+    .where(eq(apiTokensTable.id, match.id));
+
+  return match.userId;
+};
+
+const enforceApiRateLimit = async (userId: string, plan: "free" | "pro" | null): Promise<Response | null> => {
+  const rateLimitResult = await checkAndIncrementApiUsage(redis, userId, plan);
+  widelog.set("rate_limit.remaining", rateLimitResult.remaining);
+  widelog.set("rate_limit.limit", rateLimitResult.limit);
+
+  if (!rateLimitResult.allowed) {
+    widelog.set("rate_limit.exceeded", true);
+    return ErrorResponse.tooManyRequests("Daily API limit exceeded. Upgrade to Pro for unlimited access.").toResponse();
+  }
+
+  return null;
+};
+
 const withV1Auth =
   (handler: AuthenticatedRouteCallback): RouteCallback =>
   async ({ request, params }) => {
     const authHeader = request.headers.get("authorization");
 
-    if (authHeader?.startsWith("Bearer ") && isKeeperMcpEnabledAuth(auth)) {
-      const mcpAuth = auth;
-      const mcpSession = await widelog.time.measure("auth.duration_ms", () =>
-        mcpAuth.api.getMcpSession({ headers: request.headers }),
-      );
+    if (authHeader?.startsWith("Bearer ")) {
+      const bearerToken = authHeader.slice("Bearer ".length);
 
-      if (!mcpSession?.userId) {
-        return ErrorResponse.unauthorized().toResponse();
+      if (isApiToken(bearerToken)) {
+        const userId = await widelog.time.measure("auth.duration_ms", () =>
+          resolveApiTokenUserId(bearerToken),
+        );
+
+        if (!userId) {
+          return ErrorResponse.unauthorized().toResponse();
+        }
+
+        widelog.set("auth.method", "api_token");
+        const { plan } = await enrichWithUserContext(userId);
+        const rateLimitResponse = await enforceApiRateLimit(userId, plan);
+        if (rateLimitResponse) {
+          return rateLimitResponse;
+        }
+        return handler({ params, request, userId });
       }
 
-      await enrichWithUserContext(mcpSession.userId);
-      return handler({ params, request, userId: mcpSession.userId });
+      if (isKeeperMcpEnabledAuth(auth)) {
+        const mcpAuth = auth;
+        const mcpSession = await widelog.time.measure("auth.duration_ms", () =>
+          mcpAuth.api.getMcpSession({ headers: request.headers }),
+        );
+
+        if (!mcpSession?.userId) {
+          return ErrorResponse.unauthorized().toResponse();
+        }
+
+        const { plan } = await enrichWithUserContext(mcpSession.userId);
+        const rateLimitResponse = await enforceApiRateLimit(mcpSession.userId, plan);
+        if (rateLimitResponse) {
+          return rateLimitResponse;
+        }
+        return handler({ params, request, userId: mcpSession.userId });
+      }
     }
 
     const session = await widelog.time.measure("auth.duration_ms", () => getSession(request));

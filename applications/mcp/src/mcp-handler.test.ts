@@ -2,14 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { createKeeperMcpHandler } from "./mcp-handler";
 import { createKeeperMcpToolset } from "./toolset";
 
-const toolset = createKeeperMcpToolset({
-  getEventCount: () => Promise.resolve(0),
-  getEventsInRange: () => Promise.resolve([]),
-  getSyncStatuses: () => Promise.resolve([]),
-  listDestinations: () => Promise.resolve([]),
-  listMappings: () => Promise.resolve([]),
-  listSources: () => Promise.resolve([]),
-});
+const toolset = createKeeperMcpToolset();
 
 describe("createKeeperMcpHandler", () => {
   it("returns protected-resource metadata when authentication is missing", async () => {
@@ -20,6 +13,7 @@ describe("createKeeperMcpHandler", () => {
         },
       },
       mcpPublicUrl: "https://mcp.keeper.sh",
+      apiBaseUrl: "https://keeper.sh",
       toolset,
     });
 
@@ -51,6 +45,7 @@ describe("createKeeperMcpHandler", () => {
         },
       },
       mcpPublicUrl: "https://mcp.keeper.sh",
+      apiBaseUrl: "https://keeper.sh",
       toolset,
     });
 
@@ -77,6 +72,7 @@ describe("createKeeperMcpHandler", () => {
         },
       },
       mcpPublicUrl: "https://mcp.keeper.sh",
+      apiBaseUrl: "https://keeper.sh",
       toolset,
     });
 
@@ -89,6 +85,7 @@ describe("createKeeperMcpHandler", () => {
         }),
         headers: {
           "Content-Type": "application/json",
+          "Authorization": "Bearer test-token",
         },
         method: "POST",
       }),
@@ -110,6 +107,7 @@ describe("createKeeperMcpHandler", () => {
         },
       },
       mcpPublicUrl: "https://mcp.keeper.sh",
+      apiBaseUrl: "https://keeper.sh",
       toolset,
     });
 
@@ -133,6 +131,7 @@ describe("createKeeperMcpHandler", () => {
         },
       },
       mcpPublicUrl: "https://mcp.keeper.sh",
+      apiBaseUrl: "https://keeper.sh",
       toolset,
     });
 

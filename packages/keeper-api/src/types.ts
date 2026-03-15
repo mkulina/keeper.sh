@@ -1,10 +1,24 @@
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
+import type {
+  EventActionResult,
+  EventCreateResult,
+  EventInput,
+  EventUpdateInput,
+  PendingInvite,
+  RsvpStatus,
+} from "./mutation-types";
 
 type KeeperDatabase = BunSQLDatabase;
 
 interface KeeperEventRangeInput {
   from: Date | string;
   to: Date | string;
+}
+
+interface KeeperEventFilters {
+  calendarId?: string[];
+  availability?: string[];
+  isAllDay?: boolean;
 }
 
 interface KeeperSource {
@@ -64,9 +78,15 @@ interface KeeperApi {
   listSources: (userId: string) => Promise<KeeperSource[]>;
   listDestinations: (userId: string) => Promise<KeeperDestination[]>;
   listMappings: (userId: string) => Promise<KeeperMapping[]>;
-  getEventsInRange: (userId: string, range: KeeperEventRangeInput) => Promise<KeeperEvent[]>;
-  getEventCount: (userId: string) => Promise<number>;
+  getEventsInRange: (userId: string, range: KeeperEventRangeInput, filters?: KeeperEventFilters) => Promise<KeeperEvent[]>;
+  getEvent: (userId: string, eventId: string) => Promise<KeeperEvent | null>;
+  getEventCount: (userId: string, options?: { from?: Date; to?: Date }) => Promise<number>;
   getSyncStatuses: (userId: string) => Promise<KeeperSyncStatus[]>;
+  createEvent: (userId: string, input: EventInput) => Promise<EventCreateResult>;
+  updateEvent: (userId: string, eventId: string, updates: EventUpdateInput) => Promise<EventActionResult>;
+  deleteEvent: (userId: string, eventId: string) => Promise<EventActionResult>;
+  rsvpEvent: (userId: string, eventId: string, status: RsvpStatus) => Promise<EventActionResult>;
+  getPendingInvites: (userId: string, calendarId: string, from: string, to: string) => Promise<PendingInvite[]>;
 }
 
 export type {
@@ -74,6 +94,7 @@ export type {
   KeeperDatabase,
   KeeperDestination,
   KeeperEvent,
+  KeeperEventFilters,
   KeeperEventRangeInput,
   KeeperMapping,
   KeeperSource,
