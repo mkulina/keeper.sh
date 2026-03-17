@@ -49,11 +49,14 @@ const resolveOAuthProvider = async (
     .where(eq(calendarsTable.id, calendarId))
     .limit(1);
 
-  if (!oauthCred || !oauthCred.externalCalendarId) {
+  if (!oauthCred) {
     return null;
   }
 
   if (provider === "google" && oauthConfig.googleClientId && oauthConfig.googleClientSecret) {
+    if (!oauthCred.externalCalendarId) {
+      return null;
+    }
     const googleOAuth = createGoogleOAuthService({
       clientId: oauthConfig.googleClientId,
       clientSecret: oauthConfig.googleClientSecret,
@@ -71,6 +74,9 @@ const resolveOAuthProvider = async (
   }
 
   if (provider === "outlook" && oauthConfig.microsoftClientId && oauthConfig.microsoftClientSecret) {
+    if (!oauthCred.externalCalendarId) {
+      return null;
+    }
     const microsoftOAuth = createMicrosoftOAuthService({
       clientId: oauthConfig.microsoftClientId,
       clientSecret: oauthConfig.microsoftClientSecret,
@@ -79,6 +85,7 @@ const resolveOAuthProvider = async (
       accessToken: oauthCred.accessToken,
       refreshToken: oauthCred.refreshToken,
       accessTokenExpiresAt: oauthCred.expiresAt,
+      externalCalendarId: oauthCred.externalCalendarId,
       calendarId,
       userId,
       refreshAccessToken: (refreshToken) => microsoftOAuth.refreshAccessToken(refreshToken),
