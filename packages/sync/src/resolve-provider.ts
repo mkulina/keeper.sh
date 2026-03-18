@@ -88,6 +88,7 @@ const resolveOAuthProvider = async (
   oauthConfig: OAuthConfig,
   refreshLockStore: RefreshLockStore | null,
   rateLimiter?: RedisRateLimiter,
+  signal?: AbortSignal,
 ): Promise<CalendarSyncProvider | null> => {
   const [oauthCred] = await database
     .select({
@@ -130,6 +131,7 @@ const resolveOAuthProvider = async (
         rawRefresh: (refreshToken) => googleOAuth.refreshAccessToken(refreshToken),
       }),
       rateLimiter,
+      signal,
     });
   }
 
@@ -203,6 +205,7 @@ interface ResolveProviderOptions {
   encryptionKey?: string;
   refreshLockStore?: RefreshLockStore | null;
   rateLimiter?: RedisRateLimiter;
+  signal?: AbortSignal;
 }
 
 const resolveSyncProvider = (options: ResolveProviderOptions): Promise<CalendarSyncProvider | null> => {
@@ -216,6 +219,7 @@ const resolveSyncProvider = (options: ResolveProviderOptions): Promise<CalendarS
       options.oauthConfig,
       options.refreshLockStore ?? null,
       options.rateLimiter,
+      options.signal,
     );
   }
 

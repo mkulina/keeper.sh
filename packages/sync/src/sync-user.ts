@@ -193,6 +193,7 @@ const syncDestinationsForUser = async (
         encryptionKey: config.encryptionKey,
         refreshLockStore: config.refreshLockStore,
         rateLimiter,
+        signal: config.abortSignal,
       });
 
       if (!syncProvider) {
