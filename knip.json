@@ -2,22 +2,23 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "ignore": [
     "**/*.css",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "tests/**/*",
     "services/cron/src/jobs/**/*",
     "applications/web/src/generated/**/*"
   ],
   "ignoreBinaries": [],
-  "ignoreDependencies": ["@keeper.sh/otelemetry"],
+  "ignoreDependencies": ["@keeper.sh/otelemetry", "@keeper.sh/fixtures"],
   "ignoreWorkspaces": ["packages/typescript-config"],
   "ignoreExportsUsedInFile": true,
   "workspaces": {
     "packages/*": {
-      "entry": ["src/{index.ts,api.ts,cron.ts,**/*.test.ts}"],
+      "entry": ["src/{index.ts,api.ts,cron.ts}"],
       "project": "src/**/*.{ts,tsx}"
     },
     "applications/*": {
-      "entry": [
-        "src/{index.ts,main.tsx,server.tsx,**/*.test.ts,**/*.test.tsx}"
-      ],
+      "entry": ["src/{index.ts,main.tsx,server.tsx}"],
       "project": "src/**/*.{ts,tsx}"
     },
     "applications/web": {
@@ -25,27 +26,24 @@
         "src/main.tsx",
         "src/server.tsx",
         "plugins/**/*.ts",
-        "scripts/**/*.ts",
-        "src/**/*.test.ts",
-        "src/**/*.test.tsx"
+        "scripts/**/*.ts"
       ],
       "project": ["src/**/*.{ts,tsx}", "plugins/**/*.ts", "scripts/**/*.ts"],
       "ignoreDependencies": ["@babel/preset-typescript"]
     },
     "services/*": {
-      "entry": ["src/{index.ts,**/*.test.ts}"],
       "project": "src/**/*.{ts,tsx}"
     },
     "services/api": {
-      "entry": ["src/routes/**/*.ts", "src/**/*.test.ts"],
+      "entry": ["src/routes/**/*.ts"],
       "project": "src/**/*.{ts,tsx}"
     },
     "services/cron": {
-      "entry": ["src/jobs/*.ts", "src/**/*.test.ts"],
+      "entry": ["src/jobs/*.ts"],
       "project": "src/**/*.{ts,tsx}"
     },
     "services/mcp": {
-      "entry": ["src/routes/**/*.ts", "src/**/*.test.ts"],
+      "entry": ["src/routes/**/*.ts"],
       "project": "src/**/*.{ts,tsx}"
     }
   }
